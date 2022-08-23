@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @NoArgsConstructor
-public class SpriteHandler {
+public class SpriteProvider {
 
     private static String DEFAULT_PIECE_SPRITE_PATH = "sprites/Chess_Pieces_Sprite.png";
 
@@ -33,13 +33,13 @@ public class SpriteHandler {
         this.loaded = true;
     }
 
-    public BufferedImage getPieceSprite( PieceType type, TeamColor color ) {
+    public BufferedImage getPieceSprite( PieceType type, TeamColor team ) {
 
         if ( !this.isLoaded() ) {
             throw new IllegalStateException( "Sprites are not loaded yet!" );
         }
 
-        if ( TeamColor.WHITE.equals( color ) ) {
+        if ( TeamColor.WHITE.equals( team ) ) {
             return this.whiteSprites.get( type );
         }
         return this.blackSprites.get( type );

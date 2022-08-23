@@ -1,19 +1,19 @@
+import core.model.Board;
+import core.model.Piece;
+import core.values.Dir;
 import core.values.PieceType;
 import core.values.TeamColor;
-import frontend.SpriteHandler;
+import frontend.BoardView;
 import misc.Log;
-import misc.Progress;
 
 public class Application {
 
     public static void main( String[] args ) {
 
-        Log.info( "Hello {} World", "Chess" );
-
-        SpriteHandler spriteHandler = new SpriteHandler();
-        spriteHandler.reload( 20 );
-
-        spriteHandler.getPieceSprite( PieceType.KING, TeamColor.BLACK );
+        Board board = new Board( 8 );
+        board.getPositions().get( 0 ).setPiece( new Piece( PieceType.QUEEN, TeamColor.WHITE ) );
+        board.getPositions().get( 10 ).setPiece( new Piece( PieceType.BISHOP, TeamColor.BLACK ) );
+        BoardView boardView = new BoardView( board, 600, 700, 700 );
 
     }
 
