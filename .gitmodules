@@ -1,0 +1,3 @@
+[submodule "common_java"]
+	path = common_java
+	url = https://github.com/DerJeanjour/common_java.git
