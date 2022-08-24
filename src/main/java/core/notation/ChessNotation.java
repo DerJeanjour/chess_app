@@ -1,12 +1,12 @@
 package core.notation;
 
-import core.model.Board;
+import backend.Game;
 
 public interface ChessNotation {
 
-    Board read( String notation );
+    Game read( String notation );
 
-    String write( Board model );
+    String write( Game model );
 
     boolean validate( String notation );
 

@@ -15,16 +15,28 @@ public class Piece {
 
     private boolean alive;
 
+    private int moved;
+
     public Piece( PieceType type, TeamColor team ) {
         this.type = type;
         this.team = team;
         this.alive = true;
+        this.moved = 0;
     }
 
     public Piece( Piece piece ) {
         this.type = piece.getType();
         this.team = piece.getTeam();
         this.alive = piece.isAlive();
+        this.moved = piece.getMoved();
+    }
+
+    public void moved() {
+        this.moved++;
+    }
+
+    public boolean partOf( TeamColor team ) {
+        return this.team.equals( team );
     }
 
     @Override

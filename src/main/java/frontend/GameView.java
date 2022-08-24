@@ -1,6 +1,6 @@
 package frontend;
 
-import core.model.Board;
+import backend.Game;
 import core.model.Piece;
 import core.model.Position;
 import core.notation.AlgebraicNotation;
@@ -15,9 +15,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class BoardView {
+public class GameView {
 
-    private final Board board;
+    private final Game game;
 
     private final int boardSize;
 
@@ -41,14 +41,14 @@ public class BoardView {
 
     private Position selectedPos;
 
-    public BoardView( Board board, int boardSize, int windowW, int windowH ) {
+    public GameView( Game game, int boardSize, int windowW, int windowH ) {
 
-        this.board = board;
+        this.game = game;
         this.boardSize = boardSize;
 
         this.windowW = windowW;
         this.windowH = windowH;
-        this.posSize = boardSize / board.getSize();
+        this.posSize = boardSize / game.getBoardSize();
         this.xOff = ( windowW - boardSize ) / 2;
         this.yOff = ( windowH - boardSize ) / 2;
 
@@ -84,14 +84,14 @@ public class BoardView {
 
             @Override
             public void mousePressed( MouseEvent e ) {
-                selectedPos = board.getPosition( pixelToPosition( e.getX(), e.getY() ) );
+                selectedPos = game.getBoard().getPosition( pixelToPosition( e.getX(), e.getY() ) );
             }
 
             @Override
             public void mouseReleased( MouseEvent e ) {
-                Position pos = board.getPosition( pixelToPosition( e.getX(), e.getY() ) );
+                Position pos = game.getBoard().getPosition( pixelToPosition( e.getX(), e.getY() ) );
                 if ( selectedPos != null && pos != null ) {
-                    board.move( selectedPos.getPos(), pos.getPos() );
+                    game.makeMove( selectedPos.getPos(), pos.getPos() );
                 }
                 selectedPos = null;
             }
@@ -131,7 +131,7 @@ public class BoardView {
     public Vector2I pixelToPosition( int x, int y ) {
         int posX = ( x - this.xOff ) / this.posSize;
         int posY = ( y - ( this.yOff + 7 ) ) / this.posSize;
-        return new Vector2I( posX, this.board.getSize() - 1 - posY );
+        return new Vector2I( posX, this.game.getBoardSize() - 1 - posY );
     }
 
     public Vector2I positionToPixel( int x, int y ) {
@@ -153,8 +153,8 @@ public class BoardView {
             g.fillRect( 0, 0, windowW, windowH );
 
             // Draw Positions
-            for ( int i = 0; i < board.getSize(); i++ ) {
-                for ( int j = 0; j < board.getSize(); j++ ) {
+            for ( int i = 0; i < game.getBoardSize(); i++ ) {
+                for ( int j = 0; j < game.getBoardSize(); j++ ) {
                     Vector2I p = positionToPixel( i, j );
                     if ( ( i + j ) % 2 != 0 ) {
                         g.setColor( Color.darkGray );
@@ -167,25 +167,25 @@ public class BoardView {
 
             // Draw Cell Description
             g.setColor( Color.black );
-            for ( int j = 0; j < board.getSize(); j++ ) {
-                for ( int i = 0; i < board.getSize(); i++ ) {
+            for ( int j = 0; j < game.getBoardSize(); j++ ) {
+                for ( int i = 0; i < game.getBoardSize(); i++ ) {
                     Vector2I p = positionToPixel( i, j );
-                    Position pos = board.getPosition( i, board.getSize() - 1 - j );
+                    Position pos = game.getBoard().getPosition( i, game.getBoardSize() - 1 - j );
                     if ( i == 0 ) {
                         g.drawString( AlgebraicNotation.getRowCode( pos ), p.x - 20, p.y + 15 );
                     }
-                    if ( j == board.getSize() - 1 ) {
+                    if ( j == game.getBoardSize() - 1 ) {
                         g.drawString( AlgebraicNotation.getColCode( pos ), p.x + posSize - 15, p.y + posSize + 15 );
                     }
                 }
             }
 
             // Draw Pieces
-            for ( int j = 0; j < board.getSize(); j++ ) {
-                for ( int i = 0; i < board.getSize(); i++ ) {
+            for ( int j = 0; j < game.getBoardSize(); j++ ) {
+                for ( int i = 0; i < game.getBoardSize(); i++ ) {
 
                     Vector2I p = positionToPixel( i, j );
-                    Position pos = board.getPosition( i, board.getSize() - 1 - j );
+                    Position pos = game.getBoard().getPosition( i, game.getBoardSize() - 1 - j );
 
                     if ( selectedPos == null || !selectedPos.getPos().equals( pos.getPos() ) ) {
                         drawPiece( g, p, pos );
@@ -207,7 +207,7 @@ public class BoardView {
             g.drawRect( p.x, p.y, boardSize, boardSize );
 
             // add history to info text
-            moveInfo.setText( chessNotation.write( board ) );
+            moveInfo.setText( chessNotation.write( game ) );
 
             repaint();
 

@@ -1,5 +1,6 @@
 package core.notation;
 
+import backend.Game;
 import core.model.Board;
 import core.model.Piece;
 import core.values.PieceType;
@@ -9,12 +10,12 @@ import util.StringUtil;
 public class FenNotation implements ChessNotation {
 
     @Override
-    public Board read( String notation ) {
+    public Game read( String notation ) {
         return null;
     }
 
     @Override
-    public String write( Board model ) {
+    public String write( Game model ) {
         return null;
     }
 

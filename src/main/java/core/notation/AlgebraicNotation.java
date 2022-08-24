@@ -1,6 +1,6 @@
 package core.notation;
 
-import core.model.Board;
+import backend.Game;
 import core.model.Move;
 import core.model.Piece;
 import core.model.Position;
@@ -12,15 +12,15 @@ import java.text.MessageFormat;
 public class AlgebraicNotation implements ChessNotation {
 
     @Override
-    public Board read( String notation ) {
+    public Game read( String notation ) {
         // TODO
         return null;
     }
 
     @Override
-    public String write( Board model ) {
+    public String write( Game game ) {
         String notation = "";
-        for ( Move move : model.getHistory() ) {
+        for ( Move move : game.getHistory() ) {
             notation += getMoveCode( move );
         }
         return notation;
