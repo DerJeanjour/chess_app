@@ -27,4 +27,8 @@ public class Piece {
         this.alive = piece.isAlive();
     }
 
+    @Override
+    public String toString() {
+        return "[" + type.name() + "/" + team.name() + "/" + ( alive ? "alive" : "dead" ) + "]";
+    }
 }

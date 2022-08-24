@@ -1,7 +1,10 @@
 package core.notation;
 
 import core.model.Board;
-import misc.Log;
+import core.model.Piece;
+import core.values.PieceType;
+import core.values.TeamColor;
+import util.StringUtil;
 
 public class FenNotation implements ChessNotation {
 
@@ -21,12 +24,38 @@ public class FenNotation implements ChessNotation {
     }
 
     public static Board readPlacement( String placement ) {
-        String[] rows = placement.split( "/" );
-        int rowSize = rows[0].length();
-        for ( String row : rows ) {
-            Log.info( row );
+
+        if ( StringUtil.isBlank( placement ) ) {
+            throw new IllegalArgumentException();
         }
-        return new Board( rowSize );
+
+        String[] rows = placement.split( "/" );
+        int rowSize = rows.length;
+        Board board = new Board( rowSize );
+
+        for ( int i = rowSize - 1; i >= 0; i-- ) {
+
+            int rowIdx = rowSize - i - 1;
+            String row = rows[i];
+
+            int colIdx = 0;
+            for ( Character c : row.toCharArray() ) {
+                if ( Character.isDigit( c ) ) {
+                    colIdx += Integer.parseInt( c.toString() );
+                }
+                if ( Character.isAlphabetic( c ) ) {
+                    PieceType pieceType = PieceType.getByFenCode( c.toString().toUpperCase() );
+                    if ( pieceType != null ) {
+                        TeamColor team = Character.isUpperCase( c ) ? TeamColor.WHITE : TeamColor.BLACK;
+                        Piece piece = new Piece( pieceType, team );
+                        board.getPosition( colIdx, rowIdx ).setPiece( piece );
+                    }
+                    colIdx++;
+                }
+            }
+
+        }
+        return board;
     }
 
 }

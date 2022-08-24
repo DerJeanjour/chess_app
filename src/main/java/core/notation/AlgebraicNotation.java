@@ -4,6 +4,7 @@ import core.model.Board;
 import core.model.Move;
 import core.model.Piece;
 import core.model.Position;
+import core.values.TeamColor;
 import math.Vector2I;
 
 import java.text.MessageFormat;
@@ -35,9 +36,10 @@ public class AlgebraicNotation implements ChessNotation {
     /* model -> notation */
 
     public static String getMoveCode( Move move ) {
-        String pattern = "{0}.{1}{2}{3} ";
+        String pattern = "{0}{1}{2}{3} ";
+        boolean isMoveEnd = TeamColor.BLACK.equals( move.getPosition().getPiece().getTeam() );
         return MessageFormat.format( pattern,
-                move.getNumber() + 1,
+                isMoveEnd ? "" : move.getNumber() + 1 + ".",
                 getPieceCode( move.getPosition() ),
                 move.getAction().code,
                 getPosCode( move.getPosition() )

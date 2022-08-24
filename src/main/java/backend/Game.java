@@ -12,10 +12,10 @@ public class Game {
 
     public static Board getStartPlacements() {
         List<String> placementLine = ResourceLoader.getTextFile( DEFAULT_PIECE_PLACEMENT_PATH );
-        for ( String placement : placementLine ) {
-            FenNotation.readPlacement( placement );
+        if ( placementLine.isEmpty() ) {
+            throw new IllegalArgumentException();
         }
-        return null;
+        return FenNotation.readPlacement( placementLine.get( 0 ) );
     }
 
 }
