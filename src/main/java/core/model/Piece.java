@@ -39,6 +39,10 @@ public class Piece {
         return this.team.equals( team );
     }
 
+    public boolean isType( PieceType type ) {
+        return this.type.equals( type );
+    }
+
     @Override
     public String toString() {
         return "[" + type.name() + "/" + team.name() + "/" + ( alive ? "alive" : "dead" ) + "]";

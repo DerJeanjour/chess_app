@@ -7,14 +7,14 @@ import java.util.List;
 
 public enum Dir {
 
-    TOP( Vector2I.UNIT_Y ),
+    UP( Vector2I.UNIT_Y ),
     RIGHT( Vector2I.UNIT_X ),
-    BOTTOM( Vector2I.UNIT_Y.negative() ),
+    DOWN( Vector2I.UNIT_Y.negative() ),
     LEFT( Vector2I.UNIT_X.negative() ),
-    TOP_RIGHT( TOP.vector.add( RIGHT.vector ) ),
-    BOTTOM_RIGHT( BOTTOM.vector.add( RIGHT.vector ) ),
-    TOP_LEFT( TOP.vector.add( LEFT.vector ) ),
-    BOTTOM_LEFT( BOTTOM.vector.add( LEFT.vector ) );
+    UP_RIGHT( UP.vector.add( RIGHT.vector ) ),
+    DOWN_RIGHT( DOWN.vector.add( RIGHT.vector ) ),
+    UP_LEFT( UP.vector.add( LEFT.vector ) ),
+    DOWN_LEFT( DOWN.vector.add( LEFT.vector ) );
 
     public Vector2I vector;
 
@@ -24,19 +24,19 @@ public enum Dir {
 
     public static List<Dir> baseDirs() {
         return Arrays.asList(
-                TOP,
+                UP,
                 RIGHT,
-                BOTTOM,
+                DOWN,
                 LEFT
         );
     }
 
     public static List<Dir> diagonalDirs() {
         return Arrays.asList(
-                TOP_RIGHT,
-                TOP_LEFT,
-                BOTTOM_RIGHT,
-                BOTTOM_LEFT
+                UP_RIGHT,
+                UP_LEFT,
+                DOWN_RIGHT,
+                DOWN_LEFT
         );
     }
 

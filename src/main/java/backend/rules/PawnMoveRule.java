@@ -4,15 +4,12 @@ import backend.Game;
 import backend.Rule;
 import core.model.Piece;
 import core.model.Position;
-import core.values.ActionType;
-import core.values.PieceType;
-import core.values.RuleType;
-import core.values.TeamColor;
+import core.values.*;
 import math.Vector2I;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PawnMoveRule extends Rule {
 
@@ -23,26 +20,17 @@ public class PawnMoveRule extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
         Piece piece = from.getPiece();
-        if ( !PieceType.PAWN.equals( piece.getType() ) ) {
+        if ( !piece.isType( PieceType.PAWN ) ) {
             return true;
         }
 
-        Vector2I move = to.getPos().sub( from.getPos() );
+        Set<Vector2I> allowed = new HashSet<>();
 
-        List<Vector2I> allowed = new ArrayList<>();
-        Vector2I allowedMove = piece.partOf( TeamColor.WHITE )
-                ? Vector2I.UNIT_Y
-                : Vector2I.UNIT_Y.negative();
-        allowed.add( allowedMove );
+        Vector2I dir = piece.partOf( TeamColor.WHITE ) ? Dir.UP.vector : Dir.DOWN.vector;
+        int distance = piece.getMoved() == 0 ? 2 : 1;
+        allowed.addAll( game.getPositionsOfDir( from.getPos(), dir, distance ) );
+        // TODO calc diagonal vectors
 
-        if ( piece.getMoved() == 0 ) {
-            // TODO check if vector path is clear
-            allowed.add( allowedMove.mul( 2 ) );
-        }
-        if ( to.getPiece() != null ) {
-            // TODO calc diagonal vectors
-            return false;
-        }
-        return allowed.contains( move );
+        return allowed.contains( to.getPos() );
     }
 }

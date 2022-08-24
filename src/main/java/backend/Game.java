@@ -7,6 +7,7 @@ import core.values.RuleType;
 import core.values.TeamColor;
 import lombok.Getter;
 import math.Vector2I;
+import misc.Log;
 import util.ResourceLoader;
 
 import java.util.ArrayList;
@@ -92,6 +93,19 @@ public class Game {
 
     public boolean isOnMove( TeamColor color ) {
         return this.onMove.equals( color );
+    }
+
+    public List<Vector2I> getPositionsOfDir( Vector2I from, Vector2I dir, int distance ) {
+        List<Vector2I> positions = new ArrayList<>();
+        for ( int i = 0; i < distance; i++ ) {
+            Vector2I p = from.add( dir.mul( i + 1 ) );
+            Position pos = this.board.getPosition( p );
+            if ( pos == null || pos.getPiece() != null ) {
+                return positions;
+            }
+            positions.add( p );
+        }
+        return positions;
     }
 
     public static Board getStartPlacements() {
