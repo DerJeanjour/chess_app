@@ -14,6 +14,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameView {
 
@@ -41,6 +43,8 @@ public class GameView {
 
     private Position selectedPos;
 
+    private List<Vector2I> possiblePositions;
+
     public GameView( Game game, int boardSize, int windowW, int windowH ) {
 
         this.game = game;
@@ -52,6 +56,7 @@ public class GameView {
         this.xOff = ( windowW - boardSize ) / 2;
         this.yOff = ( windowH - boardSize ) / 2;
 
+        this.possiblePositions = new ArrayList<>();
         this.sprites = new SpriteProvider();
         this.sprites.reload( this.posSize );
         this.chessNotation = new AlgebraicNotation();
@@ -85,6 +90,7 @@ public class GameView {
             @Override
             public void mousePressed( MouseEvent e ) {
                 selectedPos = game.getBoard().getPosition( pixelToPosition( e.getX(), e.getY() ) );
+                possiblePositions.addAll( game.getRuleValidator().getPossiblePositions( selectedPos ) );
             }
 
             @Override
@@ -94,6 +100,7 @@ public class GameView {
                     game.makeMove( selectedPos.getPos(), pos.getPos() );
                 }
                 selectedPos = null;
+                possiblePositions.clear();
             }
         } );
 
@@ -156,10 +163,15 @@ public class GameView {
             for ( int i = 0; i < game.getBoardSize(); i++ ) {
                 for ( int j = 0; j < game.getBoardSize(); j++ ) {
                     Vector2I p = positionToPixel( i, j );
+                    Vector2I pos = new Vector2I( i, game.getBoardSize() - 1 - j );
                     if ( ( i + j ) % 2 != 0 ) {
-                        g.setColor( Color.darkGray );
+                        g.setColor( possiblePositions.contains( pos )
+                                ? new Color( 128, 64, 64 )
+                                : Color.darkGray );
                     } else {
-                        g.setColor( Color.lightGray );
+                        g.setColor( possiblePositions.contains( pos )
+                                ? new Color( 255, 192, 192 )
+                                : Color.lightGray );
                     }
                     g.fillRect( p.x, p.y, posSize, posSize );
                 }

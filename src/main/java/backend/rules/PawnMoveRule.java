@@ -9,7 +9,6 @@ import core.values.PieceType;
 import core.values.RuleType;
 import core.values.TeamColor;
 import math.Vector2I;
-import misc.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +23,7 @@ public class PawnMoveRule extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
         Piece piece = from.getPiece();
-        if( !PieceType.PAWN.equals( piece.getType() )) {
+        if ( !PieceType.PAWN.equals( piece.getType() ) ) {
             return true;
         }
 
@@ -36,11 +35,11 @@ public class PawnMoveRule extends Rule {
                 : Vector2I.UNIT_Y.negative();
         allowed.add( allowedMove );
 
-        if(piece.getMoved() == 0) {
+        if ( piece.getMoved() == 0 ) {
             // TODO check if vector path is clear
             allowed.add( allowedMove.mul( 2 ) );
         }
-        if(to.getPiece() != null) {
+        if ( to.getPiece() != null ) {
             // TODO calc diagonal vectors
             return false;
         }

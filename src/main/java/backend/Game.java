@@ -1,11 +1,9 @@
 package backend;
 
-import backend.rules.AllowedToCaptureRule;
-import backend.rules.PawnMoveRule;
-import backend.rules.TeamIsOnMoveRule;
 import core.model.*;
 import core.notation.FenNotation;
 import core.values.ActionType;
+import core.values.RuleType;
 import core.values.TeamColor;
 import lombok.Getter;
 import math.Vector2I;
@@ -34,6 +32,9 @@ public class Game {
     @Getter
     private final List<Move> history;
 
+    @Getter
+    private final RuleValidator ruleValidator;
+
     public Game() {
         this.board = getStartPlacements();
         this.white = new Team( TeamColor.WHITE );
@@ -41,18 +42,19 @@ public class Game {
         this.onMove = TeamColor.WHITE;
         this.moveNumber = 0;
         this.history = new ArrayList<>();
+        this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
     }
 
     public void makeMove( Vector2I from, Vector2I to ) {
 
         Position fromPos = this.board.getPosition( from );
         Position toPos = this.board.getPosition( to );
-        if(fromPos.getPiece() == null) {
+        if ( fromPos.getPiece() == null ) {
             return;
         }
 
         ActionType action = getAction( fromPos, toPos );
-        if ( validateMove( action, fromPos, toPos ) ) {
+        if ( this.ruleValidator.validate( action, fromPos, toPos ) ) {
 
             Piece piece = fromPos.getPiece();
             piece.moved();
@@ -67,24 +69,10 @@ public class Game {
 
     private ActionType getAction( Position from, Position to ) {
         ActionType action = ActionType.MOVE;
-        if(to.getPiece() != null) {
+        if ( to.getPiece() != null ) {
             action = ActionType.CAPTURE;
         }
         return action;
-    }
-
-    private boolean validateMove( ActionType actionType, Position from, Position to ) {
-        List<Rule> rules = Arrays.asList(
-                new TeamIsOnMoveRule(),
-                new AllowedToCaptureRule(),
-                new PawnMoveRule()
-        ); // TODO make rule provider
-        for ( Rule rule : rules ) {
-            if ( rule.getTags().contains( actionType ) && !rule.validate( this, from, to ) ) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private void addHistory( ActionType action, Position position ) {

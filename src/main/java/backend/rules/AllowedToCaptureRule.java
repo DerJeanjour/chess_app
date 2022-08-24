@@ -15,9 +15,11 @@ public class AllowedToCaptureRule extends Rule {
         super( RuleType.ALLOWED_TO_CAPTURE, Arrays.asList( ActionType.CAPTURE ) );
     }
 
-
     @Override
     public boolean validate( Game game, Position from, Position to ) {
+        if ( to.getPiece() == null ) {
+            return true;
+        }
         TeamColor teamA = from.getPiece().getTeam();
         TeamColor teamB = to.getPiece().getTeam();
         return !teamA.equals( teamB );
