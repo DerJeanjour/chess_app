@@ -1,14 +1,16 @@
+import backend.Game;
 import core.model.Board;
 import core.model.Piece;
-import core.values.Dir;
 import core.values.PieceType;
 import core.values.TeamColor;
 import frontend.BoardView;
-import misc.Log;
 
 public class Application {
 
     public static void main( String[] args ) {
+
+        Game game = new Game();
+        game.getStartPlacements();
 
         Board board = new Board( 8 );
         board.getPositions().get( 0 ).setPiece( new Piece( PieceType.QUEEN, TeamColor.WHITE ) );

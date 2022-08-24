@@ -4,14 +4,10 @@ import core.values.PieceType;
 import core.values.TeamColor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import misc.Log;
 import org.imgscalr.Scalr;
+import util.ResourceLoader;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +44,7 @@ public class SpriteProvider {
     private Map<PieceType, BufferedImage> getPieceSprites( int targetSize, TeamColor color ) {
         Map<PieceType, BufferedImage> sprites = new HashMap<>();
 
-        BufferedImage allPieces = loadSprite( DEFAULT_PIECE_SPRITE_PATH );
+        BufferedImage allPieces = ResourceLoader.getImageFile( DEFAULT_PIECE_SPRITE_PATH );
         if ( allPieces == null ) {
             return sprites;
         }
@@ -71,18 +67,6 @@ public class SpriteProvider {
         sprites.put( PieceType.PAWN, Scalr.resize( pawnSprite, Scalr.Method.BALANCED, targetSize, targetSize ) );
 
         return sprites;
-    }
-
-    private BufferedImage loadSprite( String resPath ) {
-        try {
-            URL url = getClass()
-                    .getClassLoader()
-                    .getResource( resPath );
-            return ImageIO.read( new File( url.getFile() ) );
-        } catch ( IOException e ) {
-            Log.error( "Something went wrong while loading sprites for path '{}': {}", resPath, e.getMessage() );
-            return null;
-        }
     }
 
 }

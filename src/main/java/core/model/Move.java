@@ -3,7 +3,6 @@ package core.model;
 import core.values.ActionType;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import math.Vector2I;
 
 @Data
 @RequiredArgsConstructor

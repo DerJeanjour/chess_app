@@ -2,17 +2,20 @@ package core.values;
 
 public enum PieceType {
 
-    PAWN( "" ),
-    KNIGHT( "N" ),
-    BISHOP( "B" ),
-    ROOK( "R" ),
-    QUEEN( "Q" ),
-    KING( "K" );
+    PAWN( "", "P" ),
+    KNIGHT( "N", "N" ),
+    BISHOP( "B", "B" ),
+    ROOK( "R", "R" ),
+    QUEEN( "Q", "Q" ),
+    KING( "K", "K" );
 
-    public String code;
+    public String code; // algebraic
 
-    PieceType( String code ) {
+    public String fenCode;
+
+    PieceType( String code, String fenCode ) {
         this.code = code;
+        this.fenCode = fenCode;
     }
 
 }
