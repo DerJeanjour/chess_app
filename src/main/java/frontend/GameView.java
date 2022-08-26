@@ -10,6 +10,7 @@ import misc.Log;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -129,10 +130,21 @@ public class GameView {
         JScrollPane moveInfoScroll = new JScrollPane( moveInfo );
         infoPanel.add( moveInfoScroll );
 
+        JButton copyHistoryButton = new JButton( "Copy" );
+        copyHistoryButton.addActionListener( e -> {
+            copyToClipboard( moveInfo.getText() );
+        } );
+        infoPanel.add( copyHistoryButton );
+
         frame.pack();
         frame.requestFocus();
         frame.setVisible( true );
 
+    }
+
+    public void copyToClipboard( String value ) {
+        StringSelection selection = new StringSelection( value );
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents( selection, selection );
     }
 
     public Vector2I pixelToPosition( int x, int y ) {
@@ -184,10 +196,10 @@ public class GameView {
                     Vector2I p = positionToPixel( i, j );
                     Position pos = game.getBoard().getPosition( i, game.getBoardSize() - 1 - j );
                     if ( i == 0 ) {
-                        g.drawString( AlgebraicNotation.getRowCode( pos ), p.x - 20, p.y + 15 );
+                        g.drawString( AlgebraicNotation.getRowCode( pos.getPos() ), p.x - 20, p.y + 15 );
                     }
                     if ( j == game.getBoardSize() - 1 ) {
-                        g.drawString( AlgebraicNotation.getColCode( pos ), p.x + posSize - 15, p.y + posSize + 15 );
+                        g.drawString( AlgebraicNotation.getColCode( pos.getPos() ), p.x + posSize - 15, p.y + posSize + 15 );
                     }
                 }
             }

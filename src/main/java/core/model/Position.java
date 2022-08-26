@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import math.Vector2I;
 
+import java.util.List;
+
 @Data
 @RequiredArgsConstructor
 public class Position {
@@ -28,9 +30,13 @@ public class Position {
         return hasPiece() && piece.isType( type );
     }
 
+    public boolean hasPieceOfTypes( List<PieceType> types ) {
+        return hasPiece() && types.contains( this.piece.getType() );
+    }
+
     public Position clone() {
         Position position = new Position( this.pos );
-        position.setPiece( new Piece( this.piece ) );
+        position.setPiece( this.piece.clone() );
         return position;
     }
 

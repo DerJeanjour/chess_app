@@ -1,5 +1,6 @@
 package backend;
 
+import backend.validator.RuleValidator;
 import core.model.*;
 import core.notation.FenNotation;
 import core.values.ActionType;
@@ -9,9 +10,7 @@ import lombok.Getter;
 import math.Vector2I;
 import util.ResourceLoader;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Game {
 
@@ -53,33 +52,41 @@ public class Game {
             return;
         }
 
-        ActionType action = getAction( fromPos, toPos );
-        if ( this.ruleValidator.validate( action, fromPos, toPos ) ) {
+        Set<ActionType> actions = getActions( fromPos, toPos );
+        if ( this.ruleValidator.validate( actions, fromPos, toPos ) ) {
+
+            addHistory( actions, fromPos, toPos );
 
             Piece piece = fromPos.getPiece();
             piece.moved();
             toPos.setPiece( piece );
             fromPos.setPiece( null );
 
-            addHistory( action, toPos );
             incrementMove();
 
         }
     }
 
-    private ActionType getAction( Position from, Position to ) {
-        ActionType action = ActionType.MOVE;
-        if ( to.getPiece() != null ) {
-            action = ActionType.CAPTURE;
+    private Set<ActionType> getActions( Position from, Position to ) {
+        Set<ActionType> actions = new HashSet<>();
+        if( !from.getPos().equals( to.getPos() ) ) {
+            actions.add( ActionType.MOVE );
         }
-        return action;
+        if ( to.hasEnemy( from.getPiece() ) ) {
+            actions.add( ActionType.CAPTURE );
+        }
+        // TODO
+        return actions;
     }
 
-    private void addHistory( ActionType action, Position position ) {
+    private void addHistory( Set<ActionType> actions, Position from, Position to ) {
         this.history.add( new Move(
                 this.moveNumber,
-                action,
-                position.clone()
+                actions,
+                from.getPiece().getTeam(),
+                from.getPiece().getType(),
+                from.getPos(),
+                to.getPos()
         ) );
     }
 

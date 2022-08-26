@@ -1,7 +1,7 @@
-package backend.rules;
+package backend.validator.rules;
 
 import backend.Game;
-import backend.Rule;
+import backend.validator.Rule;
 import core.model.Piece;
 import core.model.Position;
 import core.values.*;

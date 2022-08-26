@@ -1,13 +1,15 @@
 package core.values;
 
 public enum ActionType {
+
     MOVE( "" ),
     CAPTURE( "x" ),
-    PROMOTING( "=" ),
-    CHECK( "+" ),
-    CHECKMATE( "#" ),
+    AU_PASSANT( "x" ),
+    PROMOTING_QUEEN( "=Q" ),
     CASTLE_KING( "0-0" ),
-    CASTLE_QUEEN( "0-0-0" );
+    CASTLE_QUEEN( "0-0-0" ),
+    CHECK( "+" ),
+    CHECKMATE( "#" );
 
     public String code;
 

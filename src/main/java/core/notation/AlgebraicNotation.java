@@ -4,11 +4,18 @@ import backend.Game;
 import core.model.Move;
 import core.model.Piece;
 import core.model.Position;
+import core.values.ActionType;
+import core.values.PieceType;
 import core.values.TeamColor;
 import math.Vector2I;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.EnumSet;
 
+/**
+ * Validate with: https://www.dcode.fr/san-chess-notation
+ */
 public class AlgebraicNotation implements ChessNotation {
 
     @Override
@@ -21,7 +28,7 @@ public class AlgebraicNotation implements ChessNotation {
     public String write( Game game ) {
         String notation = "";
         for ( Move move : game.getHistory() ) {
-            notation += getMoveCode( move );
+            notation += getMoveCode( game, move );
         }
         return notation;
     }
@@ -35,41 +42,88 @@ public class AlgebraicNotation implements ChessNotation {
 
     /* model -> notation */
 
-    public static String getMoveCode( Move move ) {
-        String pattern = "{0}{1}{2}{3} ";
-        boolean isMoveEnd = TeamColor.BLACK.equals( move.getPosition().getPiece().getTeam() );
+    public static String getMoveCode( Game game, Move move ) {
+
+        String pattern = "{0}{1}{2}{3}{4}{5} ";
+
+        boolean isMoveEnd = TeamColor.BLACK.equals( move.getTeam() );
+        String moveNumber = isMoveEnd ? "" : ( move.getNumber() + 1 ) + ".";
+        String pieceCode = move.getPiece().code;
+        String actionCode = "";
+        String posCode = getPosCode( move.getTo() );
+        String actionCodePromoting = "";
+        String actionCodeCheck = "";
+
+        for( ActionType actionType : move.getActions() ) {
+            switch ( actionType ) {
+                case MOVE:
+                case CAPTURE:
+                case AU_PASSANT:
+                    actionCode = actionType.code;
+                    break;
+                case PROMOTING_QUEEN:
+                    actionCodePromoting = actionType.code;
+                case CASTLE_QUEEN:
+                case CASTLE_KING:
+                    pieceCode = "";
+                    posCode = "";
+                    actionCode = actionType.code;
+                    break;
+                case CHECK:
+                    if( !move.getActions().contains( ActionType.CHECKMATE ) ) {
+                        actionCodeCheck = actionType.code;
+                    }
+                    break;
+                case CHECKMATE:
+                    actionCodeCheck = actionType.code;
+                    break;
+            }
+        }
+
+        // special notation for pawns
+        if( PieceType.PAWN.equals( move.getPiece() )
+                && ( move.getActions().contains( ActionType.CAPTURE ) || move.getActions().contains( ActionType.AU_PASSANT ) ) ) {
+            pieceCode = getColCode( move.getFrom() );
+        }
+
+        pieceCode += handleAmbiguity( game, move );
+
         return MessageFormat.format( pattern,
-                isMoveEnd ? "" : move.getNumber() + 1 + ".",
-                getPieceCode( move.getPosition() ),
-                move.getAction().code,
-                getPosCode( move.getPosition() )
+                moveNumber,
+                pieceCode,
+                actionCode,
+                posCode,
+                actionCodePromoting,
+                actionCodeCheck
         );
     }
 
-    public static String getPosCode( Position pos ) {
-        return getColCode( pos ) + getRowCode( pos );
+    private static String handleAmbiguity( Game game, Move move ) {
+        if( !EnumSet.of( PieceType.BISHOP, PieceType.ROOK, PieceType.KNIGHT ).contains( move.getPiece() ) ) {
+            return "";
+        }
+        // TODO https://chess.stackexchange.com/a/1819
+        // 1. check if piece move is ambiguous
+        // 2. check if piece is distinguishable by column
+        // 3. check if piece is distinguishable by row
+        // 4. use row/column
+        return "";
     }
 
-    public static String getPieceCode( Position pos ) {
-        return pos.getPiece() != null ? pos.getPiece().getType().code : "";
+    public static String getPosCode( Vector2I p ) {
+        return getColCode( p ) + getRowCode( p );
     }
 
-    public static String getRowCode( Position pos ) {
-        return String.valueOf( pos.getPos().y + 1 );
+    public static String getRowCode( Vector2I p ) {
+        return String.valueOf( p.y + 1 );
     }
 
-    public static String getColCode( Position pos ) {
-        return Character.toString( ( char ) ( 'a' + pos.getPos().x ) );
+    public static String getColCode( Vector2I p ) {
+        return Character.toString( ( char ) ( 'a' + p.x ) );
     }
 
 
     /* notation -> model */
-
-    public static Position getPos( String s ) {
-        Position position = new Position( getPositionVector( s ) );
-        position.setPiece( getPiece( s ) );
-        return position;
-    }
 
     public static Piece getPiece( String s ) {
         // TODO

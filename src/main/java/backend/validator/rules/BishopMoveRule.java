@@ -1,7 +1,7 @@
-package backend.rules;
+package backend.validator.rules;
 
 import backend.Game;
-import backend.Rule;
+import backend.validator.Rule;
 import core.model.Position;
 import core.values.ActionType;
 import core.values.Dir;
@@ -13,22 +13,22 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class KingMoveRule extends Rule {
+public class BishopMoveRule extends Rule {
 
-    public KingMoveRule() {
-        super( RuleType.KING_MOVE, Arrays.asList( ActionType.values() ) );
+    public BishopMoveRule() {
+        super( RuleType.BISHOP_MOVE, Arrays.asList( ActionType.values() ) );
     }
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
-        if ( !from.hasPieceOfType( PieceType.KING ) ) {
+        if ( !from.hasPieceOfType( PieceType.BISHOP ) ) {
             return true;
         }
 
         Set<Vector2I> allowed = new HashSet<>();
-        Arrays.stream( Dir.values() ).forEach( dir -> allowed.addAll(
-                game.getPositionsOfDir( from, dir.vector, 1, true )
+        Dir.diagonalDirs().forEach( dir -> allowed.addAll(
+                game.getPositionsOfDir( from, dir.vector, -1, true )
         ) );
 
         return allowed.contains( to.getPos() );

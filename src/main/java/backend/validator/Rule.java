@@ -1,11 +1,13 @@
-package backend;
+package backend.validator;
 
+import backend.Game;
 import core.model.Position;
 import core.values.ActionType;
 import core.values.RuleType;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 public abstract class Rule {

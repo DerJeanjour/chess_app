@@ -24,13 +24,6 @@ public class Piece {
         this.moved = 0;
     }
 
-    public Piece( Piece piece ) {
-        this.type = piece.getType();
-        this.team = piece.getTeam();
-        this.alive = piece.isAlive();
-        this.moved = piece.getMoved();
-    }
-
     public void moved() {
         this.moved++;
     }
@@ -45,6 +38,13 @@ public class Piece {
 
     public boolean isTeam( TeamColor team ) {
         return this.team.equals( team );
+    }
+
+    public Piece clone() {
+        Piece piece = new Piece( this.type, this.team );
+        piece.setAlive( this.alive );
+        piece.setMoved( this.moved );
+        return piece;
     }
 
     @Override
