@@ -89,13 +89,13 @@ public class GameView {
 
             @Override
             public void mousePressed( MouseEvent e ) {
-                selectedPos = game.getBoard().getPosition( pixelToPosition( e.getX(), e.getY() ) );
+                selectedPos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
                 possiblePositions.addAll( game.getRuleValidator().getPossiblePositions( selectedPos ) );
             }
 
             @Override
             public void mouseReleased( MouseEvent e ) {
-                Position pos = game.getBoard().getPosition( pixelToPosition( e.getX(), e.getY() ) );
+                Position pos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
                 if ( selectedPos != null && pos != null ) {
                     game.makeMove( selectedPos.getPos(), pos.getPos() );
                 }

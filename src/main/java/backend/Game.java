@@ -7,7 +7,6 @@ import core.values.RuleType;
 import core.values.TeamColor;
 import lombok.Getter;
 import math.Vector2I;
-import misc.Log;
 import util.ResourceLoader;
 
 import java.util.ArrayList;
@@ -48,8 +47,8 @@ public class Game {
 
     public void makeMove( Vector2I from, Vector2I to ) {
 
-        Position fromPos = this.board.getPosition( from );
-        Position toPos = this.board.getPosition( to );
+        Position fromPos = getPosition( from );
+        Position toPos = getPosition( to );
         if ( fromPos.getPiece() == null ) {
             return;
         }
@@ -95,17 +94,44 @@ public class Game {
         return this.onMove.equals( color );
     }
 
-    public List<Vector2I> getPositionsOfDir( Vector2I from, Vector2I dir, int distance ) {
+    public List<Vector2I> getPositionsOfDir( Position fromPos, Vector2I dir, int distance, boolean includeEnemyContact ) {
+        Vector2I from = fromPos.getPos();
+        if ( distance < 0 ) {
+            distance = getMaxDistance();
+        }
         List<Vector2I> positions = new ArrayList<>();
         for ( int i = 0; i < distance; i++ ) {
+
             Vector2I p = from.add( dir.mul( i + 1 ) );
-            Position pos = this.board.getPosition( p );
-            if ( pos == null || pos.getPiece() != null ) {
+            Position pos = getPosition( p );
+
+            if ( pos == null ) {
+                // out of bounds
                 return positions;
             }
+
+            if ( pos.hasPiece() ) {
+
+                if ( includeEnemyContact && pos.hasEnemy( fromPos.getPiece() ) ) {
+                    positions.add( p );
+                }
+
+                // position is occupied
+                return positions;
+            }
+
             positions.add( p );
         }
+
         return positions;
+    }
+
+    public int getMaxDistance() {
+        return getBoardSize() * getBoardSize();
+    }
+
+    public Position getPosition( Vector2I p ) {
+        return this.board.getPosition( p );
     }
 
     public static Board getStartPlacements() {

@@ -43,6 +43,10 @@ public class Piece {
         return this.type.equals( type );
     }
 
+    public boolean isTeam( TeamColor team ) {
+        return this.team.equals( team );
+    }
+
     @Override
     public String toString() {
         return "[" + type.name() + "/" + team.name() + "/" + ( alive ? "alive" : "dead" ) + "]";

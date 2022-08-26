@@ -31,7 +31,7 @@ public class Board {
 
     public Position getPosition( int row, int col ) {
         Optional<Position> pos = this.positions.stream().filter( p -> p.getPos().equals( new Vector2I( row, col ) ) ).findFirst();
-        return pos.orElseGet( null ); // TODO throw exception if not present
+        return pos.orElse( null );
     }
 
 }

@@ -1,8 +1,6 @@
 package backend;
 
-import backend.rules.AllowedToCaptureRule;
-import backend.rules.PawnMoveRule;
-import backend.rules.TeamIsOnMoveRule;
+import backend.rules.*;
 import core.model.Position;
 import core.values.ActionType;
 import core.values.RuleType;
@@ -35,10 +33,20 @@ public class RuleValidator {
                 this.rules.add( new PawnMoveRule() );
                 break;
             case BISHOP_MOVE:
+                this.rules.add( new BishopMoveRule() );
+                break;
+            case KNIGHT_MOVE:
+                this.rules.add( new KnightMoveRule() );
+                break;
             case ROOK_MOVE:
+                this.rules.add( new RookMoveRule() );
+                break;
             case QUEEN_MOVE:
+                this.rules.add( new QueenMoveRule() );
+                break;
             case KING_MOVE:
-                return;
+                this.rules.add( new KingMoveRule() );
+                break;
         }
     }
 
