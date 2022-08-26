@@ -12,9 +12,9 @@ public enum PieceType {
     QUEEN( "Q", "Q" ),
     KING( "K", "K" );
 
-    public String code; // algebraic
+    public final String code; // algebraic
 
-    public String fenCode;
+    public final String fenCode;
 
     PieceType( String code, String fenCode ) {
         this.code = code;

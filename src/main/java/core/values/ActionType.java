@@ -11,7 +11,7 @@ public enum ActionType {
     CHECK( "+" ),
     CHECKMATE( "#" );
 
-    public String code;
+    public final String code;
 
     ActionType( String code ) {
         this.code = code;

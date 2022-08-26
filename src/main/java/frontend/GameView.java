@@ -7,6 +7,7 @@ import core.notation.AlgebraicNotation;
 import core.notation.ChessNotation;
 import math.Vector2I;
 import misc.Log;
+import util.IOUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,6 +42,8 @@ public class GameView {
     private JFrame frame;
 
     private JTextArea moveInfo;
+
+    private JTextField gameStateInfo;
 
     private Position selectedPos;
 
@@ -131,20 +134,18 @@ public class GameView {
         infoPanel.add( moveInfoScroll );
 
         JButton copyHistoryButton = new JButton( "Copy" );
-        copyHistoryButton.addActionListener( e -> {
-            copyToClipboard( moveInfo.getText() );
-        } );
+        copyHistoryButton.addActionListener( e -> IOUtil.copyToClipboard( moveInfo.getText() ) );
         infoPanel.add( copyHistoryButton );
+
+        this.gameStateInfo = new JTextField();
+        this.gameStateInfo.setEditable( false );
+        this.gameStateInfo.setPreferredSize( new Dimension( infoSizeWidth - 10, 30 ) );
+        infoPanel.add( this.gameStateInfo );
 
         frame.pack();
         frame.requestFocus();
         frame.setVisible( true );
 
-    }
-
-    public void copyToClipboard( String value ) {
-        StringSelection selection = new StringSelection( value );
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents( selection, selection );
     }
 
     public Vector2I pixelToPosition( int x, int y ) {
@@ -230,8 +231,9 @@ public class GameView {
             Vector2I p = positionToPixel( 0, 0 );
             g.drawRect( p.x, p.y, boardSize, boardSize );
 
-            // add history to info text
+            // Set info texts
             moveInfo.setText( chessNotation.write( game ) );
+            gameStateInfo.setText( game.getState().name() );
 
             repaint();
 

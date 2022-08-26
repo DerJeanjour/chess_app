@@ -19,6 +19,9 @@ public class Game {
     @Getter
     private final Board board;
 
+    @Getter
+    private GameState state;
+
     private Team white;
 
     private Team black;
@@ -35,10 +38,12 @@ public class Game {
     private final RuleValidator ruleValidator;
 
     public Game() {
+        // TODO make config
         this.board = getStartPlacements();
         this.white = new Team( TeamColor.WHITE );
         this.black = new Team( TeamColor.BLACK );
         this.onMove = TeamColor.WHITE;
+        this.state = GameState.WHITE_TO_MOVE;
         this.moveNumber = 0;
         this.history = new ArrayList<>();
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
@@ -95,6 +100,7 @@ public class Game {
             this.moveNumber++;
         }
         this.onMove = isOnMove( TeamColor.WHITE ) ? TeamColor.BLACK : TeamColor.WHITE;
+        this.state = isOnMove( TeamColor.BLACK ) ? GameState.BLACK_TO_MOVE : GameState.WHITE_TO_MOVE;
     }
 
     public boolean isOnMove( TeamColor color ) {
