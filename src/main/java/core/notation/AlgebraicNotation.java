@@ -7,11 +7,9 @@ import core.values.ActionType;
 import core.values.PieceType;
 import core.values.TeamColor;
 import math.Vector2I;
-import misc.Log;
 import util.StringUtil;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -42,7 +40,7 @@ public class AlgebraicNotation implements ChessNotation {
     public Game read( String notation ) {
         Game game = new Game();
         String[] moves = notation.split( " " );
-        for( String moveNotation : moves ) {
+        for ( String moveNotation : moves ) {
             Move move = readMove( game, moveNotation );
             game.makeMove( move.getFrom(), move.getTo() );
         }
@@ -81,7 +79,7 @@ public class AlgebraicNotation implements ChessNotation {
         for ( ActionType actionType : move.getActions() ) {
             switch ( actionType ) {
                 case MOVE:
-                    if( StringUtil.isBlank( actionCode ) ) {
+                    if ( StringUtil.isBlank( actionCode ) ) {
                         actionCode = actionCodes.get( actionType );
                     }
                     break;

@@ -6,17 +6,16 @@ import core.model.*;
 import core.notation.AlgebraicNotation;
 import core.notation.FenNotation;
 import core.values.ActionType;
+import core.values.PieceType;
 import core.values.RuleType;
 import core.values.TeamColor;
 import lombok.Getter;
+import lombok.Setter;
 import math.Vector2I;
 import misc.Log;
 import util.ResourceLoader;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Game {
 
@@ -43,22 +42,28 @@ public class Game {
     @Getter
     private List<Move> history;
 
+    @Setter
     @Getter
     private RuleValidator ruleValidator;
+
+    @Setter
+    @Getter
+    private boolean log;
 
     public Game() {
         reset();
     }
 
     public void reset() {
-        this.board = getStartPlacements();
         this.white = new Team( TeamColor.WHITE );
         this.black = new Team( TeamColor.BLACK );
+        this.board = loadPlacements();
         this.onMove = TeamColor.WHITE;
         this.state = GameState.WHITE_TO_MOVE;
         this.moveNumber = 0;
         this.history = new ArrayList<>();
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
+        this.log = false;
     }
 
     public void goBack() {
@@ -79,12 +84,12 @@ public class Game {
         this.ruleValidator = game.getRuleValidator();
     }
 
-    public void makeMove( Vector2I from, Vector2I to ) {
+    public boolean makeMove( Vector2I from, Vector2I to ) {
 
         Position fromPos = getPosition( from );
         Position toPos = getPosition( to );
-        if ( fromPos.getPiece() == null ) {
-            return;
+        if ( getPiece( fromPos ) == null ) {
+            return false;
         }
 
         ValidatedPosition validatedPosition = this.ruleValidator.validate( fromPos, toPos );
@@ -92,31 +97,36 @@ public class Game {
 
             addHistory( validatedPosition.getActions(), fromPos, toPos );
 
-            Piece piece = fromPos.getPiece();
+            Piece piece = getPiece( fromPos );
             piece.moved( this.moveNumber );
-            toPos.setPiece( piece );
-            fromPos.setPiece( null );
+            toPos.setPieceId( piece.getId() );
+            fromPos.setPieceId( null );
 
             this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
 
             incrementMove();
+            return true;
 
         }
+
+        return false;
     }
 
     private void addHistory( Set<ActionType> actions, Position from, Position to ) {
-        Log.info( "On {}s {}. move: {} {}->{} with actions {}",
-                from.getPiece().getTeam(),
-                this.moveNumber,
-                from.getPiece().getType(),
-                from.getPos(),
-                to.getPos(),
-                actions );
+        if ( this.log ) {
+            Log.info( "On {}s {}. move: {} {}->{} with actions {}",
+                    getTeam( from ),
+                    this.moveNumber,
+                    getType( from ),
+                    from.getPos(),
+                    to.getPos(),
+                    actions );
+        }
         this.history.add( new Move(
                 this.moveNumber,
                 actions,
-                from.getPiece().getTeam(),
-                from.getPiece().getType(),
+                getTeam( from ),
+                getType( from ),
                 from.getPos(),
                 to.getPos()
         ) );
@@ -152,7 +162,7 @@ public class Game {
 
             if ( pos.hasPiece() ) {
 
-                if ( includeEnemyContact && pos.hasEnemy( fromPos.getPiece() ) ) {
+                if ( includeEnemyContact && areEnemies( pos, fromPos ) ) {
                     positions.add( p );
                 }
 
@@ -166,6 +176,55 @@ public class Game {
         return positions;
     }
 
+    public boolean isType( Position position, PieceType type ) {
+        return type.equals( getType( position ) );
+    }
+
+    public PieceType getType( Position position ) {
+        Piece piece = getPiece( position );
+        if ( piece == null ) {
+            return null;
+        }
+        return piece.getType();
+    }
+
+    public boolean isTeam( Position position, TeamColor color ) {
+        return color.equals( getTeam( position ) );
+    }
+
+    public TeamColor getTeam( Position position ) {
+        Piece piece = getPiece( position );
+        if ( piece == null ) {
+            return null;
+        }
+        return piece.getTeam();
+    }
+
+    public boolean areEnemies( Position positionA, Position positionB ) {
+        Piece pieceA = getPiece( positionA );
+        Piece pieceB = getPiece( positionB );
+        if ( pieceA == null || pieceB == null ) {
+            return false;
+        }
+        return !pieceA.isTeam( pieceB.getTeam() );
+    }
+
+    public Piece getPiece( Position position ) {
+        if ( !position.hasPiece() ) {
+            return null;
+        }
+        return getPiece( position.getPieceId() );
+    }
+
+    public Piece getPiece( String id ) {
+        Team team = id.startsWith( "W" ) ? this.white : this.black;
+        return team.getById( id );
+    }
+
+    public boolean isCheckFor( TeamColor team ) {
+        return false;
+    }
+
     public int getMaxDistance() {
         return getBoardSize() * getBoardSize();
     }
@@ -174,18 +233,36 @@ public class Game {
         return this.board.getPosition( p );
     }
 
-    public static Board getStartPlacements() {
+    public Board loadPlacements() {
         List<String> placementLine = ResourceLoader.getTextFile( DEFAULT_PIECE_PLACEMENT_PATH );
         if ( placementLine.isEmpty() ) {
             throw new IllegalArgumentException();
         }
         // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
-        return FenNotation.readPlacement( placementLine.get( 0 ) );
+        Map<Vector2I, Piece> placements = FenNotation.readPlacement( placementLine.get( 0 ) );
         //return FenNotation.readPlacement( "rnbqk2r/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R" );
+
+        Board board = new Board( FenNotation.readBoardSize( placementLine.get( 0 ) ) );
+        for ( Map.Entry<Vector2I, Piece> placement : placements.entrySet() ) {
+            Piece piece = placement.getValue();
+            Team team = piece.isTeam( TeamColor.WHITE ) ? this.white : this.black;
+            String id = team.registerPiece( piece );
+            board.getPosition( placement.getKey() ).setPieceId( id );
+        }
+
+        return board;
     }
 
     public int getBoardSize() {
         return this.board.getSize();
+    }
+
+    public Game clone() {
+        Game game = new Game();
+        for ( Move move : this.history ) {
+            game.makeMove( move.getFrom(), move.getTo() );
+        }
+        return game;
     }
 
 }

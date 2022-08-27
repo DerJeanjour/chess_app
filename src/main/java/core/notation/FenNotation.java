@@ -1,12 +1,13 @@
 package core.notation;
 
 import backend.Game;
-import core.model.Board;
 import core.model.Piece;
 import core.values.PieceType;
 import core.values.TeamColor;
+import math.Vector2I;
 import util.StringUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class FenNotation implements ChessNotation {
@@ -29,7 +30,17 @@ public class FenNotation implements ChessNotation {
         return null;
     }
 
-    public static Board readPlacement( String placement ) {
+    public static int readBoardSize( String placement ) {
+
+        if ( StringUtil.isBlank( placement ) ) {
+            throw new IllegalArgumentException();
+        }
+
+        String[] rows = placement.split( "/" );
+        return rows.length;
+    }
+
+    public static Map<Vector2I, Piece> readPlacement( String placement ) {
 
         if ( StringUtil.isBlank( placement ) ) {
             throw new IllegalArgumentException();
@@ -37,7 +48,8 @@ public class FenNotation implements ChessNotation {
 
         String[] rows = placement.split( "/" );
         int rowSize = rows.length;
-        Board board = new Board( rowSize );
+        //Board board = new Board( rowSize );
+        Map<Vector2I, Piece> placements = new HashMap<>();
 
         for ( int i = rowSize - 1; i >= 0; i-- ) {
 
@@ -54,14 +66,14 @@ public class FenNotation implements ChessNotation {
                     if ( pieceType != null ) {
                         TeamColor team = Character.isUpperCase( c ) ? TeamColor.WHITE : TeamColor.BLACK;
                         Piece piece = new Piece( pieceType, team );
-                        board.getPosition( colIdx, rowIdx ).setPiece( piece );
+                        placements.put( new Vector2I( colIdx, rowIdx ), piece );
                     }
                     colIdx++;
                 }
             }
 
         }
-        return board;
+        return placements;
     }
 
     private static PieceType getByFenCode( String code ) {

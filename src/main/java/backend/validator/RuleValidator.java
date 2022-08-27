@@ -5,12 +5,14 @@ import backend.validator.rules.*;
 import core.model.Position;
 import core.values.ActionType;
 import core.values.RuleType;
+import lombok.Getter;
 import math.Vector2I;
 
 import java.util.*;
 
 public class RuleValidator {
 
+    @Getter
     private final List<Rule> rules;
 
     private final Game game;
@@ -62,13 +64,16 @@ public class RuleValidator {
             case CASTLING_KING_SIDE:
                 this.rules.add( new CastleKingRule() );
                 break;
+            case KING_WOULD_BE_IN_CHECK:
+                this.rules.add( new KingWouldBeInCheck() );
+                break;
         }
     }
 
     public void applyAdditionalActions( Set<ActionType> actions, Position from, Position to ) {
-        for( Rule rule : this.rules ) {
+        for ( Rule rule : this.rules ) {
             List<ActionType> tags = rule.getTags();
-            if( actions.containsAll( tags ) ) {
+            if ( actions.containsAll( tags ) ) {
                 rule.applyAdditionalAfterMove( this.game, from, to );
             }
         }
@@ -125,7 +130,7 @@ public class RuleValidator {
     }
 
     private boolean validationHasAnyTag( ValidatedPosition validatedPosition, ActionType... actions ) {
-        if(actions.length == 0) {
+        if ( actions.length == 0 ) {
             return false;
         }
         return validatedPosition.getActions().stream()

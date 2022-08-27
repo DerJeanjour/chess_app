@@ -283,8 +283,8 @@ public class GameView {
     }
 
     private void drawPiece( Graphics g, Vector2I p, Position pos ) {
-        if ( pos.getPiece() != null ) {
-            Piece piece = pos.getPiece();
+        if ( game.getPiece( pos ) != null ) {
+            Piece piece = game.getPiece( pos );
             g.drawImage( this.sprites.getPieceSprite( piece.getType(), piece.getTeam() ), p.x, p.y, null );
         }
     }

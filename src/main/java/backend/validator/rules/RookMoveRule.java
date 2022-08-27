@@ -22,7 +22,7 @@ public class RookMoveRule extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
-        if ( !from.hasPieceOfType( PieceType.ROOK ) ) {
+        if ( !game.isType( from, PieceType.ROOK ) ) {
             return false;
         }
 

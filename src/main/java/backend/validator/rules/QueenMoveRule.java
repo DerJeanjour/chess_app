@@ -22,7 +22,7 @@ public class QueenMoveRule extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
-        if ( !from.hasPieceOfType( PieceType.QUEEN ) ) {
+        if ( !game.isType( from, PieceType.QUEEN ) ) {
             return false;
         }
 

@@ -7,9 +7,7 @@ import lombok.Data;
 @Data
 public class Piece {
 
-    // id ?
-
-    private final PieceType type;
+    private PieceType type;
 
     private final TeamColor team;
 
@@ -18,6 +16,8 @@ public class Piece {
     private int moved;
 
     private int lastMovedAt;
+
+    private String id;
 
     public Piece( PieceType type, TeamColor team ) {
         this.type = type;
@@ -49,11 +49,12 @@ public class Piece {
         piece.setAlive( this.alive );
         piece.setMoved( this.moved );
         piece.setLastMovedAt( this.lastMovedAt );
+        piece.setId( this.id );
         return piece;
     }
 
     @Override
     public String toString() {
-        return "[" + type.name() + "/" + team.name() + "/" + ( alive ? "alive" : "dead" ) + "]";
+        return "[" + id + "/" + type.name() + "/" + team.name() + "/" + ( alive ? "alive" : "dead" ) + "]";
     }
 }

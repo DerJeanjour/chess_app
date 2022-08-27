@@ -20,13 +20,14 @@ public class PawnMoveRule extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
-        if ( !from.hasPieceOfType( PieceType.PAWN ) ) {
+
+        if ( !game.isType( from, PieceType.PAWN ) ) {
             return false;
         }
 
         Set<Vector2I> allowed = new HashSet<>();
 
-        Piece piece = from.getPiece();
+        Piece piece = game.getPiece( from );
         Vector2I pos = from.getPos();
         Vector2I dir = piece.partOf( TeamColor.WHITE ) ? Dir.UP.vector : Dir.DOWN.vector;
 
@@ -35,12 +36,12 @@ public class PawnMoveRule extends Rule {
 
         Vector2I diagonalLeft = pos.add( dir ).add( Dir.LEFT.vector );
         Position diagonalLeftPos = game.getPosition( diagonalLeft );
-        if ( diagonalLeftPos != null && diagonalLeftPos.hasEnemy( piece ) ) {
+        if ( diagonalLeftPos != null && game.areEnemies( diagonalLeftPos, from ) ) {
             allowed.add( diagonalLeft );
         }
         Vector2I diagonalRight = pos.add( dir ).add( Dir.RIGHT.vector );
         Position diagonalRightPos = game.getPosition( diagonalRight );
-        if ( diagonalRightPos != null && diagonalRightPos.hasEnemy( piece ) ) {
+        if ( diagonalRightPos != null && game.areEnemies( diagonalRightPos, from ) ) {
             allowed.add( diagonalRight );
         }
 

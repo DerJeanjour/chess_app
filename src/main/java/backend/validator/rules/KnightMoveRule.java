@@ -23,7 +23,8 @@ public class KnightMoveRule extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
-        if ( !from.hasPieceOfType( PieceType.KNIGHT ) ) {
+
+        if ( !game.isType( from, PieceType.KNIGHT ) ) {
             return false;
         }
 
@@ -45,7 +46,7 @@ public class KnightMoveRule extends Rule {
                     if ( position == null ) {
                         return false;
                     }
-                    return !position.hasPiece() || position.hasEnemy( from.getPiece() );
+                    return !position.hasPiece() || game.areEnemies( position, from );
                 } )
                 .collect( Collectors.toSet() );
 

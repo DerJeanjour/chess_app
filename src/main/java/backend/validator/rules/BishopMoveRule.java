@@ -22,7 +22,7 @@ public class BishopMoveRule extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
-        if ( !from.hasPieceOfType( PieceType.BISHOP ) ) {
+        if ( !game.isType( from, PieceType.BISHOP ) ) {
             return false;
         }
 

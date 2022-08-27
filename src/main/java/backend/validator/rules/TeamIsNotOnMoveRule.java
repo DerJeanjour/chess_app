@@ -16,6 +16,6 @@ public class TeamIsNotOnMoveRule extends Rule {
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
-        return from.getPiece() == null || !game.isOnMove( from.getPiece().getTeam() );
+        return game.getPiece( from ) == null || !game.isOnMove( game.getTeam( from ) );
     }
 }

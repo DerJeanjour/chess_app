@@ -16,6 +16,6 @@ public class AllowedToCaptureRule extends Rule {
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
-        return to.hasPiece() && to.hasEnemy( from.getPiece() );
+        return to.hasPiece() && game.areEnemies( to, from );
     }
 }

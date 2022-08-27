@@ -20,7 +20,7 @@ public class PromotingRule extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
-        if ( !from.hasPieceOfType( PieceType.PAWN ) ) {
+        if ( !game.isType( from, PieceType.PAWN ) ) {
             return false;
         }
 
@@ -28,16 +28,14 @@ public class PromotingRule extends Rule {
             return false;
         }
 
-        int enemyRank = from.getPiece().isTeam( TeamColor.WHITE ) ? game.getBoardSize() - 1 : 0;
+
+        int enemyRank = game.isTeam( from, TeamColor.WHITE ) ? game.getBoardSize() - 1 : 0;
         return to.getPos().y == enemyRank;
     }
 
     @Override
     public void applyAdditionalAfterMove( Game game, Position from, Position to ) {
-        Piece pawn = to.getPiece();
-        Piece queen = new Piece( PieceType.QUEEN, pawn.getTeam() );
-        queen.setMoved( pawn.getMoved() );
-        queen.setLastMovedAt( pawn.getLastMovedAt() );
-        to.setPiece( queen );
+        Piece pawn = game.getPiece( to );
+        pawn.setType( PieceType.QUEEN );
     }
 }

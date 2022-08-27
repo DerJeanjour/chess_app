@@ -19,27 +19,29 @@ public class CastleKingRule extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
-        if ( !from.hasPieceOfType( PieceType.KING ) ) {
+        if ( !game.isType( from, PieceType.KING ) ) {
             return false;
         }
 
-        Piece king = from.getPiece();
+
+        Piece king = game.getPiece( from );
         Vector2I kingPos = king.isTeam( TeamColor.WHITE ) ? new Vector2I( 4, 0 ) : new Vector2I( 4, game.getBoardSize() - 1 );
         if ( !from.getPos().equals( kingPos ) ) {
             return false;
         }
         Vector2I targetPos = kingPos.add( Dir.RIGHT.vector.mul( 2 ) );
-        if( !to.getPos().equals( targetPos ) ) {
+        if ( !to.getPos().equals( targetPos ) ) {
             return false;
         }
 
-        Vector2I rookPos = king.isTeam( TeamColor.WHITE ) ? new Vector2I( game.getBoardSize()-1, 0 ) : new Vector2I( game.getBoardSize()-1, game.getBoardSize() - 1 );
+        Vector2I rookPos = king.isTeam( TeamColor.WHITE ) ? new Vector2I( game.getBoardSize() - 1, 0 ) : new Vector2I( game.getBoardSize() - 1, game.getBoardSize() - 1 );
         Position rookPosition = game.getPosition( rookPos );
-        if ( rookPosition == null || !rookPosition.hasPieceOfType( PieceType.ROOK ) ) {
+
+        if ( rookPosition == null || !game.isType( rookPosition, PieceType.ROOK ) ) {
             return false;
         }
 
-        if ( king.getMoved() > 0 || rookPosition.getPiece().getMoved() > 0 ) {
+        if ( king.getMoved() > 0 || game.getPiece( rookPosition ).getMoved() > 0 ) {
             return false;
         }
 
@@ -49,11 +51,11 @@ public class CastleKingRule extends Rule {
 
     @Override
     public void applyAdditionalAfterMove( Game game, Position from, Position to ) {
-        Vector2I rookPos = to.getPiece().isTeam( TeamColor.WHITE ) ? new Vector2I( game.getBoardSize()-1, 0 ) : new Vector2I( game.getBoardSize()-1, game.getBoardSize() - 1 );
+        Vector2I rookPos = game.getPiece( to ).isTeam( TeamColor.WHITE ) ? new Vector2I( game.getBoardSize() - 1, 0 ) : new Vector2I( game.getBoardSize() - 1, game.getBoardSize() - 1 );
         Position rookPosition = game.getPosition( rookPos );
         Position target = game.getPosition( to.getPos().add( Dir.LEFT.vector ) );
-        target.setPiece( rookPosition.getPiece() );
-        rookPosition.setPiece( null );
+        target.setPieceId( rookPosition.getPieceId() );
+        rookPosition.setPieceId( null );
     }
 
 }
