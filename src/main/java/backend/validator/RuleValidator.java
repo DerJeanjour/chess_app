@@ -8,7 +8,6 @@ import core.values.RuleType;
 import math.Vector2I;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class RuleValidator {
 
@@ -54,17 +53,23 @@ public class RuleValidator {
             case PROMOTING:
                 this.rules.add( new PromotingRule() );
                 break;
+            case AU_PASSANT:
+                this.rules.add( new AuPassantRule() );
+                break;
+            case CASTLING_QUEEN_SIDE:
+                this.rules.add( new CastleQueenRule() );
+                break;
+            case CASTLING_KING_SIDE:
+                this.rules.add( new CastleKingRule() );
+                break;
         }
     }
 
-    public List<Rule> getByActionTag( ActionType type ) {
-        return this.rules.stream().filter( r -> r.getTags().contains( type ) ).collect( Collectors.toList() );
-    }
-
     public void applyAdditionalActions( Set<ActionType> actions, Position from, Position to ) {
-        for ( ActionType action : actions ) {
-            for ( Rule rule : getByActionTag( action ) ) {
-                rule.apply( this.game, from, to );
+        for( Rule rule : this.rules ) {
+            List<ActionType> tags = rule.getTags();
+            if( actions.containsAll( tags ) ) {
+                rule.applyAdditionalAfterMove( this.game, from, to );
             }
         }
     }
@@ -101,7 +106,7 @@ public class RuleValidator {
                 legal = false;
             }
         }
-        if ( legal && !validatedPosition.getActions().contains( ActionType.MOVE ) ) {
+        if ( legal && !validationHasAnyTag( validatedPosition, ActionType.MOVE ) ) {
             legal = false;
         }
         validatedPosition.setLegal( legal );
@@ -119,14 +124,19 @@ public class RuleValidator {
         return validation.get( p ) != null && validation.get( p ).hasAction( type );
     }
 
+    private boolean validationHasAnyTag( ValidatedPosition validatedPosition, ActionType... actions ) {
+        if(actions.length == 0) {
+            return false;
+        }
+        return validatedPosition.getActions().stream()
+                .filter( t -> Arrays.asList( actions ).contains( t ) )
+                .findAny().isPresent();
+    }
+
     private boolean ruleHasAnyTag( Rule rule, Set<ActionType> actions ) {
         return rule.getTags().stream()
                 .filter( t -> actions.contains( t ) )
                 .findAny().isPresent();
-    }
-
-    private List<Rule> getRulesByLegality( boolean legal ) {
-        return this.rules.stream().filter( r -> r.getType().legal == legal ).collect( Collectors.toList() );
     }
 
 }

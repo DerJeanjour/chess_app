@@ -19,7 +19,7 @@ public abstract class Rule {
 
     public abstract boolean validate( Game game, Position from, Position to );
 
-    public void apply( Game game, Position from, Position to ) {
+    public void applyAdditionalAfterMove( Game game, Position from, Position to ) {
         // overwrite for additional action
         return;
     }

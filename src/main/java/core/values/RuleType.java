@@ -18,7 +18,8 @@ public enum RuleType {
 
     PROMOTING(true),
     AU_PASSANT(true),
-    CASTLING(true);
+    CASTLING_QUEEN_SIDE(true),
+    CASTLING_KING_SIDE(true);
 
     public final boolean legal;
 

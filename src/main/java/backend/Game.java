@@ -68,7 +68,7 @@ public class Game {
             addHistory( validatedPosition.getActions(), fromPos, toPos );
 
             Piece piece = fromPos.getPiece();
-            piece.moved();
+            piece.moved( this.moveNumber );
             toPos.setPiece( piece );
             fromPos.setPiece( null );
 
@@ -78,21 +78,6 @@ public class Game {
 
         }
     }
-
-    /*
-    private Set<ActionType> getActions( Position from, Position to ) {
-        Set<ActionType> actions = new HashSet<>();
-        if ( !from.getPos().equals( to.getPos() ) ) {
-            actions.add( ActionType.MOVE );
-        }
-        if ( to.hasEnemy( from.getPiece() ) ) {
-            actions.add( ActionType.CAPTURE );
-        }
-        // TODO
-        return actions;
-    }
-
-     */
 
     private void addHistory( Set<ActionType> actions, Position from, Position to ) {
         Log.info( "On {}s {}. move: {} {}->{} with actions {}",
@@ -169,7 +154,9 @@ public class Game {
         if ( placementLine.isEmpty() ) {
             throw new IllegalArgumentException();
         }
+        // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
         return FenNotation.readPlacement( placementLine.get( 0 ) );
+        //return FenNotation.readPlacement( "rnbqk2r/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R" );
     }
 
     public int getBoardSize() {

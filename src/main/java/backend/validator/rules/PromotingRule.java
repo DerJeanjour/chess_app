@@ -33,10 +33,11 @@ public class PromotingRule extends Rule {
     }
 
     @Override
-    public void apply( Game game, Position from, Position to ) {
+    public void applyAdditionalAfterMove( Game game, Position from, Position to ) {
         Piece pawn = to.getPiece();
         Piece queen = new Piece( PieceType.QUEEN, pawn.getTeam() );
         queen.setMoved( pawn.getMoved() );
+        queen.setLastMovedAt( pawn.getLastMovedAt() );
         to.setPiece( queen );
     }
 }

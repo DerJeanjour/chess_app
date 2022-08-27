@@ -14,7 +14,6 @@ import misc.Log;
 import util.IOUtil;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -27,7 +26,10 @@ public class GameView {
 
     private static final Map<ActionType, Color> actionColors = Map.of(
             ActionType.MOVE, Color.GREEN,
-            ActionType.CAPTURE, Color.RED
+            ActionType.CAPTURE, Color.RED,
+            ActionType.AU_PASSANT, Color.RED,
+            ActionType.CASTLE_QUEEN, Color.GREEN,
+            ActionType.CASTLE_KING, Color.GREEN
     );
 
     private final Game game;
@@ -103,7 +105,9 @@ public class GameView {
             @Override
             public void mousePressed( MouseEvent e ) {
                 selectedPos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
-                validation.putAll( game.getRuleValidator().validate( selectedPos ));
+                if ( selectedPos != null ) {
+                    validation.putAll( game.getRuleValidator().validate( selectedPos ) );
+                }
             }
 
             @Override
@@ -191,34 +195,30 @@ public class GameView {
                     boolean hasPossibleAction = RuleValidator.isLegal( validation, pos );
                     Color posColor = ( i + j ) % 2 != 0 ? Color.DARK_GREY : Color.LIGHT_GREY;
 
-                    if(hasPossibleAction) {
+                    if ( hasPossibleAction ) {
 
                         Color actionColor = new Color( Color.BLACK, 0f );
 
-                        if( RuleValidator.hasAction( validation, pos, ActionType.MOVE ) ) {
+                        if ( RuleValidator.hasAction( validation, pos, ActionType.MOVE ) ) {
                             actionColor = new Color( actionColors.get( ActionType.MOVE ), 0.2f );
                         }
 
-                        if( RuleValidator.hasAction( validation, pos, ActionType.CAPTURE ) ) {
+                        if ( RuleValidator.hasAction( validation, pos, ActionType.CAPTURE ) ) {
                             actionColor = new Color( actionColors.get( ActionType.CAPTURE ), 0.2f );
+                        }
+
+                        if ( RuleValidator.hasAction( validation, pos, ActionType.AU_PASSANT ) ) {
+                            actionColor = new Color( actionColors.get( ActionType.AU_PASSANT ), 0.2f );
                         }
 
                         posColor = posColor.blend( actionColor );
                     }
 
-                    g.setColor(new java.awt.Color( posColor.getInt() ));
-                    /*
-                    if ( ( i + j ) % 2 != 0 ) {
-                        g.setColor( hasPossibleAction
-                                ? new Color( 128, 64, 64 )
-                                : Color.darkGray );
-                    } else {
-                        g.setColor( hasPossibleAction
-                                ? new Color( 255, 192, 192 )
-                                : Color.lightGray );
+                    if ( selectedPos != null && pos.equals( selectedPos.getPos() ) ) {
+                        posColor = posColor.blend( new Color( Color.BLUE, 0.2f ) );
                     }
 
-                     */
+                    g.setColor( new java.awt.Color( posColor.getInt() ) );
                     g.fillRect( p.x, p.y, posSize, posSize );
                 }
             }

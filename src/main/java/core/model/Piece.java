@@ -17,14 +17,18 @@ public class Piece {
 
     private int moved;
 
+    private int lastMovedAt;
+
     public Piece( PieceType type, TeamColor team ) {
         this.type = type;
         this.team = team;
         this.alive = true;
         this.moved = 0;
+        this.lastMovedAt = 0;
     }
 
-    public void moved() {
+    public void moved( int moveNumber ) {
+        this.lastMovedAt = moveNumber;
         this.moved++;
     }
 
@@ -44,6 +48,7 @@ public class Piece {
         Piece piece = new Piece( this.type, this.team );
         piece.setAlive( this.alive );
         piece.setMoved( this.moved );
+        piece.setLastMovedAt( this.lastMovedAt );
         return piece;
     }
 
