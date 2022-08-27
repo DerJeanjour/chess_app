@@ -150,6 +150,14 @@ public class GameView {
         copyHistoryButton.addActionListener( e -> IOUtil.copyToClipboard( moveInfo.getText() ) );
         infoPanel.add( copyHistoryButton );
 
+        JButton backButton = new JButton( "Go back" );
+        backButton.addActionListener( e -> game.goBack() );
+        infoPanel.add( backButton );
+
+        JButton resetButton = new JButton( "Reset" );
+        resetButton.addActionListener( e -> game.reset() );
+        infoPanel.add( resetButton );
+
         this.gameStateInfo = new JTextField();
         this.gameStateInfo.setEditable( false );
         this.gameStateInfo.setPreferredSize( new Dimension( infoSizeWidth - 10, 30 ) );

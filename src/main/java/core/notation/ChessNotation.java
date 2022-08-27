@@ -8,6 +8,4 @@ public interface ChessNotation {
 
     String write( Game model );
 
-    boolean validate( String notation );
-
 }

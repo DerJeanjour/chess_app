@@ -3,6 +3,7 @@ package backend;
 import backend.validator.RuleValidator;
 import backend.validator.ValidatedPosition;
 import core.model.*;
+import core.notation.AlgebraicNotation;
 import core.notation.FenNotation;
 import core.values.ActionType;
 import core.values.RuleType;
@@ -22,28 +23,34 @@ public class Game {
     private static String DEFAULT_PIECE_PLACEMENT_PATH = "placements/default_piece_placements.txt";
 
     @Getter
-    private final Board board;
+    private Board board;
 
     @Getter
     private GameState state;
 
+    @Getter
     private Team white;
 
+    @Getter
     private Team black;
 
+    @Getter
     private TeamColor onMove;
 
     @Getter
     private int moveNumber;
 
     @Getter
-    private final List<Move> history;
+    private List<Move> history;
 
     @Getter
-    private final RuleValidator ruleValidator;
+    private RuleValidator ruleValidator;
 
     public Game() {
-        // TODO make config
+        reset();
+    }
+
+    public void reset() {
         this.board = getStartPlacements();
         this.white = new Team( TeamColor.WHITE );
         this.black = new Team( TeamColor.BLACK );
@@ -52,6 +59,24 @@ public class Game {
         this.moveNumber = 0;
         this.history = new ArrayList<>();
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
+    }
+
+    public void goBack() {
+        if ( this.history.isEmpty() ) {
+            return;
+        }
+        AlgebraicNotation processor = new AlgebraicNotation();
+        this.history.remove( this.history.size() - 1 );
+        String notation = processor.write( this );
+        Game game = processor.read( notation );
+        this.board = game.getBoard();
+        this.white = game.getWhite();
+        this.black = game.getBlack();
+        this.history = game.getHistory();
+        this.state = game.getState();
+        this.onMove = game.getOnMove();
+        this.moveNumber = game.getMoveNumber();
+        this.ruleValidator = game.getRuleValidator();
     }
 
     public void makeMove( Vector2I from, Vector2I to ) {

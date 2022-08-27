@@ -29,11 +29,6 @@ public class FenNotation implements ChessNotation {
         return null;
     }
 
-    @Override
-    public boolean validate( String notation ) {
-        return false;
-    }
-
     public static Board readPlacement( String placement ) {
 
         if ( StringUtil.isBlank( placement ) ) {
