@@ -7,7 +7,17 @@ import core.values.PieceType;
 import core.values.TeamColor;
 import util.StringUtil;
 
+import java.util.Map;
+
 public class FenNotation implements ChessNotation {
+
+    public static final Map<PieceType, String> pieceCodes = Map.of(
+            PieceType.PAWN, "P",
+            PieceType.KNIGHT, "N",
+            PieceType.BISHOP, "B",
+            PieceType.ROOK, "R",
+            PieceType.QUEEN, "Q",
+            PieceType.KING, "K" );
 
     @Override
     public Game read( String notation ) {
@@ -45,7 +55,7 @@ public class FenNotation implements ChessNotation {
                     colIdx += Integer.parseInt( c.toString() );
                 }
                 if ( Character.isAlphabetic( c ) ) {
-                    PieceType pieceType = PieceType.getByFenCode( c.toString().toUpperCase() );
+                    PieceType pieceType = getByFenCode( c.toString().toUpperCase() );
                     if ( pieceType != null ) {
                         TeamColor team = Character.isUpperCase( c ) ? TeamColor.WHITE : TeamColor.BLACK;
                         Piece piece = new Piece( pieceType, team );
@@ -57,6 +67,15 @@ public class FenNotation implements ChessNotation {
 
         }
         return board;
+    }
+
+    private static PieceType getByFenCode( String code ) {
+        for ( Map.Entry<PieceType, String> entry : pieceCodes.entrySet() ) {
+            if ( entry.getValue().equals( code ) ) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
 }

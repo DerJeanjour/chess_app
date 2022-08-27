@@ -3,20 +3,37 @@ package core.notation;
 import backend.Game;
 import core.model.Move;
 import core.model.Piece;
-import core.model.Position;
 import core.values.ActionType;
 import core.values.PieceType;
 import core.values.TeamColor;
 import math.Vector2I;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Map;
 
 /**
  * Validate with: https://www.dcode.fr/san-chess-notation
  */
 public class AlgebraicNotation implements ChessNotation {
+
+    public static final Map<PieceType, String> pieceCodes = Map.of(
+            PieceType.PAWN, "",
+            PieceType.KNIGHT, "N",
+            PieceType.BISHOP, "B",
+            PieceType.ROOK, "R",
+            PieceType.QUEEN, "Q",
+            PieceType.KING, "K" );
+
+    public static final Map<ActionType, String> actionCodes = Map.of(
+            ActionType.MOVE, "",
+            ActionType.CAPTURE, "x",
+            ActionType.AU_PASSANT, "x",
+            ActionType.PROMOTING_QUEEN, "=Q",
+            ActionType.CASTLE_KING, "0-0",
+            ActionType.CASTLE_QUEEN, "0-0-0",
+            ActionType.CHECK, "+",
+            ActionType.CHECKMATE, "#" );
 
     @Override
     public Game read( String notation ) {
@@ -48,40 +65,40 @@ public class AlgebraicNotation implements ChessNotation {
 
         boolean isMoveEnd = TeamColor.BLACK.equals( move.getTeam() );
         String moveNumber = isMoveEnd ? "" : ( move.getNumber() + 1 ) + ".";
-        String pieceCode = move.getPiece().code;
+        String pieceCode = pieceCodes.get( move.getPiece() );
         String actionCode = "";
         String posCode = getPosCode( move.getTo() );
         String actionCodePromoting = "";
         String actionCodeCheck = "";
 
-        for( ActionType actionType : move.getActions() ) {
+        for ( ActionType actionType : move.getActions() ) {
             switch ( actionType ) {
                 case MOVE:
                 case CAPTURE:
                 case AU_PASSANT:
-                    actionCode = actionType.code;
+                    actionCode = actionCodes.get( actionType );
                     break;
                 case PROMOTING_QUEEN:
-                    actionCodePromoting = actionType.code;
+                    actionCodePromoting = actionCodes.get( actionType );
                 case CASTLE_QUEEN:
                 case CASTLE_KING:
                     pieceCode = "";
                     posCode = "";
-                    actionCode = actionType.code;
+                    actionCode = actionCodes.get( actionType );
                     break;
                 case CHECK:
-                    if( !move.getActions().contains( ActionType.CHECKMATE ) ) {
-                        actionCodeCheck = actionType.code;
+                    if ( !move.getActions().contains( ActionType.CHECKMATE ) ) {
+                        actionCodeCheck = actionCodes.get( actionType );
                     }
                     break;
                 case CHECKMATE:
-                    actionCodeCheck = actionType.code;
+                    actionCodeCheck = actionCodes.get( actionType );
                     break;
             }
         }
 
         // special notation for pawns
-        if( PieceType.PAWN.equals( move.getPiece() )
+        if ( PieceType.PAWN.equals( move.getPiece() )
                 && ( move.getActions().contains( ActionType.CAPTURE ) || move.getActions().contains( ActionType.AU_PASSANT ) ) ) {
             pieceCode = getColCode( move.getFrom() );
         }
@@ -99,7 +116,7 @@ public class AlgebraicNotation implements ChessNotation {
     }
 
     private static String handleAmbiguity( Game game, Move move ) {
-        if( !EnumSet.of( PieceType.BISHOP, PieceType.ROOK, PieceType.KNIGHT ).contains( move.getPiece() ) ) {
+        if ( !EnumSet.of( PieceType.BISHOP, PieceType.ROOK, PieceType.KNIGHT ).contains( move.getPiece() ) ) {
             return "";
         }
         // TODO https://chess.stackexchange.com/a/1819
