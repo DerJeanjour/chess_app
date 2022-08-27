@@ -1,6 +1,7 @@
 package backend;
 
 import backend.validator.RuleValidator;
+import backend.validator.ValidatedPosition;
 import core.model.*;
 import core.notation.FenNotation;
 import core.values.ActionType;
@@ -8,9 +9,13 @@ import core.values.RuleType;
 import core.values.TeamColor;
 import lombok.Getter;
 import math.Vector2I;
+import misc.Log;
 import util.ResourceLoader;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 public class Game {
 
@@ -57,24 +62,27 @@ public class Game {
             return;
         }
 
-        Set<ActionType> actions = getActions( fromPos, toPos );
-        if ( this.ruleValidator.validate( actions, fromPos, toPos ) ) {
+        ValidatedPosition validatedPosition = this.ruleValidator.validate( fromPos, toPos );
+        if ( validatedPosition.isLegal() ) {
 
-            addHistory( actions, fromPos, toPos );
+            addHistory( validatedPosition.getActions(), fromPos, toPos );
 
             Piece piece = fromPos.getPiece();
             piece.moved();
             toPos.setPiece( piece );
             fromPos.setPiece( null );
 
+            this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
+
             incrementMove();
 
         }
     }
 
+    /*
     private Set<ActionType> getActions( Position from, Position to ) {
         Set<ActionType> actions = new HashSet<>();
-        if( !from.getPos().equals( to.getPos() ) ) {
+        if ( !from.getPos().equals( to.getPos() ) ) {
             actions.add( ActionType.MOVE );
         }
         if ( to.hasEnemy( from.getPiece() ) ) {
@@ -84,7 +92,16 @@ public class Game {
         return actions;
     }
 
+     */
+
     private void addHistory( Set<ActionType> actions, Position from, Position to ) {
+        Log.info( "On {}s {}. move: {} {}->{} with actions {}",
+                from.getPiece().getTeam(),
+                this.moveNumber,
+                from.getPiece().getType(),
+                from.getPos(),
+                to.getPos(),
+                actions );
         this.history.add( new Move(
                 this.moveNumber,
                 actions,

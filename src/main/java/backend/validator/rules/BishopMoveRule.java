@@ -16,14 +16,14 @@ import java.util.Set;
 public class BishopMoveRule extends Rule {
 
     public BishopMoveRule() {
-        super( RuleType.BISHOP_MOVE, Arrays.asList( ActionType.values() ) );
+        super( RuleType.BISHOP_MOVE, Arrays.asList( ActionType.MOVE ) );
     }
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
         if ( !from.hasPieceOfType( PieceType.BISHOP ) ) {
-            return true;
+            return false;
         }
 
         Set<Vector2I> allowed = new HashSet<>();

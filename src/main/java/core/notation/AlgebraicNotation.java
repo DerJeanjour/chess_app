@@ -7,6 +7,7 @@ import core.values.ActionType;
 import core.values.PieceType;
 import core.values.TeamColor;
 import math.Vector2I;
+import util.StringUtil;
 
 import java.text.MessageFormat;
 import java.util.EnumSet;
@@ -74,12 +75,17 @@ public class AlgebraicNotation implements ChessNotation {
         for ( ActionType actionType : move.getActions() ) {
             switch ( actionType ) {
                 case MOVE:
+                    if( StringUtil.isBlank( actionCode ) ) {
+                        actionCode = actionCodes.get( actionType );
+                    }
+                    break;
                 case CAPTURE:
                 case AU_PASSANT:
                     actionCode = actionCodes.get( actionType );
                     break;
                 case PROMOTING_QUEEN:
                     actionCodePromoting = actionCodes.get( actionType );
+                    break;
                 case CASTLE_QUEEN:
                 case CASTLE_KING:
                     pieceCode = "";

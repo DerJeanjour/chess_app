@@ -17,14 +17,14 @@ import java.util.stream.Collectors;
 public class KnightMoveRule extends Rule {
 
     public KnightMoveRule() {
-        super( RuleType.KNIGHT_MOVE, Arrays.asList( ActionType.values() ) );
+        super( RuleType.KNIGHT_MOVE, Arrays.asList( ActionType.MOVE ) );
     }
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
         if ( !from.hasPieceOfType( PieceType.KNIGHT ) ) {
-            return true;
+            return false;
         }
 
         Vector2I pos = from.getPos();

@@ -8,6 +8,7 @@ import core.values.RuleType;
 import math.Vector2I;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RuleValidator {
 
@@ -18,13 +19,16 @@ public class RuleValidator {
     public RuleValidator( Game game, List<RuleType> ruleTypes ) {
         this.game = game;
         this.rules = new ArrayList<>();
-        ruleTypes.stream().forEach( type -> addRule( type ) );
+        ruleTypes.forEach( type -> addRule( type ) );
     }
 
     private void addRule( RuleType type ) {
         switch ( type ) {
-            case TEAM_IS_ON_MOVE:
-                this.rules.add( new TeamIsOnMoveRule() );
+            case POSITION_IS_OUT_OF_BOUNDS:
+                this.rules.add( new PositionIsOutOfBounds() );
+                break;
+            case TEAM_IS_NOT_ON_MOVE:
+                this.rules.add( new TeamIsNotOnMoveRule() );
                 break;
             case ALLOWED_TO_CAPTURE:
                 this.rules.add( new AllowedToCaptureRule() );
@@ -47,50 +51,82 @@ public class RuleValidator {
             case KING_MOVE:
                 this.rules.add( new KingMoveRule() );
                 break;
+            case PROMOTING:
+                this.rules.add( new PromotingRule() );
+                break;
         }
     }
 
-    public boolean validate( Set<ActionType> actions, Position from, Position to ) {
-        // TODO validate with ValidationPosition List
+    public List<Rule> getByActionTag( ActionType type ) {
+        return this.rules.stream().filter( r -> r.getTags().contains( type ) ).collect( Collectors.toList() );
+    }
+
+    public void applyAdditionalActions( Set<ActionType> actions, Position from, Position to ) {
+        for ( ActionType action : actions ) {
+            for ( Rule rule : getByActionTag( action ) ) {
+                rule.apply( this.game, from, to );
+            }
+        }
+    }
+
+    public Map<Vector2I, ValidatedPosition> validate( Position from ) {
+        Map<Vector2I, ValidatedPosition> validation = new HashMap<>();
+        for ( Position position : this.game.getBoard().getPositions() ) {
+            validation.put( position.getPos(), validate( from, position ) );
+        }
+        return validation;
+    }
+
+    public ValidatedPosition validate( Position from, Position to ) {
+        Set<ActionType> possibleActions = new HashSet<>();
+        Set<RuleType> rulesApplied = new HashSet<>();
+
         for ( Rule rule : this.rules ) {
-            if ( ( actions.isEmpty() || ruleHasAnyTag( rule, actions ) ) && !rule.validate( this.game, from, to ) ) {
-                return false;
+            if ( rule.validate( this.game, from, to ) ) {
+                possibleActions.addAll( rule.getTags() );
+                rulesApplied.add( rule.getType() );
             }
         }
-        return true;
+
+        Vector2I p = to.getPos();
+        ValidatedPosition validatedPosition = new ValidatedPosition( p, possibleActions, rulesApplied );
+        evaluateLegality( validatedPosition );
+        return validatedPosition;
     }
 
-    public List<Vector2I> getPossiblePositions( Position from ) {
-        List<Vector2I> possible = new ArrayList<>();
-        if ( from.getPiece() == null ) {
-            return possible;
-        }
-        for ( Position position : this.game.getBoard().getPositions() ) {
-            if ( validate( Collections.EMPTY_SET, from, position ) ) {
-                possible.add( position.getPos() );
+    private void evaluateLegality( ValidatedPosition validatedPosition ) {
+        boolean legal = !validatedPosition.getActions().isEmpty();
+        for ( RuleType appliedRule : validatedPosition.getRulesApplied() ) {
+            if ( !appliedRule.legal ) {
+                legal = false;
             }
         }
-        return possible;
+        if ( legal && !validatedPosition.getActions().contains( ActionType.MOVE ) ) {
+            legal = false;
+        }
+        validatedPosition.setLegal( legal );
     }
 
-    public List<ValidatedPosition> validatePositions( Position from ) {
-        List<ValidatedPosition> validatedPositions = new ArrayList<>();
-        for ( Position position : this.game.getBoard().getPositions() ) {
-            Set<ActionType> possibleActions = new HashSet<>();
-            for ( Rule rule : this.rules ) {
-                if( rule.validate( this.game, from, position )) {
-                    possibleActions.addAll( rule.getTags() ); // TODO better tags in rules
-                }
-            }
-            validatedPositions.add( new ValidatedPosition( position.getPos(), possibleActions ) );
-        }
-        return validatedPositions;
+    public static boolean isLegal( Map<Vector2I, ValidatedPosition> validation, Vector2I p ) {
+        return hasAction( validation, p ) && validation.get( p ).isLegal();
+    }
+
+    public static boolean hasAction( Map<Vector2I, ValidatedPosition> validation, Vector2I p ) {
+        return validation.get( p ) != null && validation.get( p ).hasAction();
+    }
+
+    public static boolean hasAction( Map<Vector2I, ValidatedPosition> validation, Vector2I p, ActionType type ) {
+        return validation.get( p ) != null && validation.get( p ).hasAction( type );
     }
 
     private boolean ruleHasAnyTag( Rule rule, Set<ActionType> actions ) {
         return rule.getTags().stream()
                 .filter( t -> actions.contains( t ) )
                 .findAny().isPresent();
+    }
+
+    private List<Rule> getRulesByLegality( boolean legal ) {
+        return this.rules.stream().filter( r -> r.getType().legal == legal ).collect( Collectors.toList() );
     }
 
 }

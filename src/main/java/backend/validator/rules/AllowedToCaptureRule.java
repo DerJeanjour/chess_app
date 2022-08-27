@@ -5,7 +5,6 @@ import backend.validator.Rule;
 import core.model.Position;
 import core.values.ActionType;
 import core.values.RuleType;
-import core.values.TeamColor;
 
 import java.util.Arrays;
 
@@ -17,11 +16,6 @@ public class AllowedToCaptureRule extends Rule {
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
-        if ( to.getPiece() == null ) {
-            return true;
-        }
-        TeamColor teamA = from.getPiece().getTeam();
-        TeamColor teamB = to.getPiece().getTeam();
-        return !teamA.equals( teamB );
+        return to.hasPiece() && to.hasEnemy( from.getPiece() );
     }
 }

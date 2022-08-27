@@ -16,14 +16,14 @@ import java.util.Set;
 public class KingMoveRule extends Rule {
 
     public KingMoveRule() {
-        super( RuleType.KING_MOVE, Arrays.asList( ActionType.values() ) );
+        super( RuleType.KING_MOVE, Arrays.asList( ActionType.MOVE ) );
     }
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
         if ( !from.hasPieceOfType( PieceType.KING ) ) {
-            return true;
+            return false;
         }
 
         Set<Vector2I> allowed = new HashSet<>();

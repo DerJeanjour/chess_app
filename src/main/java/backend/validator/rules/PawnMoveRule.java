@@ -14,18 +14,19 @@ import java.util.Set;
 public class PawnMoveRule extends Rule {
 
     public PawnMoveRule() {
-        super( RuleType.PAWN_MOVE, Arrays.asList( ActionType.values() ) );
+        super( RuleType.PAWN_MOVE, Arrays.asList( ActionType.MOVE ) );
     }
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
-        Piece piece = from.getPiece();
+
         if ( !from.hasPieceOfType( PieceType.PAWN ) ) {
-            return true;
+            return false;
         }
 
         Set<Vector2I> allowed = new HashSet<>();
 
+        Piece piece = from.getPiece();
         Vector2I pos = from.getPos();
         Vector2I dir = piece.partOf( TeamColor.WHITE ) ? Dir.UP.vector : Dir.DOWN.vector;
 

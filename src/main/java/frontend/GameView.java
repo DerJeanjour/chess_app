@@ -1,25 +1,34 @@
 package frontend;
 
 import backend.Game;
+import backend.validator.RuleValidator;
+import backend.validator.ValidatedPosition;
 import core.model.Piece;
 import core.model.Position;
 import core.notation.AlgebraicNotation;
 import core.notation.ChessNotation;
+import core.values.ActionType;
+import math.Color;
 import math.Vector2I;
 import misc.Log;
 import util.IOUtil;
 
 import javax.swing.*;
+
 import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameView {
+
+    private static final Map<ActionType, Color> actionColors = Map.of(
+            ActionType.MOVE, Color.GREEN,
+            ActionType.CAPTURE, Color.RED
+    );
 
     private final Game game;
 
@@ -47,7 +56,7 @@ public class GameView {
 
     private Position selectedPos;
 
-    private List<Vector2I> possiblePositions;
+    private Map<Vector2I, ValidatedPosition> validation;
 
     public GameView( Game game, int boardSize, int windowW, int windowH ) {
 
@@ -60,7 +69,7 @@ public class GameView {
         this.xOff = ( windowW - boardSize ) / 2;
         this.yOff = ( windowH - boardSize ) / 2;
 
-        this.possiblePositions = new ArrayList<>();
+        this.validation = new HashMap<>();
         this.sprites = new SpriteProvider();
         this.sprites.reload( this.posSize );
         this.chessNotation = new AlgebraicNotation();
@@ -94,7 +103,7 @@ public class GameView {
             @Override
             public void mousePressed( MouseEvent e ) {
                 selectedPos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
-                possiblePositions.addAll( game.getRuleValidator().getPossiblePositions( selectedPos ) );
+                validation.putAll( game.getRuleValidator().validate( selectedPos ));
             }
 
             @Override
@@ -104,7 +113,7 @@ public class GameView {
                     game.makeMove( selectedPos.getPos(), pos.getPos() );
                 }
                 selectedPos = null;
-                possiblePositions.clear();
+                validation.clear();
             }
         } );
 
@@ -169,29 +178,53 @@ public class GameView {
             g2d.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
 
             // Background
-            g.setColor( Color.lightGray );
+            g.setColor( java.awt.Color.lightGray );
             g.fillRect( 0, 0, windowW, windowH );
 
             // Draw Positions
             for ( int i = 0; i < game.getBoardSize(); i++ ) {
                 for ( int j = 0; j < game.getBoardSize(); j++ ) {
+
                     Vector2I p = positionToPixel( i, j );
                     Vector2I pos = new Vector2I( i, game.getBoardSize() - 1 - j );
+
+                    boolean hasPossibleAction = RuleValidator.isLegal( validation, pos );
+                    Color posColor = ( i + j ) % 2 != 0 ? Color.DARK_GREY : Color.LIGHT_GREY;
+
+                    if(hasPossibleAction) {
+
+                        Color actionColor = new Color( Color.BLACK, 0f );
+
+                        if( RuleValidator.hasAction( validation, pos, ActionType.MOVE ) ) {
+                            actionColor = new Color( actionColors.get( ActionType.MOVE ), 0.2f );
+                        }
+
+                        if( RuleValidator.hasAction( validation, pos, ActionType.CAPTURE ) ) {
+                            actionColor = new Color( actionColors.get( ActionType.CAPTURE ), 0.2f );
+                        }
+
+                        posColor = posColor.blend( actionColor );
+                    }
+
+                    g.setColor(new java.awt.Color( posColor.getInt() ));
+                    /*
                     if ( ( i + j ) % 2 != 0 ) {
-                        g.setColor( possiblePositions.contains( pos )
+                        g.setColor( hasPossibleAction
                                 ? new Color( 128, 64, 64 )
                                 : Color.darkGray );
                     } else {
-                        g.setColor( possiblePositions.contains( pos )
+                        g.setColor( hasPossibleAction
                                 ? new Color( 255, 192, 192 )
                                 : Color.lightGray );
                     }
+
+                     */
                     g.fillRect( p.x, p.y, posSize, posSize );
                 }
             }
 
             // Draw Cell Description
-            g.setColor( Color.black );
+            g.setColor( java.awt.Color.black );
             for ( int j = 0; j < game.getBoardSize(); j++ ) {
                 for ( int i = 0; i < game.getBoardSize(); i++ ) {
                     Vector2I p = positionToPixel( i, j );
@@ -227,7 +260,7 @@ public class GameView {
             }
 
             // Draw Grid Outlines
-            g.setColor( Color.black );
+            g.setColor( java.awt.Color.black );
             Vector2I p = positionToPixel( 0, 0 );
             g.drawRect( p.x, p.y, boardSize, boardSize );
 

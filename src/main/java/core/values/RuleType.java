@@ -2,18 +2,28 @@ package core.values;
 
 public enum RuleType {
 
-    TEAM_IS_ON_MOVE,
-    ALLOWED_TO_CAPTURE,
+    POSITION_IS_OUT_OF_BOUNDS(false),
 
-    KING_WOULD_BE_IN_CHECK,
+    TEAM_IS_NOT_ON_MOVE(false),
+    ALLOWED_TO_CAPTURE(true),
 
-    PAWN_MOVE,
-    BISHOP_MOVE,
-    KNIGHT_MOVE,
-    ROOK_MOVE,
-    QUEEN_MOVE,
-    KING_MOVE,
+    KING_WOULD_BE_IN_CHECK(false),
 
-    AU_PASSANT,
-    CASTLING
+    PAWN_MOVE(true),
+    BISHOP_MOVE(true),
+    KNIGHT_MOVE(true),
+    ROOK_MOVE(true),
+    QUEEN_MOVE(true),
+    KING_MOVE(true),
+
+    PROMOTING(true),
+    AU_PASSANT(true),
+    CASTLING(true);
+
+    public final boolean legal;
+
+    RuleType( boolean legal ) {
+        this.legal = legal;
+    }
+
 }

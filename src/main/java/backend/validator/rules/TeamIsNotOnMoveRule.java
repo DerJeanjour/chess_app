@@ -8,14 +8,14 @@ import core.values.RuleType;
 
 import java.util.Arrays;
 
-public class TeamIsOnMoveRule extends Rule {
+public class TeamIsNotOnMoveRule extends Rule {
 
-    public TeamIsOnMoveRule() {
-        super( RuleType.TEAM_IS_ON_MOVE, Arrays.asList( ActionType.MOVE ) );
+    public TeamIsNotOnMoveRule() {
+        super( RuleType.TEAM_IS_NOT_ON_MOVE, Arrays.asList( ActionType.MOVE ) );
     }
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
-        return game.isOnMove( from.getPiece().getTeam() );
+        return !game.isOnMove( from.getPiece().getTeam() );
     }
 }

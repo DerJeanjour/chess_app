@@ -16,14 +16,14 @@ import java.util.Set;
 public class RookMoveRule extends Rule {
 
     public RookMoveRule() {
-        super( RuleType.ROOK_MOVE, Arrays.asList( ActionType.values() ) );
+        super( RuleType.ROOK_MOVE, Arrays.asList( ActionType.MOVE ) );
     }
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
 
         if ( !from.hasPieceOfType( PieceType.ROOK ) ) {
-            return true;
+            return false;
         }
 
         Set<Vector2I> allowed = new HashSet<>();
@@ -33,4 +33,5 @@ public class RookMoveRule extends Rule {
 
         return allowed.contains( to.getPos() );
     }
+
 }
