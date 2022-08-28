@@ -39,8 +39,16 @@ public class Team {
         return this.pieces.values().stream().collect( Collectors.toList() );
     }
 
+    public List<Piece> getAlive() {
+        return getAll().stream().filter( Piece::isAlive ).collect( Collectors.toList());
+    }
+
+    public Piece getKing() {
+        return getAll().stream().filter( p -> PieceType.KING.equals( p.getType() ) ).findFirst().get();
+    }
+
     public List<Piece> getPiecesByType( PieceType type ) {
-        return this.pieces.values().stream().filter( p -> p.isType( type ) ).collect( Collectors.toList() );
+        return getAll().stream().filter( p -> p.isType( type ) ).collect( Collectors.toList() );
     }
 
 }

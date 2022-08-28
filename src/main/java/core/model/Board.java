@@ -29,6 +29,14 @@ public class Board {
         return getPosition( p.x, p.y );
     }
 
+    public Position getPosition( Piece piece ) {
+        if( piece == null ) {
+            return null;
+        }
+        Optional<Position> pos = this.positions.stream().filter( p -> piece.getId().equals( p.getPieceId() ) ).findFirst();
+        return pos.orElse( null );
+    }
+
     public Position getPosition( int row, int col ) {
         Optional<Position> pos = this.positions.stream().filter( p -> p.getPos().equals( new Vector2I( row, col ) ) ).findFirst();
         return pos.orElse( null );

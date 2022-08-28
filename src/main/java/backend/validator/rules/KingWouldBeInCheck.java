@@ -17,6 +17,7 @@ public class KingWouldBeInCheck extends Rule {
     @Override
     public boolean validate( Game game, Position from, Position to ) {
         /*
+        // THIS IS SHIT FOR PERFORMANCE
         Game sandbox = game.clone();
         sandbox.setLog( false );
         // filter out check rule

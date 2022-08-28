@@ -85,6 +85,10 @@ public class Game {
     }
 
     public boolean makeMove( Vector2I from, Vector2I to ) {
+        return makeMove( from, to, false );
+    }
+
+    public boolean makeMove( Vector2I from, Vector2I to, boolean simulate ) {
 
         Position fromPos = getPosition( from );
         Position toPos = getPosition( to );
@@ -95,18 +99,33 @@ public class Game {
         ValidatedPosition validatedPosition = this.ruleValidator.validate( fromPos, toPos );
         if ( validatedPosition.isLegal() ) {
 
+            Game rollback = null;
+            if( simulate ) {
+                rollback = this.clone();
+            }
+
             addHistory( validatedPosition.getActions(), fromPos, toPos );
 
             Piece piece = getPiece( fromPos );
             piece.moved( this.moveNumber );
+            Piece target = getPiece( toPos );
             toPos.setPieceId( piece.getId() );
             fromPos.setPieceId( null );
+            if( target != null ) {
+                target.setAlive( false );
+            }
 
             this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
 
             incrementMove();
+            if( simulate ) {
+                this.setAll( rollback );
+            }
+            if(!simulate) {
+                //boolean isInCheck = isCheckFor( piece.getTeam() ); // FIXME
+                //Log.info( "Made move! King of {} is in check: {}", piece.getTeam(), isInCheck );
+            }
             return true;
-
         }
 
         return false;
@@ -217,11 +236,31 @@ public class Game {
     }
 
     public Piece getPiece( String id ) {
-        Team team = id.startsWith( "W" ) ? this.white : this.black;
+        Team team = getTeam( id );
         return team.getById( id );
     }
 
+    public Team getTeam( String id ) {
+        return id.startsWith( "W" ) ? this.white : this.black;
+    }
+
+    public Team getTeam( TeamColor color ) {
+        return color.equals( TeamColor.WHITE ) ? this.white : this.black;
+    }
+
     public boolean isCheckFor( TeamColor team ) {
+        Piece king = getTeam( team ).getKing();
+        Position kingPos = this.board.getPosition( king );
+        List<Piece> enemies = getTeam( TeamColor.getEnemy( team ) ).getAlive();
+        for( Piece enemy : enemies ) {
+            Position enemyPos = this.board.getPosition( enemy );
+            if( enemyPos != null ) {
+                boolean isLegal = this.makeMove( enemyPos.getPos(), kingPos.getPos(), true );
+                if( isLegal ) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -263,6 +302,18 @@ public class Game {
             game.makeMove( move.getFrom(), move.getTo() );
         }
         return game;
+    }
+
+    public void setAll( Game game ) {
+        this.white = game.getWhite();
+        this.black = game.getBlack();
+        this.board = game.getBoard();
+        this.onMove = game.getOnMove();
+        this.state = game.getState();
+        this.moveNumber = game.getMoveNumber();
+        this.history = game.getHistory();
+        this.ruleValidator = game.getRuleValidator();
+        this.log = game.isLog();
     }
 
 }
