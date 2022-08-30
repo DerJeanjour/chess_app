@@ -9,6 +9,7 @@ import lombok.Getter;
 import math.Vector2I;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RuleValidator {
 
@@ -27,6 +28,9 @@ public class RuleValidator {
         switch ( type ) {
             case POSITION_IS_OUT_OF_BOUNDS:
                 this.rules.add( new PositionIsOutOfBounds() );
+                break;
+            case GAME_IS_FINISHED:
+                this.rules.add( new GameIsFinishedRule() );
                 break;
             case TEAM_IS_NOT_ON_MOVE:
                 this.rules.add( new TeamIsNotOnMoveRule() );
@@ -80,28 +84,40 @@ public class RuleValidator {
     }
 
     public Map<Vector2I, ValidatedPosition> validate( Position from ) {
+        //Timer timer = new Timer();
         Map<Vector2I, ValidatedPosition> validation = new HashMap<>();
         for ( Position position : this.game.getBoard().getPositions() ) {
             validation.put( position.getPos(), validate( from, position ) );
         }
+        //Log.info( "Validation time for legal moves of Position {}: {}ms", from, timer.getTimeSinceMillis() );
         return validation;
     }
 
     public ValidatedPosition validate( Position from, Position to ) {
-        Set<ActionType> possibleActions = new HashSet<>();
-        Set<RuleType> rulesApplied = new HashSet<>();
 
-        for ( Rule rule : this.rules ) {
-            if ( rule.validate( this.game, from, to ) ) {
-                possibleActions.addAll( rule.getTags() );
-                rulesApplied.add( rule.getType() );
+        ValidatedPosition validatedPosition = new ValidatedPosition( to.getPos(), new HashSet<>(), new HashSet<>() );
+        validatedPosition.setLegal( true );
+
+        for ( int i = 0; i <= RuleType.MAX_ORDER; i++ ) {
+
+            if ( validatedPosition.isLegal() ) {
+                for ( Rule rule : this.getRulesbyOrder( i ) ) {
+                    if ( rule.validate( this.game, from, to ) ) {
+                        validatedPosition.getActions().addAll( rule.getTags() );
+                        validatedPosition.getRulesApplied().add( rule.getType() );
+                    }
+                }
+                evaluateLegality( validatedPosition );
             }
-        }
 
-        Vector2I p = to.getPos();
-        ValidatedPosition validatedPosition = new ValidatedPosition( p, possibleActions, rulesApplied );
-        evaluateLegality( validatedPosition );
+        }
         return validatedPosition;
+    }
+
+    private List<Rule> getRulesbyOrder( int order ) {
+        return this.rules.stream()
+                .filter( rule -> rule.getType().order == order )
+                .collect( Collectors.toList() );
     }
 
     private void evaluateLegality( ValidatedPosition validatedPosition ) {

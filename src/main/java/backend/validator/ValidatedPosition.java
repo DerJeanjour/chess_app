@@ -3,6 +3,7 @@ package backend.validator;
 import core.values.ActionType;
 import core.values.RuleType;
 import lombok.Data;
+import lombok.Getter;
 import math.Vector2I;
 
 import java.util.Set;
@@ -12,8 +13,10 @@ public class ValidatedPosition {
 
     private final Vector2I pos;
 
-    private final Set<ActionType> actions; // TODO maybe sort by impact ?
+    @Getter
+    private final Set<ActionType> actions;
 
+    @Getter
     private final Set<RuleType> rulesApplied;
 
     private boolean legal;

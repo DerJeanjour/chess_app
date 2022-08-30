@@ -2,6 +2,7 @@ package core.model;
 
 import core.values.PieceType;
 import core.values.TeamColor;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ public class Team {
 
     private final TeamColor color;
 
+    @Setter
     private Map<String, Piece> pieces;
 
     public Team( TeamColor color ) {
@@ -40,7 +42,7 @@ public class Team {
     }
 
     public List<Piece> getAlive() {
-        return getAll().stream().filter( Piece::isAlive ).collect( Collectors.toList());
+        return getAll().stream().filter( Piece::isAlive ).collect( Collectors.toList() );
     }
 
     public Piece getKing() {
@@ -49,6 +51,16 @@ public class Team {
 
     public List<Piece> getPiecesByType( PieceType type ) {
         return getAll().stream().filter( p -> p.isType( type ) ).collect( Collectors.toList() );
+    }
+
+    public Team clone() {
+        Team team = new Team( this.color );
+        Map<String, Piece> pieces = new HashMap<>();
+        for ( Map.Entry<String, Piece> entry : this.pieces.entrySet() ) {
+            pieces.put( entry.getKey(), entry.getValue().clone() );
+        }
+        team.setPieces( pieces );
+        return team;
     }
 
 }

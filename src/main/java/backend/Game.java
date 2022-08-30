@@ -99,11 +99,7 @@ public class Game {
         ValidatedPosition validatedPosition = this.ruleValidator.validate( fromPos, toPos );
         if ( validatedPosition.isLegal() ) {
 
-            Game rollback = null;
-            if( simulate ) {
-                rollback = this.clone();
-            }
-
+            Game rollback = this.clone();
             addHistory( validatedPosition.getActions(), fromPos, toPos );
 
             Piece piece = getPiece( fromPos );
@@ -111,20 +107,17 @@ public class Game {
             Piece target = getPiece( toPos );
             toPos.setPieceId( piece.getId() );
             fromPos.setPieceId( null );
-            if( target != null ) {
+            if ( target != null ) {
                 target.setAlive( false );
             }
 
             this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
-
             incrementMove();
-            if( simulate ) {
+
+            if ( simulate ) {
                 this.setAll( rollback );
             }
-            if(!simulate) {
-                //boolean isInCheck = isCheckFor( piece.getTeam() ); // FIXME
-                //Log.info( "Made move! King of {} is in check: {}", piece.getTeam(), isInCheck );
-            }
+
             return true;
         }
 
@@ -252,11 +245,11 @@ public class Game {
         Piece king = getTeam( team ).getKing();
         Position kingPos = this.board.getPosition( king );
         List<Piece> enemies = getTeam( TeamColor.getEnemy( team ) ).getAlive();
-        for( Piece enemy : enemies ) {
+        for ( Piece enemy : enemies ) {
             Position enemyPos = this.board.getPosition( enemy );
-            if( enemyPos != null ) {
+            if ( enemyPos != null ) {
                 boolean isLegal = this.makeMove( enemyPos.getPos(), kingPos.getPos(), true );
-                if( isLegal ) {
+                if ( isLegal ) {
                     return true;
                 }
             }
@@ -296,24 +289,29 @@ public class Game {
         return this.board.getSize();
     }
 
-    public Game clone() {
+    public static Game createGame( List<Move> history ) {
         Game game = new Game();
-        for ( Move move : this.history ) {
+        for ( Move move : history ) {
             game.makeMove( move.getFrom(), move.getTo() );
         }
         return game;
     }
 
+    public Game clone() {
+        Game game = new Game();
+        game.setAll( this );
+        return game;
+    }
+
     public void setAll( Game game ) {
-        this.white = game.getWhite();
-        this.black = game.getBlack();
-        this.board = game.getBoard();
+        this.white = game.getWhite().clone();
+        this.black = game.getBlack().clone();
+        this.board = game.getBoard().clone();
         this.onMove = game.getOnMove();
         this.state = game.getState();
         this.moveNumber = game.getMoveNumber();
-        this.history = game.getHistory();
+        this.history = new ArrayList<>( game.getHistory() );
         this.ruleValidator = game.getRuleValidator();
-        this.log = game.isLog();
     }
 
 }
