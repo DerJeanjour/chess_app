@@ -133,6 +133,11 @@ public class RuleValidator {
         validatedPosition.setLegal( legal );
     }
 
+    public int legalMovesLeft( Position from ) {
+        Map<Vector2I, ValidatedPosition> positions = validate( from );
+        return ( int ) positions.entrySet().stream().filter( e -> e.getValue().isLegal() ).count();
+    }
+
     public static boolean isLegal( Map<Vector2I, ValidatedPosition> validation, Vector2I p ) {
         return hasAction( validation, p ) && validation.get( p ).isLegal();
     }

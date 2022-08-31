@@ -17,13 +17,6 @@ public class GameIsFinishedRule extends Rule {
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
-        Team white = game.getWhite();
-        Team black = game.getBlack();
-
-        if ( white.getAlive().size() == 1 && black.getAlive().size() == 1 ) {
-            return true;
-        }
-        // TODO check if current team has any legal
-        return false;
+        return game.isFinished();
     }
 }

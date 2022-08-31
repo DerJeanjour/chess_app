@@ -112,6 +112,8 @@ public class Game {
             }
 
             this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
+            checkCheckmate( TeamColor.getEnemy( this.onMove ) );
+            checkTie( TeamColor.getEnemy( this.onMove ) );
             incrementMove();
 
             if ( simulate ) {
@@ -144,7 +146,14 @@ public class Game {
         ) );
     }
 
+    public boolean isFinished() {
+        return EnumSet.of( GameState.TIE, GameState.WHITE_WON, GameState.BLACK_WON ).contains( this.state );
+    }
+
     private void incrementMove() {
+        if ( isFinished() ) {
+            return;
+        }
         if ( isOnMove( TeamColor.BLACK ) ) {
             this.moveNumber++;
         }
@@ -257,6 +266,45 @@ public class Game {
         return false;
     }
 
+    public void checkCheckmate( TeamColor team ) {
+        if ( isFinished() ) {
+            return;
+        }
+        Piece king = getTeam( team ).getKing();
+        Position kingPos = this.board.getPosition( king );
+        Game sandbox = clone();
+        if ( kingPos != null && sandbox.isCheckFor( team ) ) {
+            int movesLeft = sandbox.getRuleValidator().legalMovesLeft( kingPos );
+            if ( movesLeft == 0 ) {
+                this.state = team.equals( TeamColor.WHITE ) ? GameState.BLACK_WON : GameState.WHITE_WON;
+            }
+        }
+    }
+
+    public void checkTie( TeamColor teamColor ) {
+        // FIXME !
+        // TODO maybe merge with checkmate check ????
+        /*
+        if ( isFinished() ) {
+            return;
+        }
+        Team team = getTeam( teamColor );
+        if( team.getAlive().size() > 1 ) {
+            return;
+        }
+        Piece king = getTeam( teamColor ).getKing();
+        Position kingPos = this.board.getPosition( king );
+        Game sandbox = clone();
+        if ( kingPos != null ) {
+            int movesLeft = sandbox.getRuleValidator().legalMovesLeft( kingPos );
+            if ( movesLeft == 0 ) {
+                this.state = GameState.TIE;
+            }
+        }
+
+         */
+    }
+
     public int getMaxDistance() {
         return getBoardSize() * getBoardSize();
     }
@@ -271,8 +319,8 @@ public class Game {
             throw new IllegalArgumentException();
         }
         // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
-        Map<Vector2I, Piece> placements = FenNotation.readPlacement( placementLine.get( 0 ) );
-        //return FenNotation.readPlacement( "rnbqk2r/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R" );
+        //Map<Vector2I, Piece> placements = FenNotation.readPlacement( placementLine.get( 0 ) );
+        Map<Vector2I, Piece> placements = FenNotation.readPlacement( "rnbqk2r/pppppppp/8/8/8/8/8/7K" );
 
         Board board = new Board( FenNotation.readBoardSize( placementLine.get( 0 ) ) );
         for ( Map.Entry<Vector2I, Piece> placement : placements.entrySet() ) {
