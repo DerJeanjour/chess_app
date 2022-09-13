@@ -38,7 +38,7 @@ public class AlgebraicNotation implements ChessNotation {
 
     @Override
     public Game read( String notation ) {
-        Game game = new Game();
+        Game game = new Game( "main" );
         String[] moves = notation.split( " " );
         for ( String moveNotation : moves ) {
             Move move = readMove( game, moveNotation );

@@ -20,6 +20,7 @@ public enum RuleType {
     CASTLING_QUEEN_SIDE( true, 0 ),
     CASTLING_KING_SIDE( true, 0 ),
 
+    IS_CHECK( true, 1 ),
     KING_WOULD_BE_IN_CHECK( false, 1 );
 
     public final boolean legal;

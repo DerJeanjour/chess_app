@@ -17,6 +17,8 @@ public abstract class Rule {
 
     private final List<ActionType> tags;
 
+    private boolean active;
+
     public abstract boolean validate( Game game, Position from, Position to );
 
     public void applyAdditionalAfterMove( Game game, Position from, Position to ) {

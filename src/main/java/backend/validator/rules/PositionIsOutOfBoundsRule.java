@@ -9,9 +9,9 @@ import util.MathUtil;
 
 import java.util.Arrays;
 
-public class PositionIsOutOfBounds extends Rule {
+public class PositionIsOutOfBoundsRule extends Rule {
 
-    public PositionIsOutOfBounds() {
+    public PositionIsOutOfBoundsRule() {
         super( RuleType.POSITION_IS_OUT_OF_BOUNDS, Arrays.asList( ActionType.MOVE ) );
     }
 

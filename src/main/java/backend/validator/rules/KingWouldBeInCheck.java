@@ -2,14 +2,12 @@ package backend.validator.rules;
 
 import backend.Game;
 import backend.validator.Rule;
-import backend.validator.RuleValidator;
 import core.model.Position;
 import core.values.ActionType;
 import core.values.RuleType;
+import misc.Log;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class KingWouldBeInCheck extends Rule {
 
@@ -19,14 +17,8 @@ public class KingWouldBeInCheck extends Rule {
 
     @Override
     public boolean validate( Game game, Position from, Position to ) {
-        // THIS IS SHIT FOR PERFORMANCE
-        Game sandbox = game.clone();
-        // filter out check rule
-        List<RuleType> sandboxRules = sandbox.getRuleValidator().getRules().stream()
-                .map( Rule::getType )
-                .filter( r -> !r.equals( getType() ) )
-                .collect( Collectors.toList() );
-        sandbox.setRuleValidator( new RuleValidator( sandbox, sandboxRules ) );
+        Game sandbox = game.clone( "wouldbecheck" );
+        sandbox.getRuleValidator().setRuleActiveState( getType(), false );
         // simulate move and validate if king is in check
         if ( sandbox.makeMove( from.getPos(), to.getPos() ) ) {
             return sandbox.isCheckFor( game.getTeam( from ) );

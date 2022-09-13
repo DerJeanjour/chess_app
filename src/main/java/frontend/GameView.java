@@ -260,7 +260,7 @@ public class GameView {
             }
 
             // Draw Dragged Piece
-            if ( selectedPos != null ) {
+            if ( selectedPos != null && this.getMousePosition() != null ) {
                 Point p = this.getMousePosition();
                 int x = p.x - ( posSize / 2 );
                 int y = p.y - ( posSize / 2 );

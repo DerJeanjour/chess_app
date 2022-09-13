@@ -6,7 +6,11 @@ public enum TeamColor {
     WHITE;
 
     public static TeamColor getEnemy( TeamColor color ) {
-        return color.equals( WHITE ) ? BLACK : WHITE;
+        switch ( color ) {
+            case WHITE: return BLACK;
+            case BLACK: return WHITE;
+        }
+        return null;
     }
 
 }

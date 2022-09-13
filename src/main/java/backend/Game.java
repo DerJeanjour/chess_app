@@ -1,7 +1,9 @@
 package backend;
 
+import backend.validator.Rule;
 import backend.validator.RuleValidator;
 import backend.validator.ValidatedPosition;
+import core.exception.IllegalMoveException;
 import core.model.*;
 import core.notation.AlgebraicNotation;
 import core.notation.FenNotation;
@@ -16,10 +18,14 @@ import misc.Log;
 import util.ResourceLoader;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Game {
 
     private static String DEFAULT_PIECE_PLACEMENT_PATH = "placements/default_piece_placements.txt";
+
+    @Getter
+    private final String id;
 
     @Getter
     private Board board;
@@ -46,24 +52,30 @@ public class Game {
     @Getter
     private RuleValidator ruleValidator;
 
-    @Setter
     @Getter
-    private boolean log;
+    private final boolean canLog;
 
-    public Game() {
+    public Game( final String id ) {
+        this.id = id;
+        this.canLog = false;
+        reset();
+    }
+
+    public Game( final String id, boolean canLog ) {
+        this.id = id;
+        this.canLog = canLog;
         reset();
     }
 
     public void reset() {
         this.white = new Team( TeamColor.WHITE );
         this.black = new Team( TeamColor.BLACK );
-        this.board = loadPlacements();
+        setBoard();
         this.onMove = TeamColor.WHITE;
         this.state = GameState.WHITE_TO_MOVE;
         this.moveNumber = 0;
         this.history = new ArrayList<>();
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
-        this.log = false;
     }
 
     public void goBack() {
@@ -90,52 +102,62 @@ public class Game {
 
     public boolean makeMove( Vector2I from, Vector2I to, boolean simulate ) {
 
-        Position fromPos = getPosition( from );
-        Position toPos = getPosition( to );
-        if ( getPiece( fromPos ) == null ) {
+        try {
+
+            Position fromPos = getPosition( from );
+            Position toPos = getPosition( to );
+            if ( getPiece( fromPos ) == null ) {
+                return false;
+            }
+
+            ValidatedPosition validatedPosition = this.ruleValidator.validate( fromPos, toPos );
+            if ( validatedPosition.isLegal() ) {
+
+                Game rollback = this.clone( "rollback" );
+                addHistory( validatedPosition.getActions(), fromPos, toPos );
+
+                Piece piece = getPiece( fromPos );
+                piece.moved( this.moveNumber );
+                Piece target = getPiece( toPos );
+                toPos.setPieceId( piece.getId() );
+                fromPos.setPieceId( null );
+                if ( target != null ) {
+                    target.setAlive( false );
+                }
+
+                this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
+
+                if ( !simulate ) {
+                    TeamColor enemy = TeamColor.getEnemy( this.onMove );
+                    this.log( "is check for team {}: {}", enemy, isCheckFor( enemy ) );
+                    this.log( "is checkmate for team {}: {}", enemy, isCheckmateFor( enemy ) );
+                    this.log( "is stalemate for team {}: {}", enemy, isStalemateFor( enemy ) );
+                }
+
+                incrementMove();
+
+                if ( simulate ) {
+                    this.setAll( rollback );
+                }
+
+                return true;
+            }
             return false;
+
+        } catch ( Exception e ) {
+            throw new IllegalMoveException( this, from, to, e );
         }
 
-        ValidatedPosition validatedPosition = this.ruleValidator.validate( fromPos, toPos );
-        if ( validatedPosition.isLegal() ) {
-
-            Game rollback = this.clone();
-            addHistory( validatedPosition.getActions(), fromPos, toPos );
-
-            Piece piece = getPiece( fromPos );
-            piece.moved( this.moveNumber );
-            Piece target = getPiece( toPos );
-            toPos.setPieceId( piece.getId() );
-            fromPos.setPieceId( null );
-            if ( target != null ) {
-                target.setAlive( false );
-            }
-
-            this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
-            checkCheckmate( TeamColor.getEnemy( this.onMove ) );
-            checkTie( TeamColor.getEnemy( this.onMove ) );
-            incrementMove();
-
-            if ( simulate ) {
-                this.setAll( rollback );
-            }
-
-            return true;
-        }
-
-        return false;
     }
 
     private void addHistory( Set<ActionType> actions, Position from, Position to ) {
-        if ( this.log ) {
-            Log.info( "On {}s {}. move: {} {}->{} with actions {}",
-                    getTeam( from ),
-                    this.moveNumber,
-                    getType( from ),
-                    from.getPos(),
-                    to.getPos(),
-                    actions );
-        }
+        log( "On {}s {}. move: {} {}->{} with actions {}",
+                getTeam( from ),
+                this.moveNumber,
+                getType( from ),
+                from.getPos(),
+                to.getPos(),
+                actions );
         this.history.add( new Move(
                 this.moveNumber,
                 actions,
@@ -144,6 +166,52 @@ public class Game {
                 from.getPos(),
                 to.getPos()
         ) );
+    }
+
+    public boolean isCheckFor( TeamColor team ) {
+
+        Game sandbox = this.clone( "isCheck" );
+        final Piece king = sandbox.getTeam( team ).getKing();
+        if ( !king.isAlive() ) {
+            return false;
+        }
+        final Position kingPos = sandbox.getPosition( king );
+        List<Piece> enemies = sandbox.getTeam( getEnemy( team ) ).getAlive();
+
+        for ( Piece enemy : enemies ) {
+            Position enemyPos = sandbox.getPosition( enemy );
+            if ( enemyPos != null && sandbox.makeMove( enemyPos.getPos(), kingPos.getPos(), true ) ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean hasLegalMovesLeft( TeamColor color ) {
+
+        Game sandbox = this.clone( "legalMoves" );
+        sandbox.getRuleValidator().setRulesActiveState( false, RuleType.TEAM_IS_NOT_ON_MOVE );
+
+        int movesLeft = 0;
+
+        Log.info( "Rules: {}", sandbox.getRuleValidator().getRules().stream().map( Rule::getType ).collect( Collectors.toList() ) );
+
+        for ( Position p : sandbox.getAllAlivePositionsOf( color ) ) {
+            int pieceMovesLeft = sandbox.getRuleValidator().legalMovesLeft( p );
+            //log( "Legal moves for {}: {}", p.getPieceId(), pieceMovesLeft );
+            movesLeft += pieceMovesLeft;
+        }
+
+        return movesLeft > 0;
+    }
+
+    public boolean isCheckmateFor( TeamColor color ) {
+        return !hasLegalMovesLeft( color ) && isCheckFor( color );
+    }
+
+    public boolean isStalemateFor( TeamColor color ) {
+        return !hasLegalMovesLeft( color ) && !isCheckFor( color );
     }
 
     public boolean isFinished() {
@@ -163,6 +231,16 @@ public class Game {
 
     public boolean isOnMove( TeamColor color ) {
         return this.onMove.equals( color );
+    }
+
+    public List<Position> getAllAlivePositionsOf( TeamColor color ) {
+        Team team = getTeam( color );
+        if ( team == null ) {
+            return Collections.emptyList();
+        }
+        return team.getAlive().stream()
+                .map( piece -> this.getPosition( piece ) )
+                .collect( Collectors.toList() );
     }
 
     public List<Vector2I> getPositionsOfDir( Position fromPos, Vector2I dir, int distance, boolean includeEnemyContact ) {
@@ -221,6 +299,14 @@ public class Game {
         return piece.getTeam();
     }
 
+    public TeamColor getEnemy( Position position ) {
+        return TeamColor.getEnemy( getTeam( position ) );
+    }
+
+    public TeamColor getEnemy( TeamColor color ) {
+        return TeamColor.getEnemy( color );
+    }
+
     public boolean areEnemies( Position positionA, Position positionB ) {
         Piece pieceA = getPiece( positionA );
         Piece pieceB = getPiece( positionB );
@@ -242,43 +328,16 @@ public class Game {
         return team.getById( id );
     }
 
+    public Position getPosition( Piece piece ) {
+        return this.board.getPosition( piece );
+    }
+
     public Team getTeam( String id ) {
         return id.startsWith( "W" ) ? this.white : this.black;
     }
 
     public Team getTeam( TeamColor color ) {
         return color.equals( TeamColor.WHITE ) ? this.white : this.black;
-    }
-
-    public boolean isCheckFor( TeamColor team ) {
-        Piece king = getTeam( team ).getKing();
-        Position kingPos = this.board.getPosition( king );
-        List<Piece> enemies = getTeam( TeamColor.getEnemy( team ) ).getAlive();
-        for ( Piece enemy : enemies ) {
-            Position enemyPos = this.board.getPosition( enemy );
-            if ( enemyPos != null ) {
-                boolean isLegal = this.makeMove( enemyPos.getPos(), kingPos.getPos(), true );
-                if ( isLegal ) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public void checkCheckmate( TeamColor team ) {
-        if ( isFinished() ) {
-            return;
-        }
-        Piece king = getTeam( team ).getKing();
-        Position kingPos = this.board.getPosition( king );
-        Game sandbox = clone();
-        if ( kingPos != null && sandbox.isCheckFor( team ) ) {
-            int movesLeft = sandbox.getRuleValidator().legalMovesLeft( kingPos );
-            if ( movesLeft == 0 ) {
-                this.state = team.equals( TeamColor.WHITE ) ? GameState.BLACK_WON : GameState.WHITE_WON;
-            }
-        }
     }
 
     public void checkTie( TeamColor teamColor ) {
@@ -313,40 +372,41 @@ public class Game {
         return this.board.getPosition( p );
     }
 
-    public Board loadPlacements() {
+    private void setBoard() {
         List<String> placementLine = ResourceLoader.getTextFile( DEFAULT_PIECE_PLACEMENT_PATH );
         if ( placementLine.isEmpty() ) {
             throw new IllegalArgumentException();
         }
         // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
-        //Map<Vector2I, Piece> placements = FenNotation.readPlacement( placementLine.get( 0 ) );
-        Map<Vector2I, Piece> placements = FenNotation.readPlacement( "rnbqk2r/pppppppp/8/8/8/8/8/7K" );
+        Map<Vector2I, Piece> placements = FenNotation.readPlacement( placementLine.get( 0 ) );
+        //Map<Vector2I, Piece> placements = FenNotation.readPlacement( "rnbqk2r/pppppppp/8/8/8/8/8/7K" );
 
-        Board board = new Board( FenNotation.readBoardSize( placementLine.get( 0 ) ) );
+        setBoard( placements, FenNotation.readBoardSize( placementLine.get( 0 ) ) );
+    }
+
+    public void setBoard( Map<Vector2I, Piece> placements, int boardSize ) {
+        this.white = new Team( TeamColor.WHITE );
+        this.black = new Team( TeamColor.BLACK );
+        Board board = new Board( boardSize );
         for ( Map.Entry<Vector2I, Piece> placement : placements.entrySet() ) {
             Piece piece = placement.getValue();
             Team team = piece.isTeam( TeamColor.WHITE ) ? this.white : this.black;
             String id = team.registerPiece( piece );
             board.getPosition( placement.getKey() ).setPieceId( id );
         }
-
-        return board;
+        this.board = board;
     }
 
     public int getBoardSize() {
         return this.board.getSize();
     }
 
-    public static Game createGame( List<Move> history ) {
-        Game game = new Game();
-        for ( Move move : history ) {
-            game.makeMove( move.getFrom(), move.getTo() );
-        }
-        return game;
+    public List<Position> getPositions() {
+        return this.board.getPositions();
     }
 
-    public Game clone() {
-        Game game = new Game();
+    public Game clone( String tag ) {
+        Game game = new Game( this.id + "::" + tag );
         game.setAll( this );
         return game;
     }
@@ -359,7 +419,16 @@ public class Game {
         this.state = game.getState();
         this.moveNumber = game.getMoveNumber();
         this.history = new ArrayList<>( game.getHistory() );
-        this.ruleValidator = game.getRuleValidator();
+        this.ruleValidator = game.getRuleValidator().clone( this );
+    }
+
+    public void log( String pattern, Object... arguments ) {
+        if ( this.canLog ) {
+            pattern += " ({})";
+            List<Object> argumentList = new ArrayList<>( Arrays.asList( arguments ) );
+            argumentList.add( this.id );
+            Log.info( pattern, argumentList.toArray() );
+        }
     }
 
 }
