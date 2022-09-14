@@ -9,5 +9,6 @@ public enum ActionType {
     CASTLE_KING,
     CASTLE_QUEEN,
     CHECK,
-    CHECKMATE
+    CHECKMATE,
+    STALEMATE
 }

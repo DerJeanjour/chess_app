@@ -1,8 +1,11 @@
 package core.notation;
 
 import backend.Game;
+import core.exception.NotationParsingException;
 import core.model.Move;
 import core.model.Piece;
+import core.model.Position;
+import core.model.Team;
 import core.values.ActionType;
 import core.values.PieceType;
 import core.values.TeamColor;
@@ -10,8 +13,10 @@ import math.Vector2I;
 import util.StringUtil;
 
 import java.text.MessageFormat;
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Validate with: https://www.dcode.fr/san-chess-notation
@@ -34,30 +39,99 @@ public class AlgebraicNotation implements ChessNotation {
             ActionType.CASTLE_KING, "0-0",
             ActionType.CASTLE_QUEEN, "0-0-0",
             ActionType.CHECK, "+",
-            ActionType.CHECKMATE, "#" );
+            ActionType.CHECKMATE, "#",
+            ActionType.STALEMATE, " 1/2-1/2" );
 
     @Override
     public Game read( String notation ) {
         Game game = new Game( "main" );
         String[] moves = notation.split( " " );
         for ( String moveNotation : moves ) {
-            Move move = readMove( game, moveNotation );
-            game.makeMove( move.getFrom(), move.getTo() );
+            Vector2I[] move = readMove( game, moveNotation );
+            game.makeMove( move[0], move[1] );
         }
         return game;
     }
 
-    public Move readMove( Game game, String moveNotation ) {
+    public static Vector2I[] readMove( Game game, String moveNotation ) {
+        if ( StringUtil.isBlank( moveNotation ) ) {
+            throw new NotationParsingException( "Notation is empty!" );
+        }
         moveNotation = moveNotation.trim();
-        // TODO
-        return null;
+        char[] moveElements = moveNotation.toCharArray();
+
+        PieceType pieceType = PieceType.PAWN;
+        Integer toCol = null;
+        Integer toRow = null;
+
+        for ( final char m : moveElements ) {
+            if ( Character.isUpperCase( m ) ) {
+                PieceType pieceTypeTemp = getKeys( pieceCodes, String.valueOf( m ) ).findFirst().orElse( null );
+                if ( pieceTypeTemp != null ) {
+                    pieceType = pieceTypeTemp;
+                }
+            }
+            if ( Character.isLowerCase( m ) ) {
+                toCol = getCol( m );
+            }
+            if ( Character.isDigit( m ) ) {
+                toRow = getRow( Character.getNumericValue( m ) );
+            }
+        }
+
+        if ( pieceType == null || toCol == null || toRow == null ) {
+            throw new NotationParsingException( "No piece or target defined... ({})", moveNotation );
+        }
+
+        Vector2I to = new Vector2I( toCol, toRow );
+
+        Team onMove = game.getTeam( game.getOnMove() );
+        List<Piece> pieces = onMove.getPiecesByType( pieceType );
+        Piece piece = null;
+        if ( pieces.size() == 1 ) {
+            piece = pieces.get( 0 );
+        } else {
+            for ( Piece p : pieces ) {
+                Position pPos = game.getPosition( p );
+                // TODO Check ambiguity
+                if ( pPos != null && game.makeMove( pPos.getPos(), to, true ) ) {
+                    piece = p;
+                }
+            }
+        }
+        if ( piece == null ) {
+            throw new NotationParsingException( "No piece found for move... ({})", moveNotation );
+        }
+        Position fromPos = game.getPosition( piece );
+        if ( fromPos == null ) {
+            throw new NotationParsingException( "No position found for piece {}... ({})", piece.getId(), moveNotation );
+        }
+
+        return new Vector2I[]{ fromPos.getPos(), to };
+    }
+
+    public static int getRow( int rowCode ) {
+        return rowCode - 1;
+    }
+
+    public static int getCol( char colCode ) {
+        return colCode - 'a';
+    }
+
+    private static <K, V> Stream<K> getKeys( Map<K, V> map, V value ) {
+        return map.entrySet()
+                .stream()
+                .filter( entry -> value.equals( entry.getValue() ) )
+                .map( Map.Entry::getKey );
     }
 
     @Override
-    public String write( Game game ) {
+    public String write( List<Move> history ) {
         String notation = "";
-        for ( Move move : game.getHistory() ) {
+        Game game = new Game( "write", false );
+        for ( Move move : history ) {
             notation += writeCode( game, move );
+            game.makeMove( move.getFrom(), move.getTo() );
         }
         return notation;
     }
@@ -102,6 +176,7 @@ public class AlgebraicNotation implements ChessNotation {
                     }
                     break;
                 case CHECKMATE:
+                case STALEMATE:
                     actionCodeCheck = actionCodes.get( actionType );
                     break;
             }
@@ -112,8 +187,9 @@ public class AlgebraicNotation implements ChessNotation {
                 && ( move.getActions().contains( ActionType.CAPTURE ) || move.getActions().contains( ActionType.AU_PASSANT ) ) ) {
             pieceCode = getColCode( move.getFrom() );
         }
-
-        pieceCode += handleAmbiguity( game, move );
+        if ( !PieceType.PAWN.equals( move.getPiece() ) ) {
+            pieceCode += handleAmbiguity( game, move );
+        }
 
         return MessageFormat.format( pattern,
                 moveNumber,
@@ -125,16 +201,46 @@ public class AlgebraicNotation implements ChessNotation {
         );
     }
 
+    /**
+     * https://chess.stackexchange.com/a/1819
+     * 1. check if piece move is ambiguous
+     * 2. check if piece is distinguishable by column
+     * 3. check if piece is distinguishable by row
+     * 4. use row/column
+     */
     private static String handleAmbiguity( Game game, Move move ) {
-        if ( !EnumSet.of( PieceType.BISHOP, PieceType.ROOK, PieceType.KNIGHT ).contains( move.getPiece() ) ) {
+
+        Team onMove = game.getTeam( move.getTeam() );
+        List<Piece> pieces = onMove.getPiecesByType( move.getPiece(), true );
+
+        if ( pieces.size() == 1 ) {
             return "";
         }
-        // TODO https://chess.stackexchange.com/a/1819
-        // 1. check if piece move is ambiguous
-        // 2. check if piece is distinguishable by column
-        // 3. check if piece is distinguishable by row
-        // 4. use row/column
-        return "";
+
+
+        List<Vector2I> ambiguousPositions = new ArrayList<>();
+        for ( Piece piece : pieces ) {
+            Position piecePos = game.getPosition( piece );
+            if ( !piecePos.getPos().equals( move.getFrom() ) && game.makeMove( piecePos.getPos(), move.getTo(), true ) ) {
+                ambiguousPositions.add( piecePos.getPos() );
+            }
+        }
+
+        if ( ambiguousPositions.size() == 0 ) {
+            return "";
+        }
+
+        // check col
+        if ( !ambiguousPositions.stream().filter( v -> v.x == move.getFrom().x ).findFirst().isPresent() ) {
+            return getColCode( move.getFrom() );
+        }
+
+        // check row
+        if ( !ambiguousPositions.stream().filter( v -> v.y == move.getFrom().y ).findFirst().isPresent() ) {
+            return getRowCode( move.getFrom() );
+        }
+
+        return getPosCode( move.getFrom() );
     }
 
     public static String getPosCode( Vector2I p ) {

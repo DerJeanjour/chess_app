@@ -53,6 +53,10 @@ public class Team {
         return getAll().stream().filter( p -> p.isType( type ) ).collect( Collectors.toList() );
     }
 
+    public List<Piece> getPiecesByType( PieceType type, boolean alive ) {
+        return getPiecesByType( type ).stream().filter( p -> p.isAlive() == alive ).collect( Collectors.toList() );
+    }
+
     public Team clone() {
         Team team = new Team( this.color );
         Map<String, Piece> pieces = new HashMap<>();

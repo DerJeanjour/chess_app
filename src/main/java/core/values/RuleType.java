@@ -20,14 +20,18 @@ public enum RuleType {
     CASTLING_QUEEN_SIDE( true, 0 ),
     CASTLING_KING_SIDE( true, 0 ),
 
-    IS_CHECK( true, 1 ),
-    KING_WOULD_BE_IN_CHECK( false, 1 );
+    KING_WOULD_BE_IN_CHECK( false, 1 ),
+
+    IS_CHECK( true, 2 ),
+    IS_CHECKMATE( true, 2 ),
+    IS_STALEMATE( true, 2 ),
+    ;
 
     public final boolean legal;
 
     public final int order;
 
-    public static final int MAX_ORDER = 1;
+    public static final int MAX_ORDER = 2;
 
     RuleType( boolean legal, int order ) {
         this.legal = legal;

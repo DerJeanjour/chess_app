@@ -29,10 +29,13 @@ public class GameView {
             ActionType.CAPTURE, Color.RED,
             ActionType.AU_PASSANT, Color.RED,
             ActionType.CASTLE_QUEEN, Color.GREEN,
-            ActionType.CASTLE_KING, Color.GREEN
+            ActionType.CASTLE_KING, Color.GREEN,
+            ActionType.CHECK, Color.RED
     );
 
     private final Game game;
+
+    private String history;
 
     private final int boardSize;
 
@@ -56,13 +59,22 @@ public class GameView {
 
     private JTextField gameStateInfo;
 
-    private Position selectedPos;
+    private Position dragFromPos;
+
+    private Position dragFromPosTemp;
+
+    private Position dragToPos;
+
+    private boolean showMovePreview;
+
+    private boolean onDrag;
 
     private Map<Vector2I, ValidatedPosition> validation;
 
     public GameView( Game game, int boardSize, int windowW, int windowH ) {
 
         this.game = game;
+        this.history = "";
         this.boardSize = boardSize;
 
         this.windowW = windowW;
@@ -71,6 +83,11 @@ public class GameView {
         this.xOff = ( windowW - boardSize ) / 2;
         this.yOff = ( windowH - boardSize ) / 2;
 
+        this.dragFromPos = null;
+        this.dragFromPosTemp = null;
+        this.dragToPos = null;
+        this.onDrag = false;
+        this.showMovePreview = false;
         this.validation = new HashMap<>();
         this.sprites = new SpriteProvider();
         this.sprites.reload( this.posSize );
@@ -104,20 +121,28 @@ public class GameView {
 
             @Override
             public void mousePressed( MouseEvent e ) {
-                selectedPos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
-                if ( selectedPos != null ) {
-                    validation.putAll( game.getRuleValidator().validate( selectedPos ) );
+                dragFromPosTemp = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
+                if ( dragFromPosTemp != null ) {
+                    if ( showMovePreview ) {
+                        validation.putAll( game.getRuleValidator().validate( dragFromPosTemp ) );
+                    }
+                    onDrag = true;
                 }
             }
 
             @Override
             public void mouseReleased( MouseEvent e ) {
-                Position pos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
-                if ( selectedPos != null && pos != null ) {
-                    game.makeMove( selectedPos.getPos(), pos.getPos() );
+                Position dragToPosTemp = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
+                if ( dragFromPosTemp != null && dragToPosTemp != null ) {
+                    if ( game.makeMove( dragFromPosTemp.getPos(), dragToPosTemp.getPos() ) ) {
+                        dragFromPos = dragFromPosTemp;
+                        dragToPos = dragToPosTemp;
+                    }
                 }
-                selectedPos = null;
+                dragFromPosTemp = null;
                 validation.clear();
+                onDrag = false;
+                history = chessNotation.write( game.getHistory() );
             }
         } );
 
@@ -150,13 +175,24 @@ public class GameView {
         copyHistoryButton.addActionListener( e -> IOUtil.copyToClipboard( moveInfo.getText() ) );
         infoPanel.add( copyHistoryButton );
 
-        JButton backButton = new JButton( "Go back" );
+        JButton backButton = new JButton( "Go Back" );
         backButton.addActionListener( e -> game.goBack() );
         infoPanel.add( backButton );
 
         JButton resetButton = new JButton( "Reset" );
-        resetButton.addActionListener( e -> game.reset() );
+        resetButton.addActionListener( e -> {
+            game.reset();
+            this.validation.clear();
+            this.dragFromPos = null;
+            this.dragToPos = null;
+            this.onDrag = false;
+            this.history = "";
+        } );
         infoPanel.add( resetButton );
+
+        JCheckBox movePreviewButton = new JCheckBox( "Move Preview" );
+        movePreviewButton.addActionListener( e -> showMovePreview = movePreviewButton.isSelected() );
+        infoPanel.add( movePreviewButton );
 
         this.gameStateInfo = new JTextField();
         this.gameStateInfo.setEditable( false );
@@ -200,10 +236,26 @@ public class GameView {
                     Vector2I p = positionToPixel( i, j );
                     Vector2I pos = new Vector2I( i, game.getBoardSize() - 1 - j );
 
-                    boolean hasPossibleAction = RuleValidator.isLegal( validation, pos );
+
                     Color posColor = ( i + j ) % 2 != 0 ? Color.DARK_GREY : Color.LIGHT_GREY;
 
-                    if ( hasPossibleAction ) {
+                    // draw temp from pos
+                    if ( onDrag && dragFromPosTemp != null && pos.equals( dragFromPosTemp.getPos() ) ) {
+                        posColor = posColor.blend( new Color( Color.BLUE, 0.2f ) );
+                    }
+
+                    // draw from pos
+                    if ( !onDrag && dragFromPos != null && pos.equals( dragFromPos.getPos() ) ) {
+                        posColor = posColor.blend( new Color( Color.BLUE, 0.2f ) );
+                    }
+
+                    // draw to pos
+                    if ( !onDrag && dragToPos != null && pos.equals( dragToPos.getPos() ) ) {
+                        posColor = posColor.blend( new Color( Color.GREEN, 0.2f ) );
+                    }
+
+                    // draw move preview
+                    if ( showMovePreview && RuleValidator.isLegal( validation, pos ) ) {
 
                         Color actionColor = new Color( Color.BLACK, 0f );
 
@@ -219,11 +271,11 @@ public class GameView {
                             actionColor = new Color( actionColors.get( ActionType.AU_PASSANT ), 0.2f );
                         }
 
-                        posColor = posColor.blend( actionColor );
-                    }
+                        if ( RuleValidator.hasAction( validation, pos, ActionType.CHECK ) ) {
+                            actionColor = new Color( actionColors.get( ActionType.CHECK ), 0.2f );
+                        }
 
-                    if ( selectedPos != null && pos.equals( selectedPos.getPos() ) ) {
-                        posColor = posColor.blend( new Color( Color.BLUE, 0.2f ) );
+                        posColor = posColor.blend( actionColor );
                     }
 
                     g.setColor( new java.awt.Color( posColor.getInt() ) );
@@ -253,18 +305,18 @@ public class GameView {
                     Vector2I p = positionToPixel( i, j );
                     Position pos = game.getBoard().getPosition( i, game.getBoardSize() - 1 - j );
 
-                    if ( selectedPos == null || !selectedPos.getPos().equals( pos.getPos() ) ) {
+                    if ( !onDrag || !dragFromPosTemp.getPos().equals( pos.getPos() ) ) {
                         drawPiece( g, p, pos );
                     }
                 }
             }
 
             // Draw Dragged Piece
-            if ( selectedPos != null && this.getMousePosition() != null ) {
+            if ( onDrag && dragFromPosTemp != null && this.getMousePosition() != null ) {
                 Point p = this.getMousePosition();
                 int x = p.x - ( posSize / 2 );
                 int y = p.y - ( posSize / 2 );
-                drawPiece( g, new Vector2I( x, y ), selectedPos );
+                drawPiece( g, new Vector2I( x, y ), dragFromPosTemp );
             }
 
             // Draw Grid Outlines
@@ -273,7 +325,7 @@ public class GameView {
             g.drawRect( p.x, p.y, boardSize, boardSize );
 
             // Set info texts
-            moveInfo.setText( chessNotation.write( game ) );
+            moveInfo.setText( history );
             gameStateInfo.setText( game.getState().name() );
 
             repaint();

@@ -1,6 +1,7 @@
 package core.notation;
 
 import backend.Game;
+import core.model.Move;
 import core.model.Piece;
 import core.values.PieceType;
 import core.values.TeamColor;
@@ -8,6 +9,7 @@ import math.Vector2I;
 import util.StringUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FenNotation implements ChessNotation {
@@ -26,7 +28,7 @@ public class FenNotation implements ChessNotation {
     }
 
     @Override
-    public String write( Game model ) {
+    public String write( List<Move> history ) {
         return null;
     }
 

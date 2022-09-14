@@ -73,7 +73,13 @@ public class RuleValidator {
                 this.rules.add( new KingWouldBeInCheck() );
                 break;
             case IS_CHECK:
-                //this.rules.add( new IsCheckRule() );
+                this.rules.add( new IsCheckRule() );
+                break;
+            case IS_CHECKMATE:
+                this.rules.add( new IsCheckmateRule() );
+                break;
+            case IS_STALEMATE:
+                this.rules.add( new IsStalemateRule() );
                 break;
         }
     }
@@ -105,6 +111,7 @@ public class RuleValidator {
         for ( int i = 0; i <= RuleType.MAX_ORDER; i++ ) {
 
             if ( validatedPosition.isLegal() ) {
+
                 for ( Rule rule : this.getRulesbyOrder( i ) ) {
                     if ( rule.isActive() && rule.validate( this.game, from, to ) ) {
                         validatedPosition.getActions().addAll( rule.getTags() );
@@ -169,7 +176,7 @@ public class RuleValidator {
                 .findAny().isPresent();
     }
 
-    public Rule getRule(RuleType type) {
+    public Rule getRule( RuleType type ) {
         return this.rules.stream()
                 .filter( rule -> rule.getType().equals( type ) )
                 .findFirst().orElse( null );
@@ -183,20 +190,32 @@ public class RuleValidator {
         this.rules.forEach( rule -> rule.setActive( false ) );
     }
 
+    public void setRulesActiveStateByOrders( boolean active, int... orders ) {
+        for ( int order : orders ) {
+            List<Rule> rules = getRulesbyOrder( order );
+            rules.forEach( rule -> rule.setActive( active ) );
+        }
+    }
+
     public void setRulesActiveState( boolean active, RuleType... types ) {
-        for( RuleType type : types ) {
-            Rule rule = getRule( type );
-            if(rule != null) {
-                rule.setActive( active );
-            }
+        for ( RuleType type : types ) {
+            setRuleActiveState( type, active );
         }
     }
 
     public void setRuleActiveState( RuleType type, boolean active ) {
         Rule rule = getRule( type );
-        if(rule != null) {
+        if ( rule != null ) {
             rule.setActive( active );
         }
+    }
+
+    public List<Rule> getActiveRules() {
+        return this.rules.stream().filter( r -> r.isActive() ).collect( Collectors.toList() );
+    }
+
+    public List<RuleType> getActiveRuleTypes() {
+        return getActiveRules().stream().map( Rule::getType ).collect( Collectors.toList() );
     }
 
     public RuleValidator clone( Game game ) {
@@ -204,14 +223,11 @@ public class RuleValidator {
                 game,
                 getRules().stream()
                         .map( Rule::getType )
-                        .collect( Collectors.toList())
+                        .collect( Collectors.toList() )
         );
-        /*
-        for( Rule rule : this.rules ) {
+        for ( Rule rule : this.rules ) {
             ruleValidator.setRuleActiveState( rule.getType(), rule.isActive() );
         }
-
-         */
         return ruleValidator;
     }
 

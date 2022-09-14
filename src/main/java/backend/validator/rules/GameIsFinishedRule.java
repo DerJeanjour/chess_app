@@ -3,7 +3,6 @@ package backend.validator.rules;
 import backend.Game;
 import backend.validator.Rule;
 import core.model.Position;
-import core.model.Team;
 import core.values.ActionType;
 import core.values.RuleType;
 

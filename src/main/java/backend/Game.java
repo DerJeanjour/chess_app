@@ -1,6 +1,5 @@
 package backend;
 
-import backend.validator.Rule;
 import backend.validator.RuleValidator;
 import backend.validator.ValidatedPosition;
 import core.exception.IllegalMoveException;
@@ -12,7 +11,6 @@ import core.values.PieceType;
 import core.values.RuleType;
 import core.values.TeamColor;
 import lombok.Getter;
-import lombok.Setter;
 import math.Vector2I;
 import misc.Log;
 import util.ResourceLoader;
@@ -48,7 +46,6 @@ public class Game {
     @Getter
     private List<Move> history;
 
-    @Setter
     @Getter
     private RuleValidator ruleValidator;
 
@@ -84,7 +81,7 @@ public class Game {
         }
         AlgebraicNotation processor = new AlgebraicNotation();
         this.history.remove( this.history.size() - 1 );
-        String notation = processor.write( this );
+        String notation = processor.write( this.history );
         Game game = processor.read( notation );
         this.board = game.getBoard();
         this.white = game.getWhite();
@@ -127,13 +124,7 @@ public class Game {
 
                 this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
 
-                if ( !simulate ) {
-                    TeamColor enemy = TeamColor.getEnemy( this.onMove );
-                    this.log( "is check for team {}: {}", enemy, isCheckFor( enemy ) );
-                    this.log( "is checkmate for team {}: {}", enemy, isCheckmateFor( enemy ) );
-                    this.log( "is stalemate for team {}: {}", enemy, isStalemateFor( enemy ) );
-                }
-
+                checkFinished( validatedPosition.getActions() );
                 incrementMove();
 
                 if ( simulate ) {
@@ -171,6 +162,7 @@ public class Game {
     public boolean isCheckFor( TeamColor team ) {
 
         Game sandbox = this.clone( "isCheck" );
+        sandbox.getRuleValidator().setRulesActiveState( false, RuleType.TEAM_IS_NOT_ON_MOVE, RuleType.GAME_IS_FINISHED );
         final Piece king = sandbox.getTeam( team ).getKing();
         if ( !king.isAlive() ) {
             return false;
@@ -191,15 +183,12 @@ public class Game {
     public boolean hasLegalMovesLeft( TeamColor color ) {
 
         Game sandbox = this.clone( "legalMoves" );
-        sandbox.getRuleValidator().setRulesActiveState( false, RuleType.TEAM_IS_NOT_ON_MOVE );
+        sandbox.getRuleValidator().setRulesActiveState( false, RuleType.TEAM_IS_NOT_ON_MOVE, RuleType.GAME_IS_FINISHED );
 
         int movesLeft = 0;
 
-        Log.info( "Rules: {}", sandbox.getRuleValidator().getRules().stream().map( Rule::getType ).collect( Collectors.toList() ) );
-
         for ( Position p : sandbox.getAllAlivePositionsOf( color ) ) {
             int pieceMovesLeft = sandbox.getRuleValidator().legalMovesLeft( p );
-            //log( "Legal moves for {}: {}", p.getPieceId(), pieceMovesLeft );
             movesLeft += pieceMovesLeft;
         }
 
@@ -207,11 +196,33 @@ public class Game {
     }
 
     public boolean isCheckmateFor( TeamColor color ) {
-        return !hasLegalMovesLeft( color ) && isCheckFor( color );
+        return isCheckFor( color ) && !hasLegalMovesLeft( color );
     }
 
     public boolean isStalemateFor( TeamColor color ) {
-        return !hasLegalMovesLeft( color ) && !isCheckFor( color );
+
+        // check if each team only has their kings left
+        Team white = this.getTeam( TeamColor.WHITE );
+        Team black = this.getTeam( TeamColor.BLACK );
+        if ( white.getAlive().size() == 1 && black.getAlive().size() == 1 ) {
+            return true;
+        }
+
+        return !isCheckFor( color ) && !hasLegalMovesLeft( color );
+    }
+
+    private void checkFinished( Set<ActionType> actions ) {
+
+        if ( actions.contains( ActionType.CHECKMATE ) ) {
+            this.state = isOnMove( TeamColor.WHITE )
+                    ? GameState.WHITE_WON
+                    : GameState.BLACK_WON;
+        }
+
+        if ( actions.contains( ActionType.STALEMATE ) ) {
+            this.state = GameState.TIE;
+        }
+
     }
 
     public boolean isFinished() {
@@ -328,6 +339,14 @@ public class Game {
         return team.getById( id );
     }
 
+    public boolean hasPieceOfType( Position p, PieceType type ) {
+        Piece piece = getPiece( p );
+        if ( piece != null ) {
+            return piece.getType().equals( type );
+        }
+        return false;
+    }
+
     public Position getPosition( Piece piece ) {
         return this.board.getPosition( piece );
     }
@@ -338,30 +357,6 @@ public class Game {
 
     public Team getTeam( TeamColor color ) {
         return color.equals( TeamColor.WHITE ) ? this.white : this.black;
-    }
-
-    public void checkTie( TeamColor teamColor ) {
-        // FIXME !
-        // TODO maybe merge with checkmate check ????
-        /*
-        if ( isFinished() ) {
-            return;
-        }
-        Team team = getTeam( teamColor );
-        if( team.getAlive().size() > 1 ) {
-            return;
-        }
-        Piece king = getTeam( teamColor ).getKing();
-        Position kingPos = this.board.getPosition( king );
-        Game sandbox = clone();
-        if ( kingPos != null ) {
-            int movesLeft = sandbox.getRuleValidator().legalMovesLeft( kingPos );
-            if ( movesLeft == 0 ) {
-                this.state = GameState.TIE;
-            }
-        }
-
-         */
     }
 
     public int getMaxDistance() {
@@ -380,6 +375,7 @@ public class Game {
         // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
         Map<Vector2I, Piece> placements = FenNotation.readPlacement( placementLine.get( 0 ) );
         //Map<Vector2I, Piece> placements = FenNotation.readPlacement( "rnbqk2r/pppppppp/8/8/8/8/8/7K" );
+        //Map<Vector2I, Piece> placements = FenNotation.readPlacement( "k7/6RQ/8/8/8/8/8/7K" );
 
         setBoard( placements, FenNotation.readBoardSize( placementLine.get( 0 ) ) );
     }
