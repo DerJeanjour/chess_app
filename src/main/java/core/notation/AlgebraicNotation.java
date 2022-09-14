@@ -10,6 +10,7 @@ import core.values.ActionType;
 import core.values.PieceType;
 import core.values.TeamColor;
 import math.Vector2I;
+import misc.Log;
 import util.CollectionUtil;
 import util.StringUtil;
 
@@ -59,7 +60,32 @@ public class AlgebraicNotation implements ChessNotation {
         if ( StringUtil.isBlank( moveNotation ) ) {
             throw new NotationParsingException( "Notation is empty!" );
         }
+
+        // cleanup
         moveNotation = moveNotation.trim();
+        if(moveNotation.contains( "." )) {
+            moveNotation = moveNotation.substring( moveNotation.indexOf( '.' )+1, moveNotation.length() );
+        }
+        if( moveNotation.contains( actionCodes.get( ActionType.PROMOTING_QUEEN ) ) ) {
+            moveNotation = moveNotation.replace( actionCodes.get( ActionType.PROMOTING_QUEEN ), "" );
+        }
+
+        Log.info( "Parsing move {} ...", moveNotation );
+
+        // special cases
+        if( moveNotation.equals( actionCodes.get( ActionType.CASTLE_KING ) ) ) {
+            Team onMove = game.getTeam( game.getOnMove() );
+            Position kingPos = game.getPosition( onMove.getKing() );
+            return new Vector2I[] { kingPos.getPos(), kingPos.getPos().add( new Vector2I(2, 0 ) ) };
+        }
+
+        if( moveNotation.equals( actionCodes.get( ActionType.CASTLE_QUEEN ) ) ) {
+            Team onMove = game.getTeam( game.getOnMove() );
+            Position kingPos = game.getPosition( onMove.getKing() );
+            return new Vector2I[] { kingPos.getPos(), kingPos.getPos().add( new Vector2I(-2, 0 ) ) };
+        }
+
+        // general parsing
         char[] moveElements = moveNotation.toCharArray();
 
         PieceType pieceType = PieceType.PAWN;
