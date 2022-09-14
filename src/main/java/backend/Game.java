@@ -4,6 +4,8 @@ import backend.validator.RuleValidator;
 import backend.validator.ValidatedPosition;
 import core.exception.IllegalMoveException;
 import core.model.*;
+import core.notation.AlgebraicNotation;
+import core.notation.ChessNotation;
 import core.notation.FenNotation;
 import core.values.ActionType;
 import core.values.PieceType;
@@ -80,17 +82,16 @@ public class Game {
             return;
         }
         this.history.remove( this.history.size() - 1 );
-        /*
-        AlgebraicNotation processor = new AlgebraicNotation();
-        String notation = processor.write( this.history );
-        Game game = processor.read( notation );
-        this.setAll( game );
-
-         */
         Game game = new Game( this.id, this.canLog );
         for ( Move move : this.history ) {
             game.makeMove( move.getFrom(), move.getTo() );
         }
+        this.setAll( game );
+    }
+
+    public void set( String notation ) {
+        ChessNotation notationProcessor = new AlgebraicNotation();
+        Game game = notationProcessor.read( notation );
         this.setAll( game );
     }
 

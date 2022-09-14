@@ -3,6 +3,7 @@ package frontend;
 import backend.Game;
 import backend.validator.RuleValidator;
 import backend.validator.ValidatedPosition;
+import core.exception.NotationParsingException;
 import core.model.Move;
 import core.model.Piece;
 import core.model.Position;
@@ -14,13 +15,11 @@ import math.Vector2I;
 import misc.FpsTracker;
 import misc.Log;
 import util.IOUtil;
+import util.MathUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -165,7 +164,46 @@ public class GameView {
 
         this.moveInfo = new JTextArea();
         moveInfo.setPreferredSize( new Dimension( infoSizeWidth - 10, this.windowH / 2 ) );
-        moveInfo.setEditable( false );
+        moveInfo.setEditable( true );
+        moveInfo.addKeyListener( new KeyListener() {
+
+            @Override
+            public void keyTyped( KeyEvent e ) {
+
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+
+                switch ( e.getKeyCode() ) {
+                    case KeyEvent.VK_LEFT: // FIXME
+                        moveInfo.moveCaretPosition( MathUtil.clamp( 0, moveInfo.getText().length(), moveInfo.getCaretPosition() - 1 ) );
+                        break;
+                    case KeyEvent.VK_RIGHT: // FIXME
+                        moveInfo.moveCaretPosition( MathUtil.clamp( 0, moveInfo.getText().length(), moveInfo.getCaretPosition() + 1 ) );
+                        break;
+                    case KeyEvent.VK_DELETE:
+                    case KeyEvent.VK_BACK_SPACE:
+                        if ( history.length() > 0 ) {
+                            history = history.substring( 0, history.length() - 1 );
+                        }
+                        break;
+                    default:
+                        char pressed = e.getKeyChar();
+                        if ( Character.isDefined( pressed ) ) {
+                            history += pressed;
+                        }
+                        break;
+                }
+
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+
+            }
+
+        } );
         moveInfo.setLineWrap( true );
         JScrollPane moveInfoScroll = new JScrollPane( moveInfo );
         infoPanel.add( moveInfoScroll );
@@ -173,6 +211,17 @@ public class GameView {
         JButton copyHistoryButton = new JButton( "Copy" );
         copyHistoryButton.addActionListener( e -> IOUtil.copyToClipboard( moveInfo.getText() ) );
         infoPanel.add( copyHistoryButton );
+
+        JButton parseButton = new JButton( "Parse" );
+        parseButton.addActionListener( a -> {
+            try {
+                game.set( this.history );
+            } catch ( NotationParsingException e ) {
+                this.history = chessNotation.write( game.getHistory() );
+            }
+
+        } );
+        infoPanel.add( parseButton );
 
         JButton backButton = new JButton( "Go Back" );
         backButton.addActionListener( e -> {
