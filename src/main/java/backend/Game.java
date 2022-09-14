@@ -4,7 +4,6 @@ import backend.validator.RuleValidator;
 import backend.validator.ValidatedPosition;
 import core.exception.IllegalMoveException;
 import core.model.*;
-import core.notation.AlgebraicNotation;
 import core.notation.FenNotation;
 import core.values.ActionType;
 import core.values.PieceType;
@@ -80,18 +79,19 @@ public class Game {
         if ( this.history.isEmpty() ) {
             return;
         }
-        AlgebraicNotation processor = new AlgebraicNotation();
         this.history.remove( this.history.size() - 1 );
+        /*
+        AlgebraicNotation processor = new AlgebraicNotation();
         String notation = processor.write( this.history );
         Game game = processor.read( notation );
-        this.board = game.getBoard();
-        this.white = game.getWhite();
-        this.black = game.getBlack();
-        this.history = game.getHistory();
-        this.state = game.getState();
-        this.onMove = game.getOnMove();
-        this.moveNumber = game.getMoveNumber();
-        this.ruleValidator = game.getRuleValidator();
+        this.setAll( game );
+
+         */
+        Game game = new Game( this.id, this.canLog );
+        for ( Move move : this.history ) {
+            game.makeMove( move.getFrom(), move.getTo() );
+        }
+        this.setAll( game );
     }
 
     public boolean makeMove( Vector2I from, Vector2I to ) {
@@ -396,6 +396,13 @@ public class Game {
 
     public int getBoardSize() {
         return this.board.getSize();
+    }
+
+    public Move getLastMove() {
+        if ( this.history.isEmpty() ) {
+            return null;
+        }
+        return this.history.get( this.history.size() - 1 );
     }
 
     public List<Position> getPositions() {
