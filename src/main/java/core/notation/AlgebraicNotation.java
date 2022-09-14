@@ -10,10 +10,12 @@ import core.values.ActionType;
 import core.values.PieceType;
 import core.values.TeamColor;
 import math.Vector2I;
+import util.CollectionUtil;
 import util.StringUtil;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -66,7 +68,8 @@ public class AlgebraicNotation implements ChessNotation {
 
         for ( final char m : moveElements ) {
             if ( Character.isUpperCase( m ) ) {
-                PieceType pieceTypeTemp = getKeys( pieceCodes, String.valueOf( m ) ).findFirst().orElse( null );
+                PieceType pieceTypeTemp = CollectionUtil.getValueKeys( pieceCodes, String.valueOf( m ) )
+                        .findFirst().orElse( null );
                 if ( pieceTypeTemp != null ) {
                     pieceType = pieceTypeTemp;
                 }
@@ -116,13 +119,6 @@ public class AlgebraicNotation implements ChessNotation {
 
     public static int getCol( char colCode ) {
         return colCode - 'a';
-    }
-
-    private static <K, V> Stream<K> getKeys( Map<K, V> map, V value ) {
-        return map.entrySet()
-                .stream()
-                .filter( entry -> value.equals( entry.getValue() ) )
-                .map( Map.Entry::getKey );
     }
 
     @Override

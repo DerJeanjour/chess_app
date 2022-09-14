@@ -10,6 +10,7 @@ import core.notation.ChessNotation;
 import core.values.ActionType;
 import math.Color;
 import math.Vector2I;
+import misc.FpsTracker;
 import misc.Log;
 import util.IOUtil;
 
@@ -32,6 +33,8 @@ public class GameView {
             ActionType.CASTLE_KING, Color.GREEN,
             ActionType.CHECK, Color.RED
     );
+
+    private final FpsTracker fps;
 
     private final Game game;
 
@@ -57,6 +60,8 @@ public class GameView {
 
     private JTextArea moveInfo;
 
+    private JLabel fpsInfo;
+
     private JTextField gameStateInfo;
 
     private Position dragFromPos;
@@ -72,6 +77,8 @@ public class GameView {
     private Map<Vector2I, ValidatedPosition> validation;
 
     public GameView( Game game, int boardSize, int windowW, int windowH ) {
+
+        this.fps = new FpsTracker( 1000l );
 
         this.game = game;
         this.history = "";
@@ -199,6 +206,9 @@ public class GameView {
         this.gameStateInfo.setPreferredSize( new Dimension( infoSizeWidth - 10, 30 ) );
         infoPanel.add( this.gameStateInfo );
 
+        this.fpsInfo = new JLabel( fps.getPrintableFps() + "FPS" );
+        infoPanel.add( this.fpsInfo );
+
         frame.pack();
         frame.requestFocus();
         frame.setVisible( true );
@@ -221,6 +231,7 @@ public class GameView {
 
         @Override
         protected void paintComponent( Graphics g ) {
+
             super.paintComponent( g );
             Graphics2D g2d = ( Graphics2D ) g;
             g2d.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
@@ -327,6 +338,9 @@ public class GameView {
             // Set info texts
             moveInfo.setText( history );
             gameStateInfo.setText( game.getState().name() );
+
+            fps.update();
+            fpsInfo.setText( fps.getPrintableFps() + "FPS" );
 
             repaint();
 

@@ -13,6 +13,7 @@ import core.values.TeamColor;
 import lombok.Getter;
 import math.Vector2I;
 import misc.Log;
+import util.CollectionUtil;
 import util.ResourceLoader;
 
 import java.util.*;
@@ -421,7 +422,7 @@ public class Game {
     public void log( String pattern, Object... arguments ) {
         if ( this.canLog ) {
             pattern += " ({})";
-            List<Object> argumentList = new ArrayList<>( Arrays.asList( arguments ) );
+            List<Object> argumentList = CollectionUtil.toMutableList( arguments );
             argumentList.add( this.id );
             Log.info( pattern, argumentList.toArray() );
         }
