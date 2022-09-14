@@ -3,6 +3,8 @@ package frontend;
 import backend.Game;
 import backend.validator.RuleValidator;
 import backend.validator.ValidatedPosition;
+import bot.ChessBot;
+import bot.random.RandomChessBot;
 import core.exception.NotationParsingException;
 import core.model.Move;
 import core.model.Piece;
@@ -10,6 +12,7 @@ import core.model.Position;
 import core.notation.AlgebraicNotation;
 import core.notation.ChessNotation;
 import core.values.ActionType;
+import core.values.TeamColor;
 import math.Color;
 import math.Vector2I;
 import misc.FpsTracker;
@@ -135,7 +138,11 @@ public class GameView {
             public void mouseReleased( MouseEvent e ) {
                 Position pos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
                 if ( selectedPos != null && pos != null ) {
-                    game.makeMove( selectedPos.getPos(), pos.getPos() );
+                    boolean madeMove = game.makeMove( selectedPos.getPos(), pos.getPos() );
+                    if( madeMove ) {
+                        ChessBot bot = new RandomChessBot( TeamColor.BLACK );
+                        bot.makeMove( game );
+                    }
                 }
                 selectedPos = null;
                 validation.clear();
