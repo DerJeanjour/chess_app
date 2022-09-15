@@ -54,15 +54,19 @@ public class Game {
     @Getter
     private final boolean canLog;
 
+    private final List<GameListener> listeners;
+
     public Game( final String id ) {
         this.id = id;
         this.canLog = false;
+        this.listeners = new ArrayList<>();
         reset();
     }
 
     public Game( final String id, boolean canLog ) {
         this.id = id;
         this.canLog = canLog;
+        this.listeners = new ArrayList<>();
         reset();
     }
 
@@ -75,6 +79,7 @@ public class Game {
         this.moveNumber = 0;
         this.history = new ArrayList<>();
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
+        this.emitEvent();
     }
 
     public void goBack() {
@@ -99,7 +104,7 @@ public class Game {
         return makeMove( from, to, false );
     }
 
-    public boolean makeMove( Vector2I from, Vector2I to, boolean simulate ) {
+    public synchronized boolean makeMove( Vector2I from, Vector2I to, boolean simulate ) {
 
         try {
 
@@ -132,6 +137,8 @@ public class Game {
                 if ( simulate ) {
                     this.setAll( rollback );
                 }
+
+                this.emitEvent();
 
                 return true;
             }
@@ -331,7 +338,7 @@ public class Game {
 
     public Piece getPiece( Vector2I p ) {
         Position pos = getPosition( p );
-        if( pos == null ) {
+        if ( pos == null ) {
             return null;
         }
         return getPiece( pos );
@@ -418,6 +425,14 @@ public class Game {
         return this.board.getPositions();
     }
 
+    public void addListener( GameListener listener ) {
+        this.listeners.add( listener );
+    }
+
+    public void emitEvent() {
+        this.listeners.forEach( l -> l.gameUpdated( this ) );
+    }
+
     public Game clone( String tag ) {
         Game game = new Game( this.id + "::" + tag );
         game.setAll( this );
@@ -433,6 +448,7 @@ public class Game {
         this.moveNumber = game.getMoveNumber();
         this.history = new ArrayList<>( game.getHistory() );
         this.ruleValidator = game.getRuleValidator().clone( this );
+        this.emitEvent();
     }
 
     public void log( String pattern, Object... arguments ) {

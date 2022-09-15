@@ -8,10 +8,12 @@ import bot.random.RandomChessBot;
 import core.exception.NotationParsingException;
 import core.model.Move;
 import core.model.Piece;
+import core.model.Player;
 import core.model.Position;
 import core.notation.AlgebraicNotation;
 import core.notation.ChessNotation;
 import core.values.ActionType;
+import core.values.PlayerType;
 import core.values.TeamColor;
 import math.Color;
 import math.Vector2I;
@@ -40,6 +42,10 @@ public class GameView {
     private final FpsTracker fps;
 
     private final Game game;
+
+    private Player whitePlayer;
+
+    private Player blackPlayer;
 
     private String history;
 
@@ -78,8 +84,14 @@ public class GameView {
     public GameView( Game game, int boardSize, int windowW, int windowH ) {
 
         this.fps = new FpsTracker( 1000l );
+        this.fps.start();
 
         this.game = game;
+        this.whitePlayer = new Player( TeamColor.WHITE, PlayerType.HUMAN );
+        this.blackPlayer = new Player( TeamColor.BLACK, PlayerType.RANDOM_BOT );
+        this.game.addListener( this.whitePlayer );
+        this.game.addListener( this.blackPlayer );
+
         this.history = "";
         this.boardSize = boardSize;
 
@@ -97,6 +109,13 @@ public class GameView {
         this.sprites.reload( this.posSize );
         this.chessNotation = new AlgebraicNotation();
         setupFrame();
+
+        Thread whitePlayerThread = new Thread(this.whitePlayer);
+        whitePlayerThread.start();
+        Thread blackPlayerThread = new Thread(this.blackPlayer);
+        blackPlayerThread.start();
+
+        this.game.reset();
     }
 
     private void setupFrame() {
@@ -138,14 +157,10 @@ public class GameView {
             public void mouseReleased( MouseEvent e ) {
                 Position pos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
                 if ( selectedPos != null && pos != null ) {
-                    boolean madeMove = game.makeMove( selectedPos.getPos(), pos.getPos() );
-                    /*
-                    if( madeMove ) {
-                        ChessBot bot = new RandomChessBot( TeamColor.BLACK );
-                        bot.makeMove( game );
+                    Player playerOnMove = game.isOnMove( TeamColor.WHITE ) ? whitePlayer : blackPlayer;
+                    if( playerOnMove.isHuman() ) {
+                        game.makeMove( selectedPos.getPos(), pos.getPos() );
                     }
-
-                     */
                 }
                 selectedPos = null;
                 validation.clear();

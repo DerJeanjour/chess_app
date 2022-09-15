@@ -55,7 +55,7 @@ public class AlgebraicNotation implements ChessNotation {
     }
 
     public static Vector2I[] readMove( Game game, String moveNotation ) {
-        
+
         if ( StringUtil.isBlank( moveNotation ) ) {
             throw new NotationParsingException( "Notation is empty!" );
         }
@@ -314,19 +314,6 @@ public class AlgebraicNotation implements ChessNotation {
 
     public static String getColCode( Vector2I p ) {
         return Character.toString( ( char ) ( 'a' + p.x ) );
-    }
-
-
-    /* notation -> model */
-
-    public static Piece getPiece( String s ) {
-        // TODO
-        return null;
-    }
-
-    public static Vector2I getPositionVector( String s ) {
-        // TODO
-        return null;
     }
 
 }
