@@ -139,10 +139,13 @@ public class GameView {
                 Position pos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
                 if ( selectedPos != null && pos != null ) {
                     boolean madeMove = game.makeMove( selectedPos.getPos(), pos.getPos() );
+                    /*
                     if( madeMove ) {
                         ChessBot bot = new RandomChessBot( TeamColor.BLACK );
                         bot.makeMove( game );
                     }
+
+                     */
                 }
                 selectedPos = null;
                 validation.clear();

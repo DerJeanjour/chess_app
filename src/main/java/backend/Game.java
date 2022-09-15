@@ -329,6 +329,14 @@ public class Game {
         return !pieceA.isTeam( pieceB.getTeam() );
     }
 
+    public Piece getPiece( Vector2I p ) {
+        Position pos = getPosition( p );
+        if( pos == null ) {
+            return null;
+        }
+        return getPiece( pos );
+    }
+
     public Piece getPiece( Position position ) {
         if ( !position.hasPiece() ) {
             return null;
@@ -377,7 +385,7 @@ public class Game {
         // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
         Map<Vector2I, Piece> placements = FenNotation.readPlacement( placementLine.get( 0 ) );
         //Map<Vector2I, Piece> placements = FenNotation.readPlacement( "rnbqk2r/pppppppp/8/8/8/8/8/7K" );
-        //Map<Vector2I, Piece> placements = FenNotation.readPlacement( "k7/6RQ/8/8/8/8/8/7K" );
+        //Map<Vector2I, Piece> placements = FenNotation.readPlacement( "k7/8/8/7Q/8/8/4K3/3Q3Q" );
 
         setBoard( placements, FenNotation.readBoardSize( placementLine.get( 0 ) ) );
     }

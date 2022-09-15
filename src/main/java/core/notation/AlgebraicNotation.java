@@ -16,10 +16,8 @@ import util.StringUtil;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * Validate with: https://www.dcode.fr/san-chess-notation
@@ -57,38 +55,44 @@ public class AlgebraicNotation implements ChessNotation {
     }
 
     public static Vector2I[] readMove( Game game, String moveNotation ) {
+        
         if ( StringUtil.isBlank( moveNotation ) ) {
             throw new NotationParsingException( "Notation is empty!" );
         }
 
         // cleanup
         moveNotation = moveNotation.trim();
-        if(moveNotation.contains( "." )) {
-            moveNotation = moveNotation.substring( moveNotation.indexOf( '.' )+1, moveNotation.length() );
+        if ( moveNotation.contains( "." ) ) {
+            moveNotation = moveNotation.substring( moveNotation.indexOf( '.' ) + 1, moveNotation.length() );
         }
-        if( moveNotation.contains( actionCodes.get( ActionType.PROMOTING_QUEEN ) ) ) {
+        if ( moveNotation.contains( actionCodes.get( ActionType.PROMOTING_QUEEN ) ) ) {
             moveNotation = moveNotation.replace( actionCodes.get( ActionType.PROMOTING_QUEEN ), "" );
         }
 
-        Log.info( "Parsing move {} ...", moveNotation );
-
         // special cases
-        if( moveNotation.equals( actionCodes.get( ActionType.CASTLE_KING ) ) ) {
+        if ( moveNotation.equals( actionCodes.get( ActionType.CASTLE_KING ) ) ) {
             Team onMove = game.getTeam( game.getOnMove() );
             Position kingPos = game.getPosition( onMove.getKing() );
-            return new Vector2I[] { kingPos.getPos(), kingPos.getPos().add( new Vector2I(2, 0 ) ) };
+            return new Vector2I[]{ kingPos.getPos(), kingPos.getPos().add( new Vector2I( 2, 0 ) ) };
         }
 
-        if( moveNotation.equals( actionCodes.get( ActionType.CASTLE_QUEEN ) ) ) {
+        if ( moveNotation.equals( actionCodes.get( ActionType.CASTLE_QUEEN ) ) ) {
             Team onMove = game.getTeam( game.getOnMove() );
             Position kingPos = game.getPosition( onMove.getKing() );
-            return new Vector2I[] { kingPos.getPos(), kingPos.getPos().add( new Vector2I(-2, 0 ) ) };
+            return new Vector2I[]{ kingPos.getPos(), kingPos.getPos().add( new Vector2I( -2, 0 ) ) };
         }
 
         // general parsing
         char[] moveElements = moveNotation.toCharArray();
 
+        // mandatory piece notation (PAWN is default)
         PieceType pieceType = PieceType.PAWN;
+
+        // for ambiguous positions
+        Integer optionalFromCol = null;
+        Integer optionalFromRow = null;
+
+        // mandatory position vector
         Integer toCol = null;
         Integer toRow = null;
 
@@ -101,9 +105,15 @@ public class AlgebraicNotation implements ChessNotation {
                 }
             }
             if ( Character.isLowerCase( m ) ) {
+                if ( toCol != null ) {
+                    optionalFromCol = toCol;
+                }
                 toCol = getCol( m );
             }
             if ( Character.isDigit( m ) ) {
+                if ( toRow != null ) {
+                    optionalFromRow = toRow;
+                }
                 toRow = getRow( Character.getNumericValue( m ) );
             }
         }
@@ -115,18 +125,47 @@ public class AlgebraicNotation implements ChessNotation {
         Vector2I to = new Vector2I( toCol, toRow );
 
         Team onMove = game.getTeam( game.getOnMove() );
-        List<Piece> pieces = onMove.getPiecesByType( pieceType );
+        List<Piece> pieces = onMove.getPiecesByType( pieceType, true );
         Piece piece = null;
         if ( pieces.size() == 1 ) {
             piece = pieces.get( 0 );
         } else {
+
+            // get ambiguous positions with legal moves
+            List<Vector2I> ambiguousPositions = new ArrayList<>();
             for ( Piece p : pieces ) {
                 Position pPos = game.getPosition( p );
-                // TODO Check ambiguity
                 if ( pPos != null && game.makeMove( pPos.getPos(), to, true ) ) {
+                    ambiguousPositions.add( pPos.getPos() );
                     piece = p;
                 }
             }
+
+
+            if( ambiguousPositions.size() == 1 ) {
+                piece = game.getPiece( game.getPosition( ambiguousPositions.get( 0 ) ) );
+            } else {
+                // get correct move of ambiguous positions
+                if( optionalFromCol != null && optionalFromRow != null ) {
+                    piece = game.getPiece( new Vector2I( optionalFromCol, optionalFromRow ) );
+                } else {
+                    if( optionalFromCol != null ) {
+                        final int col = optionalFromCol;
+                        Vector2I target = ambiguousPositions.stream()
+                                .filter( v -> v.x == col )
+                                .findFirst().orElse( null );
+                        piece = game.getPiece( target );
+                    }
+                    if( optionalFromRow != null ) {
+                        final int row = optionalFromRow;
+                        Vector2I target = ambiguousPositions.stream()
+                                .filter( v -> v.y == row )
+                                .findFirst().orElse( null );
+                        piece = game.getPiece( target );
+                    }
+                }
+            }
+
         }
         if ( piece == null ) {
             throw new NotationParsingException( "No piece found for move... ({})", moveNotation );
