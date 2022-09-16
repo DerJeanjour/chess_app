@@ -96,7 +96,7 @@ public class RuleValidator {
     public Map<Vector2I, ValidatedPosition> validate( Position from ) {
         //Timer timer = new Timer();
         Map<Vector2I, ValidatedPosition> validation = new HashMap<>();
-        for ( Position position : this.game.getBoard().getPositions() ) {
+        for ( Position position : this.game.getBoard().getPositions().values() ) {
             validation.put( position.getPos(), validate( from, position ) );
         }
         //Log.info( "Validation time for legal moves of Position {}: {}ms", from, timer.getTimeSinceMillis() );

@@ -421,10 +421,6 @@ public class Game {
         return this.history.get( this.history.size() - 1 );
     }
 
-    public List<Position> getPositions() {
-        return this.board.getPositions();
-    }
-
     public void addListener( GameListener listener ) {
         this.listeners.add( listener );
     }

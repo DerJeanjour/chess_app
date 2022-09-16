@@ -4,9 +4,8 @@ import lombok.Data;
 import lombok.Setter;
 import math.Vector2I;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Data
@@ -15,15 +14,16 @@ public class Board {
     private final int size;
 
     @Setter
-    private List<Position> positions;
+    private Map<Vector2I, Position> positions;
 
     public Board( int size ) {
         this.size = size;
-        this.positions = new ArrayList<>();
+        this.positions = new HashMap<>();
         for ( int i = 0; i < this.size; i++ ) {
             for ( int j = 0; j < this.size; j++ ) {
+                Vector2I pos = new Vector2I( i, j );
                 Position position = new Position( new Vector2I( i, j ) );
-                this.positions.add( position );
+                this.positions.put( pos, position );
             }
         }
     }
@@ -36,20 +36,19 @@ public class Board {
         if ( piece == null ) {
             return null;
         }
-        Optional<Position> pos = this.positions.stream().filter( p -> piece.getId().equals( p.getPieceId() ) ).findFirst();
-        return pos.orElse( null );
+        return this.positions.values().stream()
+                .filter( p -> piece.getId().equals( p.getPieceId() ) )
+                .findFirst().orElse( null );
     }
 
-    public Position getPosition( int row, int col ) {
-        Optional<Position> pos = this.positions.stream().filter( p -> p.getPos().equals( new Vector2I( row, col ) ) ).findFirst();
-        return pos.orElse( null );
+    public Position getPosition( int col, int row ) {
+        return this.positions.get( new Vector2I( col, row ) );
     }
 
     public Board clone() {
         Board board = new Board( this.size );
-        board.setPositions( this.positions.stream()
-                .map( Position::clone )
-                .collect( Collectors.toList() ) );
+        board.setPositions( this.positions.entrySet().stream()
+                .collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue().clone() ) ) );
         return board;
     }
 

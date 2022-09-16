@@ -1,14 +1,13 @@
 package frontend;
 
 import backend.Game;
+import backend.GameListener;
+import backend.Player;
 import backend.validator.RuleValidator;
 import backend.validator.ValidatedPosition;
-import bot.ChessBot;
-import bot.random.RandomChessBot;
 import core.exception.NotationParsingException;
 import core.model.Move;
 import core.model.Piece;
-import core.model.Player;
 import core.model.Position;
 import core.notation.AlgebraicNotation;
 import core.notation.ChessNotation;
@@ -28,7 +27,7 @@ import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GameView {
+public class GameView implements GameListener {
 
     private static final Map<ActionType, Color> actionColors = Map.of(
             ActionType.MOVE, Color.GREEN,
@@ -87,10 +86,9 @@ public class GameView {
         this.fps.start();
 
         this.game = game;
+        this.game.addListener( this );
         this.whitePlayer = new Player( TeamColor.WHITE, PlayerType.HUMAN );
         this.blackPlayer = new Player( TeamColor.BLACK, PlayerType.RANDOM_BOT );
-        this.game.addListener( this.whitePlayer );
-        this.game.addListener( this.blackPlayer );
 
         this.history = "";
         this.boardSize = boardSize;
@@ -110,12 +108,22 @@ public class GameView {
         this.chessNotation = new AlgebraicNotation();
         setupFrame();
 
-        Thread whitePlayerThread = new Thread(this.whitePlayer);
-        whitePlayerThread.start();
-        Thread blackPlayerThread = new Thread(this.blackPlayer);
-        blackPlayerThread.start();
-
         this.game.reset();
+    }
+
+    @Override
+    public void gameUpdated( Game game ) {
+        this.history = chessNotation.write( game.getHistory() );
+        final Player onMove = this.whitePlayer.isOnMove( game )
+                ? this.whitePlayer
+                : this.blackPlayer;
+        new SwingWorker<>() {
+            @Override
+            protected Game doInBackground() {
+                onMove.makeMove( game );
+                return game;
+            }
+        }.execute();
     }
 
     private void setupFrame() {
@@ -158,14 +166,13 @@ public class GameView {
                 Position pos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
                 if ( selectedPos != null && pos != null ) {
                     Player playerOnMove = game.isOnMove( TeamColor.WHITE ) ? whitePlayer : blackPlayer;
-                    if( playerOnMove.isHuman() ) {
+                    if ( playerOnMove.isHuman() ) {
                         game.makeMove( selectedPos.getPos(), pos.getPos() );
                     }
                 }
                 selectedPos = null;
                 validation.clear();
                 onDrag = false;
-                history = chessNotation.write( game.getHistory() );
             }
         } );
 
@@ -250,23 +257,46 @@ public class GameView {
 
         JButton backButton = new JButton( "Go Back" );
         backButton.addActionListener( e -> {
-            game.goBack();
-            this.history = chessNotation.write( game.getHistory() );
+            this.game.goBack();
         } );
         infoPanel.add( backButton );
 
         JButton resetButton = new JButton( "Reset" );
         resetButton.addActionListener( e -> {
-            game.reset();
+            this.game.reset();
             this.validation.clear();
             this.onDrag = false;
-            this.history = "";
         } );
         infoPanel.add( resetButton );
 
         JCheckBox movePreviewButton = new JCheckBox( "Move Preview" );
         movePreviewButton.addActionListener( e -> showMovePreview = movePreviewButton.isSelected() );
         infoPanel.add( movePreviewButton );
+
+        JPanel whitePlayerSelectPanel = new JPanel();
+        whitePlayerSelectPanel.setLayout( new BoxLayout( whitePlayerSelectPanel, BoxLayout.LINE_AXIS ) );
+        whitePlayerSelectPanel.add( new JLabel( "White" ) );
+        whitePlayerSelectPanel.add( Box.createHorizontalGlue() );
+        JComboBox<PlayerType> whitePlayerSelect = new JComboBox<>( PlayerType.values() );
+        whitePlayerSelect.setSelectedItem( this.whitePlayer.getType() );
+        whitePlayerSelect.addActionListener( e -> {
+            this.whitePlayer = new Player( TeamColor.WHITE, ( PlayerType ) whitePlayerSelect.getSelectedItem() );
+            this.gameUpdated( this.game );
+        } );
+        whitePlayerSelectPanel.add( whitePlayerSelect );
+        infoPanel.add( whitePlayerSelectPanel );
+
+        JPanel blackPlayerSelectPanel = new JPanel();
+        blackPlayerSelectPanel.setLayout( new BoxLayout( blackPlayerSelectPanel, BoxLayout.LINE_AXIS ) );
+        blackPlayerSelectPanel.add( new JLabel( "Black" ) );
+        JComboBox<PlayerType> blackPlayerSelect = new JComboBox<>( PlayerType.values() );
+        blackPlayerSelect.setSelectedItem( this.blackPlayer.getType() );
+        blackPlayerSelect.addActionListener( e -> {
+            this.blackPlayer = new Player( TeamColor.WHITE, ( PlayerType ) blackPlayerSelect.getSelectedItem() );
+            this.gameUpdated( this.game );
+        } );
+        blackPlayerSelectPanel.add( blackPlayerSelect );
+        infoPanel.add( blackPlayerSelectPanel );
 
         this.gameStateInfo = new JTextField();
         this.gameStateInfo.setEditable( false );
