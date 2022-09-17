@@ -1,6 +1,7 @@
 package backend;
 
 import bot.ChessBot;
+import bot.ChessBotFactory;
 import bot.random.RandomChessBot;
 import core.values.PlayerType;
 import core.values.TeamColor;
@@ -24,14 +25,7 @@ public class Player {
         super();
         this.team = team;
         this.type = type;
-        switch ( type ) {
-            case RANDOM_BOT:
-                this.bot = new RandomChessBot( team );
-                break;
-            default:
-                this.bot = null;
-                break;
-        }
+        this.bot = ChessBotFactory.get( type, team );
     }
 
     public boolean isOnMove( Game game ) {

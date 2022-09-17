@@ -1,6 +1,7 @@
 package bot;
 
 import backend.Game;
+import bot.evaluator.ChessEvaluator;
 import core.values.TeamColor;
 import lombok.RequiredArgsConstructor;
 
@@ -9,13 +10,8 @@ public abstract class ChessBot {
 
     protected final TeamColor teamColor;
 
-    public abstract void makeMove( Game game );
+    protected final ChessEvaluator evaluator;
 
-    /**
-     * Evaluate game state for team
-     * @param game
-     * @return double value between -1 and 1 (positive is favor white and negative for black)
-     */
-    protected abstract float evaluate( Game game );
+    public abstract void makeMove( Game game );
 
 }

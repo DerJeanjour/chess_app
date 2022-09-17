@@ -28,7 +28,6 @@ public class PromotingRule extends Rule {
             return false;
         }
 
-
         int enemyRank = game.isTeam( from, TeamColor.WHITE ) ? game.getBoardSize() - 1 : 0;
         return to.getPos().y == enemyRank;
     }

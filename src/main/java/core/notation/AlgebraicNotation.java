@@ -16,8 +16,10 @@ import util.StringUtil;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Validate with: https://www.dcode.fr/san-chess-notation
@@ -37,21 +39,26 @@ public class AlgebraicNotation implements ChessNotation {
             ActionType.CAPTURE, "x",
             ActionType.AU_PASSANT, "x",
             ActionType.PROMOTING_QUEEN, "=Q",
-            ActionType.CASTLE_KING, "0-0",
-            ActionType.CASTLE_QUEEN, "0-0-0",
+            ActionType.CASTLE_KING, "O-O",
+            ActionType.CASTLE_QUEEN, "O-O-O",
             ActionType.CHECK, "+",
             ActionType.CHECKMATE, "#",
-            ActionType.STALEMATE, " 1/2-1/2" );
+            ActionType.STALEMATE, "1/2-1/2" );
 
     @Override
     public Game read( String notation ) {
         Game game = new Game( "main" );
-        String[] moves = notation.split( " " );
-        for ( String moveNotation : moves ) {
+        applyMoves( game, notation );
+        return game;
+    }
+
+    public static void applyMoves( Game game, String notation ) {
+        List<String> moveNotations = Arrays.asList( notation.split( " " ) );
+        moveNotations = moveNotations.stream().filter( m -> !m.endsWith( "." ) ).collect( Collectors.toList());
+        for ( String moveNotation : moveNotations ) {
             Vector2I[] move = readMove( game, moveNotation );
             game.makeMove( move[0], move[1] );
         }
-        return game;
     }
 
     public static Vector2I[] readMove( Game game, String moveNotation ) {
@@ -80,6 +87,10 @@ public class AlgebraicNotation implements ChessNotation {
             Team onMove = game.getTeam( game.getOnMove() );
             Position kingPos = game.getPosition( onMove.getKing() );
             return new Vector2I[]{ kingPos.getPos(), kingPos.getPos().add( new Vector2I( -2, 0 ) ) };
+        }
+
+        if ( moveNotation.equals( actionCodes.get( ActionType.STALEMATE ) ) ) {
+            return new Vector2I[]{ null, null };
         }
 
         // general parsing
@@ -237,8 +248,10 @@ public class AlgebraicNotation implements ChessNotation {
                     }
                     break;
                 case CHECKMATE:
-                case STALEMATE:
                     actionCodeCheck = actionCodes.get( actionType );
+                    break;
+                case STALEMATE:
+                    actionCodeCheck = " " + actionCodes.get( actionType );
                     break;
             }
         }

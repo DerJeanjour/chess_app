@@ -19,7 +19,7 @@ public class RandomChessBot extends ChessBot {
     private final Random random;
 
     public RandomChessBot( TeamColor teamColor ) {
-        super( teamColor );
+        super( teamColor, null );
         this.random = new Random();
     }
 
@@ -55,8 +55,4 @@ public class RandomChessBot extends ChessBot {
         }
     }
 
-    @Override
-    protected float evaluate( Game game ) {
-        return 0;
-    }
 }

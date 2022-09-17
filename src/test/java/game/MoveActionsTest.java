@@ -6,6 +6,8 @@ import core.model.Piece;
 import core.notation.AlgebraicNotation;
 import core.notation.FenNotation;
 import core.values.ActionType;
+import core.values.PieceType;
+import core.values.RuleType;
 import math.Vector2I;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -67,6 +69,28 @@ public class MoveActionsTest {
         assertFalse( moveHistory.getActions().contains( ActionType.CHECKMATE ) );
         assertFalse( moveHistory.getActions().contains( ActionType.CHECK ) );
         assertTrue( this.game.isFinished() );
+    }
+
+    @ParameterizedTest( name = "Testing queen promotion move actions: {index} => placement={0} move={1}" )
+    @CsvSource( {
+            "'k3/3P/4/3K', '1.d4=Q'",
+            "'k3/4/p3/3K', '1.Kc1 a1=Q'"
+    } )
+    void testQueenPromotion( String placementPattern, String moveNotation ) {
+        Map<Vector2I, Piece> placements = FenNotation.readPlacement( placementPattern );
+        this.game.setBoard( placements, BOARD_SIZE );
+
+        AlgebraicNotation.applyMoves( this.game, moveNotation );
+
+        Move moveHistory = this.game.getLastMove();
+        assertTrue( moveHistory.getActions().contains( ActionType.MOVE ) );
+        assertTrue( moveHistory.getActions().contains( ActionType.PROMOTING_QUEEN ) );
+
+        Piece promotedPawn = this.game.getPiece( moveHistory.getTo() );
+        assertTrue( promotedPawn != null );
+        assertTrue( promotedPawn.isAlive() );
+        assertTrue( promotedPawn.isType( PieceType.QUEEN ) );
+
     }
 
 }

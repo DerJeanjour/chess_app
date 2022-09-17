@@ -106,6 +106,10 @@ public class Game {
 
     public synchronized boolean makeMove( Vector2I from, Vector2I to, boolean simulate ) {
 
+        if( from == null || to == null ) {
+            return false;
+        }
+
         try {
 
             Position fromPos = getPosition( from );

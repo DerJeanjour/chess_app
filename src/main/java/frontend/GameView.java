@@ -5,6 +5,7 @@ import backend.GameListener;
 import backend.Player;
 import backend.validator.RuleValidator;
 import backend.validator.ValidatedPosition;
+import bot.evaluator.PiecePointChessEvaluator;
 import core.exception.NotationParsingException;
 import core.model.Move;
 import core.model.Piece;
@@ -88,7 +89,7 @@ public class GameView implements GameListener {
         this.game = game;
         this.game.addListener( this );
         this.whitePlayer = new Player( TeamColor.WHITE, PlayerType.HUMAN );
-        this.blackPlayer = new Player( TeamColor.BLACK, PlayerType.RANDOM_BOT );
+        this.blackPlayer = new Player( TeamColor.BLACK, PlayerType.HUMAN );
 
         this.history = "";
         this.boardSize = boardSize;
@@ -108,11 +109,12 @@ public class GameView implements GameListener {
         this.chessNotation = new AlgebraicNotation();
         setupFrame();
 
-        this.game.reset();
+        this.game.emitEvent();
     }
 
     @Override
     public void gameUpdated( Game game ) {
+        Log.info( "Evaluation is {}", new PiecePointChessEvaluator().evaluate( game, TeamColor.WHITE ) );
         this.history = chessNotation.write( game.getHistory() );
         final Player onMove = this.whitePlayer.isOnMove( game )
                 ? this.whitePlayer
