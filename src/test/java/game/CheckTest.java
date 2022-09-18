@@ -1,33 +1,22 @@
 package game;
 
-import backend.Game;
-import core.model.Piece;
-import core.notation.FenNotation;
-import core.values.TeamColor;
-import math.Vector2I;
-import org.junit.jupiter.api.BeforeEach;
+import backend.core.values.TeamColor;
+import backend.game.Game;
+import backend.game.GameConfig;
+import backend.game.modulebased.GameMB;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CheckTest {
 
-    private static final int BOARD_SIZE = 4;
-
-    Game game;
-
-    @BeforeEach
-    void setup() {
-        this.game = new Game( "test", false );
-    }
-
     @Test
     void testSimpleCheck() {
-        Map<Vector2I, Piece> placements = FenNotation.readPlacement( "k3/4/4/R2K" );
-        this.game.setBoard( placements, BOARD_SIZE );
-        assertTrue( this.game.isCheckFor( TeamColor.BLACK ) );
+
+        GameConfig config = new GameConfig( "k3/4/4/R2K", TeamColor.WHITE );
+        Game game = new GameMB( "test", config );
+
+        assertTrue( game.isCheckFor( TeamColor.BLACK ) );
     }
 
 }

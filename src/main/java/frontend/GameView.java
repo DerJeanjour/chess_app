@@ -1,20 +1,18 @@
 package frontend;
 
-import backend.Game;
-import backend.GameListener;
-import backend.Player;
-import backend.validator.RuleValidator;
-import backend.validator.ValidatedPosition;
-import bot.evaluator.PiecePointChessEvaluator;
-import core.exception.NotationParsingException;
-import core.model.Move;
-import core.model.Piece;
-import core.model.Position;
-import core.notation.AlgebraicNotation;
-import core.notation.ChessNotation;
-import core.values.ActionType;
-import core.values.PlayerType;
-import core.values.TeamColor;
+import backend.bot.evaluator.PiecePointChessEvaluator;
+import backend.core.exception.NotationParsingException;
+import backend.core.model.Move;
+import backend.core.model.Piece;
+import backend.core.model.Validation;
+import backend.core.notation.AlgebraicNotation;
+import backend.core.notation.ChessNotation;
+import backend.core.values.ActionType;
+import backend.core.values.PlayerType;
+import backend.core.values.TeamColor;
+import backend.game.Game;
+import backend.game.GameListener;
+import backend.game.Player;
 import math.Color;
 import math.Vector2I;
 import misc.FpsTracker;
@@ -73,13 +71,13 @@ public class GameView implements GameListener {
 
     private JTextField gameStateInfo;
 
-    private Position selectedPos;
+    private Vector2I selectedPos;
 
     private boolean showMovePreview;
 
     private boolean onDrag;
 
-    private Map<Vector2I, ValidatedPosition> validation;
+    private Map<Vector2I, Validation> validation;
 
     public GameView( Game game, int boardSize, int windowW, int windowH ) {
 
@@ -154,10 +152,10 @@ public class GameView implements GameListener {
 
             @Override
             public void mousePressed( MouseEvent e ) {
-                selectedPos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
-                if ( selectedPos != null ) {
+                selectedPos = pixelToPosition( e.getX(), e.getY() );
+                if ( selectedPos != null && !game.isOutOfBounce( selectedPos ) ) {
                     if ( showMovePreview ) {
-                        validation.putAll( game.getRuleValidator().validate( selectedPos ) );
+                        validation.putAll( game.validate( selectedPos ) );
                     }
                     onDrag = true;
                 }
@@ -165,11 +163,11 @@ public class GameView implements GameListener {
 
             @Override
             public void mouseReleased( MouseEvent e ) {
-                Position pos = game.getPosition( pixelToPosition( e.getX(), e.getY() ) );
-                if ( selectedPos != null && pos != null ) {
+                Vector2I pos = pixelToPosition( e.getX(), e.getY() );
+                if ( selectedPos != null && !game.isOutOfBounce( pos ) ) {
                     Player playerOnMove = game.isOnMove( TeamColor.WHITE ) ? whitePlayer : blackPlayer;
                     if ( playerOnMove.isHuman() ) {
-                        game.makeMove( selectedPos.getPos(), pos.getPos() );
+                        game.makeMove( selectedPos, pos );
                     }
                 }
                 selectedPos = null;
@@ -249,7 +247,7 @@ public class GameView implements GameListener {
         JButton parseButton = new JButton( "Parse" );
         parseButton.addActionListener( a -> {
             try {
-                game.set( this.history );
+                game.setGame( this.history );
             } catch ( NotationParsingException e ) {
                 this.history = chessNotation.write( game.getHistory() );
             }
@@ -259,7 +257,7 @@ public class GameView implements GameListener {
 
         JButton backButton = new JButton( "Go Back" );
         backButton.addActionListener( e -> {
-            this.game.goBack();
+            this.game.undoLastMove();
         } );
         infoPanel.add( backButton );
 
@@ -294,7 +292,7 @@ public class GameView implements GameListener {
         JComboBox<PlayerType> blackPlayerSelect = new JComboBox<>( PlayerType.values() );
         blackPlayerSelect.setSelectedItem( this.blackPlayer.getType() );
         blackPlayerSelect.addActionListener( e -> {
-            this.blackPlayer = new Player( TeamColor.WHITE, ( PlayerType ) blackPlayerSelect.getSelectedItem() );
+            this.blackPlayer = new Player( TeamColor.BLACK, ( PlayerType ) blackPlayerSelect.getSelectedItem() );
             this.gameUpdated( this.game );
         } );
         blackPlayerSelectPanel.add( blackPlayerSelect );
@@ -350,7 +348,7 @@ public class GameView implements GameListener {
                     Color posColor = ( i + j ) % 2 != 0 ? Color.DARK_GREY : Color.LIGHT_GREY;
 
                     // draw temp from pos
-                    if ( onDrag && selectedPos != null && pos.equals( selectedPos.getPos() ) ) {
+                    if ( onDrag && selectedPos != null && pos.equals( selectedPos ) ) {
                         posColor = posColor.blend( new Color( Color.BLUE, 0.2f ) );
                     }
 
@@ -365,23 +363,23 @@ public class GameView implements GameListener {
                     }
 
                     // draw move preview
-                    if ( showMovePreview && RuleValidator.isLegal( validation, pos ) ) {
+                    if ( showMovePreview && game.isLegal( validation, pos ) ) {
 
                         Color actionColor = new Color( Color.BLACK, 0f );
 
-                        if ( RuleValidator.hasAction( validation, pos, ActionType.MOVE ) ) {
+                        if ( game.hasAction( validation, pos, ActionType.MOVE ) ) {
                             actionColor = new Color( actionColors.get( ActionType.MOVE ), 0.2f );
                         }
 
-                        if ( RuleValidator.hasAction( validation, pos, ActionType.CAPTURE ) ) {
+                        if ( game.hasAction( validation, pos, ActionType.CAPTURE ) ) {
                             actionColor = new Color( actionColors.get( ActionType.CAPTURE ), 0.2f );
                         }
 
-                        if ( RuleValidator.hasAction( validation, pos, ActionType.AU_PASSANT ) ) {
+                        if ( game.hasAction( validation, pos, ActionType.AU_PASSANT ) ) {
                             actionColor = new Color( actionColors.get( ActionType.AU_PASSANT ), 0.2f );
                         }
 
-                        if ( RuleValidator.hasAction( validation, pos, ActionType.CHECK ) ) {
+                        if ( game.hasAction( validation, pos, ActionType.CHECK ) ) {
                             actionColor = new Color( actionColors.get( ActionType.CHECK ), 0.2f );
                         }
 
@@ -398,12 +396,12 @@ public class GameView implements GameListener {
             for ( int j = 0; j < game.getBoardSize(); j++ ) {
                 for ( int i = 0; i < game.getBoardSize(); i++ ) {
                     Vector2I p = positionToPixel( i, j );
-                    Position pos = game.getBoard().getPosition( i, game.getBoardSize() - 1 - j );
+                    Vector2I boardPos = new Vector2I( i, game.getBoardSize() - 1 - j );
                     if ( i == 0 ) {
-                        g.drawString( AlgebraicNotation.getRowCode( pos.getPos() ), p.x - 20, p.y + 15 );
+                        g.drawString( AlgebraicNotation.getRowCode( boardPos ), p.x - 20, p.y + 15 );
                     }
                     if ( j == game.getBoardSize() - 1 ) {
-                        g.drawString( AlgebraicNotation.getColCode( pos.getPos() ), p.x + posSize - 15, p.y + posSize + 15 );
+                        g.drawString( AlgebraicNotation.getColCode( boardPos ), p.x + posSize - 15, p.y + posSize + 15 );
                     }
                 }
             }
@@ -413,10 +411,10 @@ public class GameView implements GameListener {
                 for ( int i = 0; i < game.getBoardSize(); i++ ) {
 
                     Vector2I p = positionToPixel( i, j );
-                    Position pos = game.getBoard().getPosition( i, game.getBoardSize() - 1 - j );
+                    Vector2I boardPos = new Vector2I( i, game.getBoardSize() - 1 - j );
 
-                    if ( !onDrag || !selectedPos.getPos().equals( pos.getPos() ) ) {
-                        drawPiece( g, p, pos );
+                    if ( !onDrag || !selectedPos.equals( boardPos ) ) {
+                        drawPiece( g, p, boardPos );
                     }
                 }
             }
@@ -447,7 +445,7 @@ public class GameView implements GameListener {
 
     }
 
-    private void drawPiece( Graphics g, Vector2I p, Position pos ) {
+    private void drawPiece( Graphics g, Vector2I p, Vector2I pos ) {
         Piece piece = game.getPiece( pos );
         if ( piece != null && piece.isAlive() ) {
             g.drawImage( this.sprites.getPieceSprite( piece.getType(), piece.getTeam() ), p.x, p.y, null );

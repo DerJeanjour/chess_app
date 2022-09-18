@@ -1,7 +1,7 @@
 package frontend;
 
-import core.values.PieceType;
-import core.values.TeamColor;
+import backend.core.values.PieceType;
+import backend.core.values.TeamColor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.imgscalr.Scalr;

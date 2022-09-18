@@ -1,22 +1,18 @@
-import backend.Game;
-import core.notation.AlgebraicNotation;
-import core.notation.ChessNotation;
+import backend.core.notation.AlgebraicNotation;
+import backend.core.notation.ChessNotation;
+import backend.game.Game;
+import backend.game.GameConfig;
+import backend.game.modulebased.GameMB;
 import frontend.GameView;
 import misc.Log;
 import misc.Timer;
-
-import javax.swing.*;
 
 public class Application {
 
     public static void main( String[] args ) {
         //makeBenchmark();
-
-        SwingUtilities.invokeLater( () -> {
-            Game game = new Game( "main", true );
-            new GameView( game, 400, 500, 500 );
-        } );
-
+        Game game = new GameMB( "main", new GameConfig() );
+        new GameView( game, 400, 500, 500 );
     }
 
     private static void makeBenchmark() {
@@ -43,7 +39,7 @@ public class Application {
                 "Kg5 Bc2 1/2-1/2";
         ChessNotation notationProcessor = new AlgebraicNotation();
         Game game = notationProcessor.read( notation );
-        Log.info("Benchmark processed in {}s", timer.getTimeSinceSec());
+        Log.info( "Benchmark processed in {}s", timer.getTimeSinceSec() );
         new GameView( game, 400, 500, 500 );
     }
 
