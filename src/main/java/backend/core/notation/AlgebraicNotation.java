@@ -64,8 +64,6 @@ public class AlgebraicNotation implements ChessNotation {
 
     public static Vector2I[] readMove( Game game, String moveNotation ) {
 
-        Log.info( "Reading move {}", moveNotation );
-
 
         if ( StringUtil.isBlank( moveNotation ) ) {
             throw new NotationParsingException( "Notation is empty!" );
