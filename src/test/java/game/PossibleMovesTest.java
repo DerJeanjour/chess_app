@@ -32,7 +32,7 @@ public class PossibleMovesTest {
     @Test
     void testPossibleNodes() {
 
-        int maxDepth = 2; // FIXME already depth 3 is close to 2 min !!!
+        int maxDepth = 2; // FIXME already depth 3 is close to 1 min !!!
         for ( int i = 0; i <= maxDepth; i++ ) {
             Timer timer = new Timer();
             GameMB game = new GameMB( "test", new GameConfig() );
@@ -54,9 +54,11 @@ public class PossibleMovesTest {
             List<Validation> pieceMoves = sandbox.validate( sandbox.getPos( piece ) ).values().stream()
                     .filter( Validation::isLegal ).collect( Collectors.toList() );
             for ( Validation move : pieceMoves ) {
+                GameMB rollback = sandbox.clone( "rollback" );
                 sandbox.makeMove( move.getFrom(), move.getTo() );
                 legalMoves += getPossibleNodesInDepth( sandbox, depth - 1 );
-                sandbox.undoLastMove();
+                //sandbox.undoLastMove();
+                sandbox.setAll( rollback );
             }
         }
         return legalMoves;
