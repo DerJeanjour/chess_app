@@ -2,9 +2,10 @@ package backend.game.modulebased.validator.rules;
 
 import backend.core.values.*;
 import backend.game.modulebased.GameMB;
-import backend.game.modulebased.PieceMB;
+import backend.game.MoveGenerator;
 import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
+import backend.game.modulebased.validator.RuleType;
 import math.Vector2I;
 
 import java.util.Arrays;
@@ -17,27 +18,7 @@ public class AuPassantRule extends Rule {
 
     @Override
     public boolean validate( GameMB game, Position from, Position to ) {
-
-
-        if ( !game.isType( from, PieceType.PAWN ) || to.hasPiece() ) {
-            return false;
-        }
-
-
-        Vector2I dir = game.isTeam( from, TeamColor.WHITE ) ? Dir.UP.vector : Dir.DOWN.vector;
-        Vector2I targetPos = to.getPos().sub( dir );
-        if ( !targetPos.equals( from.getPos().add( Dir.LEFT.vector ) ) && !targetPos.equals( from.getPos().add( Dir.RIGHT.vector ) ) ) {
-            return false;
-        }
-
-        Position target = game.getPosition( targetPos );
-
-        if ( target == null || !game.isType( target, PieceType.PAWN ) || !game.areEnemies( target, from ) ) {
-            return false;
-        }
-
-        PieceMB piece = ( PieceMB ) game.getPiece( target );
-        return piece.getMoved() == 1 && game.getMoveNumber() - piece.getLastMovedAt() <= 1;
+        return MoveGenerator.generateAuPassantMoves( game, from.getPos() ).contains( to.getPos() );
     }
 
     @Override

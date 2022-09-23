@@ -10,6 +10,8 @@ import backend.core.notation.FenNotation;
 import backend.core.values.*;
 import backend.game.Game;
 import backend.game.GameConfig;
+import backend.game.MoveGenerator;
+import backend.game.modulebased.validator.RuleType;
 import backend.game.modulebased.validator.RuleValidator;
 import backend.game.modulebased.validator.ValidationMB;
 import lombok.Getter;
@@ -40,8 +42,16 @@ public class GameMB extends Game {
     @Getter
     private final boolean canLog;
 
+    // speedup data
+
     @Getter
-    private GameMB rollback;
+    private GameMB prev;
+
+    @Getter
+    private Set<Vector2I> attacked;
+
+    @Getter
+    private Set<Vector2I> pined;
 
     public GameMB( final String id, final GameConfig config ) {
         super( config );
@@ -62,9 +72,11 @@ public class GameMB extends Game {
         this.white = new TeamMB( TeamColor.WHITE );
         this.black = new TeamMB( TeamColor.BLACK );
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
-        this.rollback = null;
         this.setBoard();
         this.resetStates();
+        this.prev = null;
+        this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
+        this.pined = new HashSet<>();
         this.emitEvent();
     }
 
@@ -77,11 +89,10 @@ public class GameMB extends Game {
 
     @Override
     public void undoLastMove() {
-        // TODO make this more faster
-        if ( this.rollback == null ) {
+        if ( this.prev == null ) {
             return;
         }
-        this.setAll( this.rollback );
+        this.setAll( this.prev );
     }
 
     @Override
@@ -113,7 +124,7 @@ public class GameMB extends Game {
             ValidationMB validatedPosition = this.ruleValidator.validate( fromPos, toPos );
             if ( validatedPosition.isLegal() ) {
 
-                this.rollback = this.clone( "rb" );
+                this.prev = this.clone( "rb" );
                 addHistory( validatedPosition.getActions(), fromPos, toPos );
                 movePiece( fromPos, toPos );
 
@@ -122,6 +133,8 @@ public class GameMB extends Game {
                 checkFinished( validatedPosition.getActions() );
                 incrementMove();
 
+                this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
+                this.pined = new HashSet<>();
                 this.emitEvent();
                 return true;
             }
@@ -252,38 +265,6 @@ public class GameMB extends Game {
                 .collect( Collectors.toList() );
     }
 
-    public List<Vector2I> getPositionsOfDir( Position fromPos, Vector2I dir, int distance, boolean includeEnemyContact ) {
-        Vector2I from = fromPos.getPos();
-        if ( distance < 0 ) {
-            distance = getMaxDistance();
-        }
-        List<Vector2I> positions = new ArrayList<>();
-        for ( int i = 0; i < distance; i++ ) {
-
-            Vector2I p = from.add( dir.mul( i + 1 ) );
-            Position pos = getPosition( p );
-
-            if ( pos == null ) {
-                // out of bounds
-                return positions;
-            }
-
-            if ( pos.hasPiece() ) {
-
-                if ( includeEnemyContact && areEnemies( pos, fromPos ) ) {
-                    positions.add( p );
-                }
-
-                // position is occupied
-                return positions;
-            }
-
-            positions.add( p );
-        }
-
-        return positions;
-    }
-
     public boolean isType( Vector2I p, PieceType type ) {
         return type.equals( getType( p ) );
     }
@@ -345,9 +326,24 @@ public class GameMB extends Game {
         return TeamColor.getEnemy( color );
     }
 
-    public boolean areEnemies( Position positionA, Position positionB ) {
-        Piece pieceA = getPiece( positionA );
-        Piece pieceB = getPiece( positionB );
+    @Override
+    public boolean areEnemies( Vector2I pA, Vector2I pB ) {
+        return areEnemies( getPosition( pA ), getPosition( pB ) );
+    }
+
+    @Override
+    public boolean isAttacked( Vector2I p ) {
+        return this.attacked.contains( p );
+    }
+
+    @Override
+    public boolean isPined( Vector2I p ) {
+        return this.pined.contains( p );
+    }
+
+    public boolean areEnemies( Position pA, Position pB ) {
+        Piece pieceA = getPiece( pA );
+        Piece pieceB = getPiece( pB );
         if ( pieceA == null || pieceB == null ) {
             return false;
         }
@@ -364,7 +360,7 @@ public class GameMB extends Game {
     }
 
     public Piece getPiece( Position position ) {
-        if ( !position.hasPiece() ) {
+        if ( position == null || !position.hasPiece() ) {
             return null;
         }
         return getPiece( position.getPieceId() );
@@ -388,6 +384,24 @@ public class GameMB extends Game {
         return this.board.getPosition( ( PieceMB ) piece ).getPos();
     }
 
+    @Override
+    public boolean hasMoved( Piece piece ) {
+        PieceMB pieceMB = ( PieceMB ) piece;
+        return pieceMB.getMoved() > 0;
+    }
+
+    @Override
+    public boolean hasMovedTimes( Piece piece, int moveCount ) {
+        PieceMB pieceMB = ( PieceMB ) piece;
+        return pieceMB.getMoved() == moveCount;
+    }
+
+    @Override
+    public boolean hasMovedSince( Piece piece, int moveCount ) {
+        PieceMB pieceMB = ( PieceMB ) piece;
+        return this.getMoveNumber() - pieceMB.getLastMovedAt() <= moveCount;
+    }
+
     public Position getPosition( Piece piece ) {
         return this.board.getPosition( ( PieceMB ) piece );
     }
@@ -399,10 +413,6 @@ public class GameMB extends Game {
     @Override
     public Team getTeam( TeamColor color ) {
         return color.equals( TeamColor.WHITE ) ? this.white : this.black;
-    }
-
-    public int getMaxDistance() {
-        return getBoardSize() * getBoardSize();
     }
 
     public Position getPosition( Vector2I p ) {
@@ -424,7 +434,6 @@ public class GameMB extends Game {
             board.setPiece( placement.getKey(), id );
         }
         this.board = board;
-
     }
 
     @Override
@@ -446,7 +455,9 @@ public class GameMB extends Game {
         this.state = game.getState();
         this.moveNumber = game.getMoveNumber();
         this.history = new ArrayList<>( game.getHistory() );
-        this.rollback = game.getRollback();
+        this.prev = game.getPrev();
+        this.attacked = game.getAttacked();
+        this.pined = game.getPined();
         this.ruleValidator = game.getRuleValidator().clone( this );
         this.emitEvent();
     }

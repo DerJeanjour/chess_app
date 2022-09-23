@@ -75,6 +75,10 @@ public class GameView implements GameListener {
 
     private boolean showMovePreview;
 
+    private boolean showAttacked;
+
+    private boolean showPined;
+
     private boolean onDrag;
 
     private Map<Vector2I, Validation> validation;
@@ -101,6 +105,8 @@ public class GameView implements GameListener {
         this.selectedPos = null;
         this.onDrag = false;
         this.showMovePreview = false;
+        this.showAttacked = false;
+        this.showPined = false;
         this.validation = new HashMap<>();
         this.sprites = new SpriteProvider();
         this.sprites.reload( this.posSize );
@@ -273,6 +279,14 @@ public class GameView implements GameListener {
         movePreviewButton.addActionListener( e -> showMovePreview = movePreviewButton.isSelected() );
         infoPanel.add( movePreviewButton );
 
+        JCheckBox showAttackedButton = new JCheckBox( "Show attacked" );
+        showAttackedButton.addActionListener( e -> showAttacked = showAttackedButton.isSelected() );
+        infoPanel.add( showAttackedButton );
+
+        JCheckBox showPinedButton = new JCheckBox( "Show attacked" );
+        showPinedButton.addActionListener( e -> showPined = showPinedButton.isSelected() );
+        infoPanel.add( showPinedButton );
+
         JPanel whitePlayerSelectPanel = new JPanel();
         whitePlayerSelectPanel.setLayout( new BoxLayout( whitePlayerSelectPanel, BoxLayout.LINE_AXIS ) );
         whitePlayerSelectPanel.add( new JLabel( "White" ) );
@@ -344,7 +358,6 @@ public class GameView implements GameListener {
                     Vector2I p = positionToPixel( i, j );
                     Vector2I pos = new Vector2I( i, game.getBoardSize() - 1 - j );
 
-
                     Color posColor = ( i + j ) % 2 != 0 ? Color.DARK_GREY : Color.LIGHT_GREY;
 
                     // draw temp from pos
@@ -384,6 +397,14 @@ public class GameView implements GameListener {
                         }
 
                         posColor = posColor.blend( actionColor );
+                    }
+
+                    if( !onDrag && showAttacked && game.isAttacked( pos ) ) {
+                        posColor = posColor.blend( new Color( Color.RED, 0.2f ) );
+                    }
+
+                    if( !onDrag && showPined && game.isPined( pos ) ) {
+                        posColor = posColor.blend( new Color( Color.PINK, 0.2f ) );
                     }
 
                     g.setColor( new java.awt.Color( posColor.getInt() ) );

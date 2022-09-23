@@ -1,4 +1,4 @@
-package backend.core.values;
+package backend.game.modulebased.validator;
 
 public enum RuleType {
 
@@ -24,8 +24,7 @@ public enum RuleType {
 
     IS_CHECK( true, 2 ),
     IS_CHECKMATE( true, 2 ),
-    IS_STALEMATE( true, 2 ),
-    ;
+    IS_STALEMATE( true, 2 );
 
     public final boolean legal;
 

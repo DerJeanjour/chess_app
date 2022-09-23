@@ -8,6 +8,7 @@ import backend.core.values.ActionType;
 import backend.core.values.GameState;
 import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
+import backend.game.modulebased.Position;
 import lombok.Getter;
 import math.Vector2I;
 import util.MathUtil;
@@ -88,6 +89,12 @@ public abstract class Game {
 
     public abstract Vector2I getPos( Piece piece );
 
+    public abstract boolean hasMoved( Piece piece );
+
+    public abstract boolean hasMovedTimes( Piece piece, int moveCount );
+
+    public abstract boolean hasMovedSince( Piece piece, int moveCount );
+
     public abstract boolean isTeam( Vector2I p, TeamColor team );
 
     public abstract TeamColor getTeam( Vector2I p );
@@ -97,6 +104,12 @@ public abstract class Game {
     public abstract TeamColor getEnemy( Vector2I p );
 
     public abstract TeamColor getEnemy( TeamColor team );
+
+    public abstract boolean areEnemies( Vector2I pA, Vector2I pB );
+
+    public abstract boolean isAttacked( Vector2I p );
+
+    public abstract boolean isPined( Vector2I p );
 
     /**
      * listener
@@ -144,6 +157,9 @@ public abstract class Game {
     }
 
     public boolean isOutOfBounce( Vector2I p ) {
+        if( p == null ) {
+            return true;
+        }
         return MathUtil.isOutOfBounds( p.x, this.getBoardSize() )
                 || MathUtil.isOutOfBounds( p.y, this.getBoardSize() );
     }
@@ -165,6 +181,40 @@ public abstract class Game {
         this.state = this.isOnMove( TeamColor.WHITE ) ? GameState.WHITE_TO_MOVE : GameState.BLACK_TO_MOVE;
         this.moveNumber = 0;
         this.history = new ArrayList<>();
+    }
+
+    public int getMaxDistance() {
+        return getBoardSize() * getBoardSize();
+    }
+
+    public List<Vector2I> getPositionsOfDir( Vector2I from, Vector2I dir, int distance, boolean includeEnemyContact ) {
+        if ( distance < 0 ) {
+            distance = getMaxDistance();
+        }
+        List<Vector2I> positions = new ArrayList<>();
+        for ( int i = 0; i < distance; i++ ) {
+
+            Vector2I p = from.add( dir.mul( i + 1 ) );
+
+            if( !this.isOutOfBounce( p ) ) {
+
+                if ( this.getPiece( p ) != null ) {
+
+                    if ( includeEnemyContact && areEnemies( p, from ) ) {
+                        positions.add( p );
+                    }
+
+                    // position is occupied
+                    return positions;
+                }
+
+                positions.add( p );
+
+            }
+
+        }
+
+        return positions;
     }
 
 }

@@ -11,7 +11,7 @@ public class Application {
 
     public static void main( String[] args ) {
         //makeBenchmark();
-        Game game = new GameMB( "main", new GameConfig() );
+        Game game = new GameMB( "main", new GameConfig(), true );
         new GameView( game, 400, 500, 500 );
     }
 

@@ -1,7 +1,6 @@
 package backend.game.modulebased.validator;
 
 import backend.core.values.ActionType;
-import backend.core.values.RuleType;
 import backend.game.modulebased.GameMB;
 import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.rules.*;

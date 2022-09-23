@@ -1,7 +1,6 @@
 package backend.game.modulebased.validator;
 
 import backend.core.model.Validation;
-import backend.core.values.RuleType;
 import lombok.Getter;
 import math.Vector2I;
 
