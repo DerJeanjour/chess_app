@@ -3,6 +3,7 @@ package backend.game.modulebased.validator.rules;
 import backend.core.model.Piece;
 import backend.core.values.*;
 import backend.game.modulebased.GameMB;
+import backend.game.modulebased.PieceMB;
 import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
 import math.Vector2I;
@@ -27,7 +28,7 @@ public class PawnMoveRule extends Rule {
 
         Set<Vector2I> allowed = new HashSet<>();
 
-        Piece piece = game.getPiece( from );
+        PieceMB piece = ( PieceMB ) game.getPiece( from );
         Vector2I pos = from.getPos();
         Vector2I dir = piece.isTeam( TeamColor.WHITE ) ? Dir.UP.vector : Dir.DOWN.vector;
 

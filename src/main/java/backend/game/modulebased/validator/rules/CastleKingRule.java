@@ -3,6 +3,7 @@ package backend.game.modulebased.validator.rules;
 import backend.core.model.Piece;
 import backend.core.values.*;
 import backend.game.modulebased.GameMB;
+import backend.game.modulebased.PieceMB;
 import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
 import math.Vector2I;
@@ -24,7 +25,7 @@ public class CastleKingRule extends Rule {
         }
 
 
-        Piece king = game.getPiece( from );
+        PieceMB king = ( PieceMB ) game.getPiece( from );
         Vector2I kingPos = king.isTeam( TeamColor.WHITE ) ? new Vector2I( 4, 0 ) : new Vector2I( 4, game.getBoardSize() - 1 );
         if ( !from.getPos().equals( kingPos ) ) {
             return false;
@@ -41,7 +42,8 @@ public class CastleKingRule extends Rule {
             return false;
         }
 
-        if ( king.getMoved() > 0 || game.getPiece( rookPosition ).getMoved() > 0 ) {
+        PieceMB rook = ( PieceMB ) game.getPiece( rookPosition );
+        if ( king.getMoved() > 0 || rook.getMoved() > 0 ) {
             return false;
         }
 

@@ -2,6 +2,7 @@ package backend.game.modulebased.validator.rules;
 
 import backend.core.values.*;
 import backend.game.modulebased.GameMB;
+import backend.game.modulebased.PieceMB;
 import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
 import math.Vector2I;
@@ -35,8 +36,8 @@ public class AuPassantRule extends Rule {
             return false;
         }
 
-
-        return game.getPiece( target ).getMoved() == 1 && game.getMoveNumber() - game.getPiece( target ).getLastMovedAt() <= 1;
+        PieceMB piece = ( PieceMB ) game.getPiece( target );
+        return piece.getMoved() == 1 && game.getMoveNumber() - piece.getLastMovedAt() <= 1;
     }
 
     @Override

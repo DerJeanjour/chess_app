@@ -12,8 +12,23 @@ public class PieceMB extends Piece {
     @Setter
     private String id;
 
+    @Getter
+    @Setter
+    private int moved;
+
+    @Getter
+    @Setter
+    private int lastMovedAt;
+
     public PieceMB( PieceType type, TeamColor team ) {
         super( type, team );
+        this.moved = 0;
+        this.lastMovedAt = 0;
+    }
+
+    public void moved( int moveNumber ) {
+        this.lastMovedAt = moveNumber;
+        this.moved++;
     }
 
     public PieceMB clone() {

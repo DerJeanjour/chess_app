@@ -13,16 +13,10 @@ public class Piece {
 
     protected boolean alive;
 
-    protected int moved;
-
-    protected int lastMovedAt;
-
     public Piece( PieceType type, TeamColor team ) {
         this.type = type;
         this.team = team;
         this.alive = true;
-        this.moved = 0;
-        this.lastMovedAt = 0;
     }
 
     public boolean isType( PieceType type ) {
@@ -31,11 +25,6 @@ public class Piece {
 
     public boolean isTeam( TeamColor team ) {
         return this.team.equals( team );
-    }
-
-    public void moved( int moveNumber ) {
-        this.lastMovedAt = moveNumber;
-        this.moved++;
     }
 
     @Override

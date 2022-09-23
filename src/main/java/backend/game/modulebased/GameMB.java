@@ -1,7 +1,6 @@
 package backend.game.modulebased;
 
 import backend.core.exception.IllegalMoveException;
-import backend.core.model.Move;
 import backend.core.model.Piece;
 import backend.core.model.Team;
 import backend.core.model.Validation;
@@ -41,6 +40,9 @@ public class GameMB extends Game {
     @Getter
     private final boolean canLog;
 
+    @Getter
+    private GameMB rollback;
+
     public GameMB( final String id, final GameConfig config ) {
         super( config );
         this.id = id;
@@ -60,6 +62,7 @@ public class GameMB extends Game {
         this.white = new TeamMB( TeamColor.WHITE );
         this.black = new TeamMB( TeamColor.BLACK );
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
+        this.rollback = null;
         this.setBoard();
         this.resetStates();
         this.emitEvent();
@@ -75,15 +78,10 @@ public class GameMB extends Game {
     @Override
     public void undoLastMove() {
         // TODO make this more faster
-        if ( this.history.isEmpty() ) {
+        if ( this.rollback == null ) {
             return;
         }
-        this.history.remove( this.history.size() - 1 );
-        GameMB game = new GameMB( this.id, this.config, this.canLog );
-        for ( Move move : this.history ) {
-            game.makeMove( move.getFrom(), move.getTo() );
-        }
-        this.setAll( game );
+        this.setAll( this.rollback );
     }
 
     @Override
@@ -98,11 +96,7 @@ public class GameMB extends Game {
     }
 
     @Override
-    public boolean makeMove( Vector2I from, Vector2I to ) {
-        return makeMove( from, to, false );
-    }
-
-    public synchronized boolean makeMove( Vector2I from, Vector2I to, boolean simulate ) {
+    public synchronized boolean makeMove( Vector2I from, Vector2I to ) {
 
         if ( from == null || to == null ) {
             return false;
@@ -119,7 +113,7 @@ public class GameMB extends Game {
             ValidationMB validatedPosition = this.ruleValidator.validate( fromPos, toPos );
             if ( validatedPosition.isLegal() ) {
 
-                GameMB rollback = this.clone( "rollback" );
+                this.rollback = this.clone( "rb" );
                 addHistory( validatedPosition.getActions(), fromPos, toPos );
                 movePiece( fromPos, toPos );
 
@@ -128,12 +122,7 @@ public class GameMB extends Game {
                 checkFinished( validatedPosition.getActions() );
                 incrementMove();
 
-                if ( simulate ) {
-                    this.setAll( rollback );
-                }
-
                 this.emitEvent();
-
                 return true;
             }
             return false;
@@ -145,7 +134,7 @@ public class GameMB extends Game {
     }
 
     public void movePiece( Position from, Position to ) {
-        Piece piece = getPiece( from );
+        PieceMB piece = ( PieceMB ) getPiece( from );
         if ( piece == null ) {
             return;
         }
@@ -192,7 +181,7 @@ public class GameMB extends Game {
 
         for ( Piece enemy : enemies ) {
             Position enemyPos = sandbox.getPosition( enemy );
-            if ( enemyPos != null && sandbox.makeMove( enemyPos.getPos(), kingPos.getPos(), true ) ) {
+            if ( enemyPos != null && sandbox.validate( enemyPos.getPos(), kingPos.getPos() ).isLegal() ) {
                 return true;
             }
         }
@@ -457,6 +446,7 @@ public class GameMB extends Game {
         this.state = game.getState();
         this.moveNumber = game.getMoveNumber();
         this.history = new ArrayList<>( game.getHistory() );
+        this.rollback = game.getRollback();
         this.ruleValidator = game.getRuleValidator().clone( this );
         this.emitEvent();
     }

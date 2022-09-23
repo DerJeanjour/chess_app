@@ -2,6 +2,7 @@ package game;
 
 import backend.core.model.Piece;
 import backend.core.model.Validation;
+import backend.game.Game;
 import backend.game.GameConfig;
 import backend.game.modulebased.GameMB;
 import misc.Log;
@@ -44,21 +45,18 @@ public class PossibleMovesTest {
 
     }
 
-    long getPossibleNodesInDepth( GameMB game, int depth ) {
+    long getPossibleNodesInDepth( Game game, int depth ) {
         if ( depth == 0 ) {
             return 1l;
         }
-        GameMB sandbox = game.clone( "d" + depth );
         long legalMoves = 0l;
-        for ( Piece piece : sandbox.getTeam( sandbox.getOnMove() ).getAlive() ) {
-            List<Validation> pieceMoves = sandbox.validate( sandbox.getPos( piece ) ).values().stream()
+        for ( Piece piece : game.getTeam( game.getOnMove() ).getAlive() ) {
+            List<Validation> pieceMoves = game.validate( game.getPos( piece ) ).values().stream()
                     .filter( Validation::isLegal ).collect( Collectors.toList() );
             for ( Validation move : pieceMoves ) {
-                GameMB rollback = sandbox.clone( "rollback" );
-                sandbox.makeMove( move.getFrom(), move.getTo() );
-                legalMoves += getPossibleNodesInDepth( sandbox, depth - 1 );
-                //sandbox.undoLastMove();
-                sandbox.setAll( rollback );
+                game.makeMove( move.getFrom(), move.getTo() );
+                legalMoves += getPossibleNodesInDepth( game, depth - 1 );
+                game.undoLastMove();
             }
         }
         return legalMoves;
