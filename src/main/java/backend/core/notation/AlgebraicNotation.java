@@ -11,7 +11,6 @@ import backend.game.Game;
 import backend.game.GameConfig;
 import backend.game.modulebased.GameMB;
 import math.Vector2I;
-import misc.Log;
 import util.CollectionUtil;
 import util.StringUtil;
 

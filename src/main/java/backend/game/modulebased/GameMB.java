@@ -7,7 +7,10 @@ import backend.core.model.Validation;
 import backend.core.notation.AlgebraicNotation;
 import backend.core.notation.ChessNotation;
 import backend.core.notation.FenNotation;
-import backend.core.values.*;
+import backend.core.values.ActionType;
+import backend.core.values.GameState;
+import backend.core.values.PieceType;
+import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
 import backend.game.MoveGenerator;
@@ -76,7 +79,7 @@ public class GameMB extends Game {
         this.resetStates();
         this.prev = null;
         this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
-        this.pined = new HashSet<>();
+        this.pined = this.pined = MoveGenerator.generatePinedPositionsBy( this, getEnemy( this.onMove ) );
         this.emitEvent();
     }
 
@@ -134,7 +137,7 @@ public class GameMB extends Game {
                 incrementMove();
 
                 this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
-                this.pined = new HashSet<>();
+                this.pined = MoveGenerator.generatePinedPositionsBy( this, getEnemy( this.onMove ) );
                 this.emitEvent();
                 return true;
             }

@@ -283,7 +283,7 @@ public class GameView implements GameListener {
         showAttackedButton.addActionListener( e -> showAttacked = showAttackedButton.isSelected() );
         infoPanel.add( showAttackedButton );
 
-        JCheckBox showPinedButton = new JCheckBox( "Show attacked" );
+        JCheckBox showPinedButton = new JCheckBox( "Show pined" );
         showPinedButton.addActionListener( e -> showPined = showPinedButton.isSelected() );
         infoPanel.add( showPinedButton );
 
@@ -399,11 +399,11 @@ public class GameView implements GameListener {
                         posColor = posColor.blend( actionColor );
                     }
 
-                    if( !onDrag && showAttacked && game.isAttacked( pos ) ) {
+                    if ( !onDrag && showAttacked && game.isAttacked( pos ) ) {
                         posColor = posColor.blend( new Color( Color.RED, 0.2f ) );
                     }
 
-                    if( !onDrag && showPined && game.isPined( pos ) ) {
+                    if ( !onDrag && showPined && game.isPined( pos ) ) {
                         posColor = posColor.blend( new Color( Color.PINK, 0.2f ) );
                     }
 
