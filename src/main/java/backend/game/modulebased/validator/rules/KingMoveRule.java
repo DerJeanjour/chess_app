@@ -2,10 +2,10 @@ package backend.game.modulebased.validator.rules;
 
 import backend.core.values.ActionType;
 import backend.game.MoveGenerator;
-import backend.game.modulebased.validator.RuleType;
 import backend.game.modulebased.GameMB;
 import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
+import backend.game.modulebased.validator.RuleType;
 
 import java.util.Arrays;
 

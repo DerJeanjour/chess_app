@@ -3,11 +3,11 @@ package backend.game.modulebased.validator.rules;
 import backend.core.model.Piece;
 import backend.core.values.ActionType;
 import backend.core.values.PieceType;
-import backend.game.modulebased.validator.RuleType;
 import backend.core.values.TeamColor;
 import backend.game.modulebased.GameMB;
 import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
+import backend.game.modulebased.validator.RuleType;
 
 import java.util.Arrays;
 
