@@ -17,9 +17,18 @@ public class IsCheckmateRule extends Rule {
 
     @Override
     public boolean validate( GameMB game, Position from, Position to ) {
+        /*
+        // TODO stackoverflow
+        TeamColor enemy = game.getEnemy( from );
+        game.makeMove( from.getPos(), to.getPos() );
+        boolean checkmate = game.isCheckmateFor( enemy );
+        game.undoLastMove();
+        return checkmate;
+
+         */
+
         TeamColor enemy = game.getEnemy( from );
         GameMB sandbox = game.clone( "isCheckmateRule" );
-        //sandbox.getRuleValidator().setRuleActiveState( getType(), false );
         sandbox.getRuleValidator().setRulesActiveStateByOrders( false, 2 );
         if ( sandbox.makeMove( from.getPos(), to.getPos() ) ) {
             return sandbox.isCheckmateFor( enemy );

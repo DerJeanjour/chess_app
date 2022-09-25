@@ -4,6 +4,7 @@ import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
 import backend.game.modulebased.GameMB;
+import misc.Log;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

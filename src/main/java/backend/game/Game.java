@@ -137,22 +137,25 @@ public abstract class Game {
         this.history.add( new Move(
                 this.moveNumber,
                 actions,
-                getTeam( from ),
-                getType( from ),
+                getTeam( to ),
+                getType( to ),
                 from,
                 to
         ) );
+    }
+
+    protected void switchTeam() {
+        this.onMove = isOnMove( TeamColor.WHITE ) ? TeamColor.BLACK : TeamColor.WHITE;
+        this.state = isOnMove( TeamColor.BLACK ) ? GameState.BLACK_TO_MOVE : GameState.WHITE_TO_MOVE;
     }
 
     protected void incrementMove() {
         if ( isFinished() ) {
             return;
         }
-        if ( isOnMove( getEnemy( this.config.getTeamStarting() ) ) ) {
+        if ( isOnMove( this.config.getTeamStarting() ) ) {
             this.moveNumber++;
         }
-        this.onMove = isOnMove( TeamColor.WHITE ) ? TeamColor.BLACK : TeamColor.WHITE;
-        this.state = isOnMove( TeamColor.BLACK ) ? GameState.BLACK_TO_MOVE : GameState.WHITE_TO_MOVE;
     }
 
     public boolean isOutOfBounce( Vector2I p ) {

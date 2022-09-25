@@ -128,16 +128,27 @@ public class GameMB extends Game {
             if ( validatedPosition.isLegal() ) {
 
                 this.prev = this.clone( "rb" );
-                addHistory( validatedPosition.getActions(), fromPos, toPos );
                 movePiece( fromPos, toPos );
-
                 this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
+
+                switchTeam();
+
+                this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
+                this.pined = MoveGenerator.generatePinedPositionsBy( this, getEnemy( this.onMove ) );
+                this.ruleValidator.postValidate( validatedPosition );
+
+                log( "On {}s {}. move: {} {}->{} with actions {}",
+                        this.getTeam( to ),
+                        this.moveNumber,
+                        getType( to ),
+                        from,
+                        to,
+                        validatedPosition.getActions() );
+                addHistory( validatedPosition.getActions(), fromPos.getPos(), toPos.getPos() );
 
                 checkFinished( validatedPosition.getActions() );
                 incrementMove();
 
-                this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
-                this.pined = MoveGenerator.generatePinedPositionsBy( this, getEnemy( this.onMove ) );
                 this.emitEvent();
                 return true;
             }
@@ -167,17 +178,6 @@ public class GameMB extends Game {
         }
     }
 
-    private void addHistory( Set<ActionType> actions, Position from, Position to ) {
-        log( "On {}s {}. move: {} {}->{} with actions {}",
-                getTeam( from ),
-                this.moveNumber,
-                getType( from ),
-                from.getPos(),
-                to.getPos(),
-                actions );
-        this.addHistory( actions, from.getPos(), to.getPos() );
-    }
-
     @Override
     public boolean isOnMove( TeamColor color ) {
         return this.onMove.equals( color );
@@ -186,38 +186,23 @@ public class GameMB extends Game {
     @Override
     public boolean isCheckFor( TeamColor team ) {
 
-        GameMB sandbox = this.clone( "isCheck" );
-        sandbox.getRuleValidator().setRulesActiveState( false, RuleType.TEAM_IS_NOT_ON_MOVE, RuleType.GAME_IS_FINISHED );
-        final Piece king = sandbox.getTeam( team ).getKing();
+        final Piece king = this.getTeam( team ).getKing();
         if ( !king.isAlive() ) {
             return false;
         }
-        final Position kingPos = sandbox.getPosition( king );
-        List<Piece> enemies = sandbox.getTeam( getEnemy( team ) ).getAlive();
 
-        for ( Piece enemy : enemies ) {
-            Position enemyPos = sandbox.getPosition( enemy );
-            if ( enemyPos != null && sandbox.validate( enemyPos.getPos(), kingPos.getPos() ).isLegal() ) {
-                return true;
-            }
-        }
-
-        return false;
+        return MoveGenerator.generateAttackedPositionsBy( this, getEnemy( team ) ).contains( getPos( king ) );
     }
 
     @Override
     public boolean hasLegalMovesLeft( TeamColor color ) {
 
-        GameMB sandbox = this.clone( "legalMoves" );
-        sandbox.getRuleValidator().setRulesActiveState( false, RuleType.TEAM_IS_NOT_ON_MOVE, RuleType.GAME_IS_FINISHED );
-
         int movesLeft = 0;
 
-        for ( Position p : sandbox.getAllAlivePositionsOf( color ) ) {
-            int pieceMovesLeft = sandbox.getRuleValidator().legalMovesLeft( p );
+        for ( Position p : this.getAllAlivePositionsOf( color ) ) {
+            int pieceMovesLeft = this.getRuleValidator().legalMovesLeft( p );
             movesLeft += pieceMovesLeft;
         }
-
         return movesLeft > 0;
     }
 
@@ -329,6 +314,10 @@ public class GameMB extends Game {
         return TeamColor.getEnemy( color );
     }
 
+    public TeamColor getEnemy() {
+        return getEnemy( this.onMove );
+    }
+
     @Override
     public boolean areEnemies( Vector2I pA, Vector2I pB ) {
         return areEnemies( getPosition( pA ), getPosition( pB ) );
@@ -336,6 +325,9 @@ public class GameMB extends Game {
 
     @Override
     public boolean isAttacked( Vector2I p ) {
+        if(this.attacked == null) {
+            return false;
+        }
         return this.attacked.contains( p );
     }
 

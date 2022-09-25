@@ -8,15 +8,14 @@ import backend.game.modulebased.validator.RuleType;
 
 import java.util.Arrays;
 
-public class AllowedToCaptureRule extends Rule {
+public class NotAllowedToCaptureRule extends Rule {
 
-    public AllowedToCaptureRule() {
-        super( RuleType.ALLOWED_TO_CAPTURE, Arrays.asList( ActionType.CAPTURE ) );
+    public NotAllowedToCaptureRule() {
+        super( RuleType.NOT_ALLOWED_TO_CAPTURE, Arrays.asList( ActionType.CAPTURE ) );
     }
 
     @Override
     public boolean validate( GameMB game, Position from, Position to ) {
-        return to.hasPiece() && game.areEnemies( to, from );
+        return to.hasPiece() && !game.areEnemies( to, from );
     }
-
 }

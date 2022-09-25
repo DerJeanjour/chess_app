@@ -17,9 +17,19 @@ public class IsCheckRule extends Rule {
 
     @Override
     public boolean validate( GameMB game, Position from, Position to ) {
+
+        // TODO stackoverflow
+        /*
+        TeamColor enemy = game.getEnemy( from );
+        game.makeMove( from.getPos(), to.getPos() );
+        boolean isCheck = game.isCheckFor( enemy );
+        game.undoLastMove();
+        return isCheck;
+
+         */
+
         TeamColor enemy = game.getEnemy( from );
         GameMB sandbox = game.clone( "isCheckRule" );
-        //sandbox.getRuleValidator().setRuleActiveState( getType(), false );
         sandbox.getRuleValidator().setRulesActiveStateByOrders( false, 1, 2 );
         if ( sandbox.makeMove( from.getPos(), to.getPos() ) ) {
             return sandbox.isCheckFor( enemy );

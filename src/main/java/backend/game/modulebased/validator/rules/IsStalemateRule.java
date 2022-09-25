@@ -17,9 +17,17 @@ public class IsStalemateRule extends Rule {
 
     @Override
     public boolean validate( GameMB game, Position from, Position to ) {
+        /*
+        // TODO stackoverflow
+        TeamColor enemy = game.getEnemy( from );
+        game.makeMove( from.getPos(), to.getPos() );
+        boolean isStalemate = game.isStalemateFor( enemy );
+        game.undoLastMove();
+        return isStalemate;
+
+         */
         TeamColor enemy = game.getEnemy( from );
         GameMB sandbox = game.clone( "isStalemateRule" );
-        //sandbox.getRuleValidator().setRuleActiveState( getType(), false );
         sandbox.getRuleValidator().setRulesActiveStateByOrders( false, 2 );
         if ( sandbox.makeMove( from.getPos(), to.getPos() ) ) {
             return sandbox.isStalemateFor( enemy );

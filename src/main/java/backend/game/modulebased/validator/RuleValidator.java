@@ -1,11 +1,13 @@
 package backend.game.modulebased.validator;
 
 import backend.core.values.ActionType;
+import backend.game.MoveGenerator;
 import backend.game.modulebased.GameMB;
 import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.rules.*;
 import lombok.Getter;
 import math.Vector2I;
+import misc.Log;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,6 +39,9 @@ public class RuleValidator {
                 break;
             case ALLOWED_TO_CAPTURE:
                 this.rules.add( new AllowedToCaptureRule() );
+                break;
+            case NOT_ALLOWED_TO_CAPTURE:
+                this.rules.add( new NotAllowedToCaptureRule() );
                 break;
             case PAWN_MOVE:
                 this.rules.add( new PawnMoveRule() );
@@ -71,6 +76,7 @@ public class RuleValidator {
             case KING_WOULD_BE_IN_CHECK:
                 this.rules.add( new KingWouldBeInCheck() );
                 break;
+                /*
             case IS_CHECK:
                 this.rules.add( new IsCheckRule() );
                 break;
@@ -80,6 +86,8 @@ public class RuleValidator {
             case IS_STALEMATE:
                 this.rules.add( new IsStalemateRule() );
                 break;
+
+                 */
         }
     }
 
@@ -94,7 +102,9 @@ public class RuleValidator {
 
     public Map<Vector2I, ValidationMB> validate( Position from ) {
         Map<Vector2I, ValidationMB> validation = new HashMap<>();
-        for ( Position toPos : this.game.getBoard().getPositions().values() ) {
+        List<Position> positions = MoveGenerator.generateAllPossibleMoves( this.game, from.getPos() ).stream()
+                .map( p -> this.game.getPosition( p ) ).collect( Collectors.toList() );
+        for ( Position toPos : positions ) {
             validation.put( toPos.getPos(), validate( from, toPos ) );
         }
         return validation;
@@ -119,6 +129,23 @@ public class RuleValidator {
 
         }
         return validatedPosition;
+    }
+
+    /**
+     * Validate after move.
+     * Checking check, checkmate and stalemate.
+     */
+    public void postValidate( ValidationMB validation ) {
+        boolean isCheck = this.game.isCheckFor( this.game.getOnMove() );
+        boolean hasMoves = this.game.hasLegalMovesLeft( this.game.getOnMove() );
+        if( isCheck ) {
+            validation.getActions().add( ActionType.CHECK );
+            if( !hasMoves ) {
+                validation.getActions().add( ActionType.CHECKMATE );
+            }
+        } else if( !hasMoves ) {
+            validation.getActions().add( ActionType.STALEMATE );
+        }
     }
 
     private List<Rule> getRulesbyOrder( int order ) {

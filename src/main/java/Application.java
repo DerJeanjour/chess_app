@@ -1,5 +1,6 @@
 import backend.core.notation.AlgebraicNotation;
 import backend.core.notation.ChessNotation;
+import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
 import backend.game.modulebased.GameMB;

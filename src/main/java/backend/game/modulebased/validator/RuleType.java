@@ -7,6 +7,7 @@ public enum RuleType {
 
     TEAM_IS_NOT_ON_MOVE( false, 0 ),
     ALLOWED_TO_CAPTURE( true, 0 ),
+    NOT_ALLOWED_TO_CAPTURE( false, 0 ),
 
     PAWN_MOVE( true, 0 ),
     BISHOP_MOVE( true, 0 ),

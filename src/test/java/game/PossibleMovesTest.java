@@ -33,7 +33,7 @@ public class PossibleMovesTest {
     @Test
     void testPossibleNodes() {
 
-        int maxDepth = 2; // FIXME already depth 3 is close to 1 min !!!
+        int maxDepth = 3;
         for ( int i = 0; i <= maxDepth; i++ ) {
             Timer timer = new Timer();
             GameMB game = new GameMB( "test", new GameConfig() );
