@@ -27,7 +27,7 @@ public class CastleQueenRule extends Rule {
         Vector2I rookPos = game.isTeam( to, TeamColor.WHITE )
                 ? new Vector2I( 0, 0 )
                 : new Vector2I( 0, game.getBoardSize() - 1 );
-        Vector2I target =to.add( Dir.RIGHT.vector );
+        Vector2I target = to.add( Dir.RIGHT.vector );
         game.movePiece( rookPos, target );
     }
 }

@@ -115,12 +115,12 @@ public class RuleValidator {
     public void postValidate( ValidationMB validation ) {
         boolean isCheck = this.game.isCheckFor( this.game.getOnMove() );
         boolean hasMoves = this.game.hasLegalMovesLeft( this.game.getOnMove() );
-        if( isCheck ) {
+        if ( isCheck ) {
             validation.getActions().add( ActionType.CHECK );
-            if( !hasMoves ) {
+            if ( !hasMoves ) {
                 validation.getActions().add( ActionType.CHECKMATE );
             }
-        } else if( !hasMoves ) {
+        } else if ( !hasMoves ) {
             validation.getActions().add( ActionType.STALEMATE );
         }
     }

@@ -302,7 +302,7 @@ public class GameMB extends Game {
 
     @Override
     public boolean isAttacked( Vector2I p ) {
-        if(this.attacked == null) {
+        if ( this.attacked == null ) {
             return false;
         }
         return this.attacked.contains( p );
@@ -326,7 +326,7 @@ public class GameMB extends Game {
     @Override
     public Piece getPiece( Vector2I p ) {
         String pieceId = this.positions.get( p );
-        if( StringUtil.isBlank( pieceId ) ) {
+        if ( StringUtil.isBlank( pieceId ) ) {
             return null;
         }
         return getPiece( this.positions.get( p ) );
@@ -344,10 +344,10 @@ public class GameMB extends Game {
 
     @Override
     public Vector2I getPosition( Piece piece ) {
-        if( piece == null ) {
+        if ( piece == null ) {
             return null;
         }
-        return this.piecePositions.get( getPieceMb(piece).getId() );
+        return this.piecePositions.get( getPieceMb( piece ).getId() );
     }
 
     @Override
@@ -419,8 +419,8 @@ public class GameMB extends Game {
     public void setAll( GameMB game ) {
         this.white = game.getWhite().clone();
         this.black = game.getBlack().clone();
-        this.positions = game.getPositions().entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue() ));
-        this.piecePositions = game.getPiecePositions().entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue() ));
+        this.positions = game.getPositions().entrySet().stream().collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue() ) );
+        this.piecePositions = game.getPiecePositions().entrySet().stream().collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue() ) );
         this.onMove = game.getOnMove();
         this.state = game.getState();
         this.moveNumber = game.getMoveNumber();

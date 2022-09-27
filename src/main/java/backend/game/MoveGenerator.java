@@ -253,7 +253,7 @@ public class MoveGenerator {
                 getPositionsOfDir( game, from, dir.vector, 1, false, true, true )
         ) );
         // TODO is this correct ? maybe calculate covert separately
-        return allowed.stream().filter( p -> !game.isAttacked( p ) ).collect( Collectors.toSet());
+        return allowed.stream().filter( p -> !game.isAttacked( p ) ).collect( Collectors.toSet() );
     }
 
     public static Set<Vector2I> generateCastleQueenMoves( Game game, Vector2I from ) {
@@ -280,8 +280,8 @@ public class MoveGenerator {
         if ( inBetween.size() != kingPos.x - 1 ) {
             return allowed;
         }
-        for( Vector2I p : inBetween ) {
-            if(game.isAttacked( p )) {
+        for ( Vector2I p : inBetween ) {
+            if ( game.isAttacked( p ) ) {
                 return allowed;
             }
         }
@@ -321,8 +321,8 @@ public class MoveGenerator {
         if ( inBetween.size() != game.getBoardSize() - kingPos.x - 2 ) {
             return allowed;
         }
-        for( Vector2I p : inBetween ) {
-            if(game.isAttacked( p )) {
+        for ( Vector2I p : inBetween ) {
+            if ( game.isAttacked( p ) ) {
                 return allowed;
             }
         }
@@ -355,7 +355,7 @@ public class MoveGenerator {
 
                     if ( includeEnemyContact && game.areEnemies( p, from ) ) {
                         positions.add( p );
-                    } else if( includeTeamContact && !game.areEnemies( p, from ) ) {
+                    } else if ( includeTeamContact && !game.areEnemies( p, from ) ) {
                         positions.add( p );
                     }
 

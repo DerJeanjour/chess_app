@@ -20,8 +20,8 @@ public class PawnMoveRule extends Rule {
     public boolean validate( GameMB game, Vector2I from, Vector2I to ) {
         Set<Vector2I> moves = MoveGenerator.generatePawnMoves( game, from );
         Set<Vector2I> attacking = MoveGenerator.generatePawnNormalAttackingMoves( game, from );
-        for( Vector2I attack : attacking ) {
-            if( !game.hasPiece( to ) ) {
+        for ( Vector2I attack : attacking ) {
+            if ( !game.hasPiece( to ) ) {
                 moves.remove( attack );
             }
         }

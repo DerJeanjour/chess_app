@@ -20,14 +20,14 @@ public class KingWouldBeInCheck extends Rule {
 
         Piece king = game.getTeam( game.getTeam( from ) ).getKing();
         Vector2I kingPos = game.getPosition( king );
-        if( game.isAttacked( kingPos ) ) {
-            if( from.equals( kingPos ) && game.isAttacked( to ) ) {
+        if ( game.isAttacked( kingPos ) ) {
+            if ( from.equals( kingPos ) && game.isAttacked( to ) ) {
                 return true;
-            } else if( !from.equals( kingPos ) && !game.isPined( to ) ) {
+            } else if ( !from.equals( kingPos ) && !game.isPined( to ) ) {
                 return true;
             }
         }
-        if( game.isPined( from ) && !game.isPined( to ) ) {
+        if ( game.isPined( from ) && !game.isPined( to ) ) {
             return true;
         }
         return false;
