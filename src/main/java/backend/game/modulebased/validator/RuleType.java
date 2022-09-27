@@ -2,40 +2,31 @@ package backend.game.modulebased.validator;
 
 public enum RuleType {
 
-    GAME_IS_FINISHED( false, 0 ),
-    POSITION_IS_OUT_OF_BOUNDS( false, 0 ),
+    GAME_IS_FINISHED( false ),
+    POSITION_IS_OUT_OF_BOUNDS( false ),
 
-    TEAM_IS_NOT_ON_MOVE( false, 0 ),
-    ALLOWED_TO_CAPTURE( true, 0 ),
-    NOT_ALLOWED_TO_CAPTURE( false, 0 ),
+    TEAM_IS_NOT_ON_MOVE( false ),
+    ALLOWED_TO_CAPTURE( true ),
+    NOT_ALLOWED_TO_CAPTURE( false ),
 
-    PAWN_MOVE( true, 0 ),
-    BISHOP_MOVE( true, 0 ),
-    KNIGHT_MOVE( true, 0 ),
-    ROOK_MOVE( true, 0 ),
-    QUEEN_MOVE( true, 0 ),
-    KING_MOVE( true, 0 ),
+    PAWN_MOVE( true ),
+    BISHOP_MOVE( true ),
+    KNIGHT_MOVE( true ),
+    ROOK_MOVE( true ),
+    QUEEN_MOVE( true ),
+    KING_MOVE( true ),
 
-    PROMOTING( true, 0 ),
-    AU_PASSANT( true, 0 ),
-    CASTLING_QUEEN_SIDE( true, 0 ),
-    CASTLING_KING_SIDE( true, 0 ),
+    PROMOTING( true ),
+    AU_PASSANT( true ),
+    CASTLING_QUEEN_SIDE( true ),
+    CASTLING_KING_SIDE( true ),
 
-    KING_WOULD_BE_IN_CHECK( false, 1 ),
-
-    IS_CHECK( true, 2 ),
-    IS_CHECKMATE( true, 2 ),
-    IS_STALEMATE( true, 2 );
+    KING_WOULD_BE_IN_CHECK( false );
 
     public final boolean legal;
 
-    public final int order;
-
-    public static final int MAX_ORDER = 2;
-
-    RuleType( boolean legal, int order ) {
+    RuleType( boolean legal ) {
         this.legal = legal;
-        this.order = order;
     }
 
 }

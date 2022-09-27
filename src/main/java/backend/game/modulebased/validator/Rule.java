@@ -16,8 +16,6 @@ public abstract class Rule {
 
     private final List<ActionType> tags;
 
-    private boolean active;
-
     public abstract boolean validate( GameMB game, Vector2I from, Vector2I to );
 
     public void applyAdditionalAfterMove( GameMB game, Vector2I from, Vector2I to ) {
