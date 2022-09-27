@@ -86,7 +86,9 @@ public abstract class Game {
 
     public abstract Piece getPiece( Vector2I p );
 
-    public abstract Vector2I getPos( Piece piece );
+    public abstract boolean hasPiece( Vector2I p );
+
+    public abstract Vector2I getPosition( Piece piece );
 
     public abstract boolean hasMoved( Piece piece );
 

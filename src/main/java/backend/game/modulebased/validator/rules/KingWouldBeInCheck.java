@@ -2,9 +2,7 @@ package backend.game.modulebased.validator.rules;
 
 import backend.core.model.Piece;
 import backend.core.values.ActionType;
-import backend.core.values.PieceType;
 import backend.game.modulebased.GameMB;
-import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
 import backend.game.modulebased.validator.RuleType;
 import math.Vector2I;
@@ -18,29 +16,20 @@ public class KingWouldBeInCheck extends Rule {
     }
 
     @Override
-    public boolean validate( GameMB game, Position from, Position to ) {
+    public boolean validate( GameMB game, Vector2I from, Vector2I to ) {
 
         Piece king = game.getTeam( game.getTeam( from ) ).getKing();
-        Vector2I kingPos = game.getPos( king );
+        Vector2I kingPos = game.getPosition( king );
         if( game.isAttacked( kingPos ) ) {
-            if( from.getPos().equals( kingPos ) && game.isAttacked( to.getPos() ) ) {
+            if( from.equals( kingPos ) && game.isAttacked( to ) ) {
                 return true;
-            } else if( !from.getPos().equals( kingPos ) && !game.isPined( to.getPos() ) ) {
+            } else if( !from.equals( kingPos ) && !game.isPined( to ) ) {
                 return true;
             }
         }
-        if( game.isPined( from.getPos() ) && !game.isPined( to.getPos() ) ) {
+        if( game.isPined( from ) && !game.isPined( to ) ) {
             return true;
         }
         return false;
-
-        /*
-        GameMB sandbox = game.clone( "wouldbecheck" );
-        sandbox.getRuleValidator().setRulesActiveStateByOrders( false, 1, 2 );
-        if ( sandbox.makeMove( from.getPos(), to.getPos() ) ) {
-            return sandbox.isCheckFor( game.getTeam( from ) );
-        }
-        return false;
-        */
     }
 }

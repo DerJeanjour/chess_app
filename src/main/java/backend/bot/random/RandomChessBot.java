@@ -33,7 +33,7 @@ public class RandomChessBot extends ChessBot {
 
                 int randomPieceIdx = this.random.nextInt( alive.size() );
                 Piece randomPiece = alive.get( randomPieceIdx );
-                Vector2I piecePos = game.getPos( randomPiece );
+                Vector2I piecePos = game.getPosition( randomPiece );
 
                 Map<Vector2I, Validation> validation = game.validate( piecePos );
                 List<Validation> legalMoves = validation.values().stream()

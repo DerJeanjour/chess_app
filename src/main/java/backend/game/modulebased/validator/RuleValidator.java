@@ -3,11 +3,9 @@ package backend.game.modulebased.validator;
 import backend.core.values.ActionType;
 import backend.game.MoveGenerator;
 import backend.game.modulebased.GameMB;
-import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.rules.*;
 import lombok.Getter;
 import math.Vector2I;
-import misc.Log;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -91,7 +89,7 @@ public class RuleValidator {
         }
     }
 
-    public void applyAdditionalActions( Set<ActionType> actions, Position from, Position to ) {
+    public void applyAdditionalActions( Set<ActionType> actions, Vector2I from, Vector2I to ) {
         for ( Rule rule : this.rules ) {
             List<ActionType> tags = rule.getTags();
             if ( actions.containsAll( tags ) ) {
@@ -100,19 +98,18 @@ public class RuleValidator {
         }
     }
 
-    public Map<Vector2I, ValidationMB> validate( Position from ) {
+    public Map<Vector2I, ValidationMB> validate( Vector2I from ) {
         Map<Vector2I, ValidationMB> validation = new HashMap<>();
-        List<Position> positions = MoveGenerator.generateAllPossibleMoves( this.game, from.getPos() ).stream()
-                .map( p -> this.game.getPosition( p ) ).collect( Collectors.toList() );
-        for ( Position toPos : positions ) {
-            validation.put( toPos.getPos(), validate( from, toPos ) );
+        Set<Vector2I> positions = MoveGenerator.generateAllPossibleMoves( this.game, from );
+        for ( Vector2I to : positions ) {
+            validation.put( to, validate( from, to ) );
         }
         return validation;
     }
 
-    public ValidationMB validate( Position from, Position to ) {
+    public ValidationMB validate( Vector2I from, Vector2I to ) {
 
-        ValidationMB validatedPosition = new ValidationMB( from.getPos(), to.getPos() );
+        ValidationMB validatedPosition = new ValidationMB( from, to );
 
         for ( int i = 0; i <= RuleType.MAX_ORDER; i++ ) {
 
@@ -167,7 +164,7 @@ public class RuleValidator {
         validatedPosition.setLegal( legal );
     }
 
-    public int legalMovesLeft( Position from ) {
+    public int legalMovesLeft( Vector2I from ) {
         Map<Vector2I, ValidationMB> positions = validate( from );
         return ( int ) positions.entrySet().stream().filter( e -> e.getValue().isLegal() ).count();
     }

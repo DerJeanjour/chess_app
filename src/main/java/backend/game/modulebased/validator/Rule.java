@@ -2,9 +2,9 @@ package backend.game.modulebased.validator;
 
 import backend.core.values.ActionType;
 import backend.game.modulebased.GameMB;
-import backend.game.modulebased.Position;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import math.Vector2I;
 
 import java.util.List;
 
@@ -18,9 +18,9 @@ public abstract class Rule {
 
     private boolean active;
 
-    public abstract boolean validate( GameMB game, Position from, Position to );
+    public abstract boolean validate( GameMB game, Vector2I from, Vector2I to );
 
-    public void applyAdditionalAfterMove( GameMB game, Position from, Position to ) {
+    public void applyAdditionalAfterMove( GameMB game, Vector2I from, Vector2I to ) {
         // overwrite for additional action
         return;
     }

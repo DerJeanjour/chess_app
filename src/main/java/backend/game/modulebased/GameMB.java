@@ -21,6 +21,7 @@ import lombok.Getter;
 import math.Vector2I;
 import misc.Log;
 import util.CollectionUtil;
+import util.StringUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,13 +32,19 @@ public class GameMB extends Game {
     private final String id;
 
     @Getter
-    private Board board;
-
-    @Getter
     private TeamMB white;
 
     @Getter
     private TeamMB black;
+
+    @Getter
+    private int size;
+
+    @Getter
+    private Map<Vector2I, String> positions;
+
+    @Getter
+    private Map<String, Vector2I> piecePositions;
 
     @Getter
     private RuleValidator ruleValidator;
@@ -75,11 +82,12 @@ public class GameMB extends Game {
         this.white = new TeamMB( TeamColor.WHITE );
         this.black = new TeamMB( TeamColor.BLACK );
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
-        this.setBoard();
+        this.size = FenNotation.readBoardSize( config.getStartingPosition() );
+        this.initPositions();
         this.resetStates();
         this.prev = null;
         this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
-        this.pined = this.pined = MoveGenerator.generatePinedPositionsBy( this, getEnemy( this.onMove ) );
+        this.pined = MoveGenerator.generatePinedPositionsBy( this, getEnemy( this.onMove ) );
         this.emitEvent();
     }
 
@@ -100,13 +108,13 @@ public class GameMB extends Game {
 
     @Override
     public Map<Vector2I, Validation> validate( Vector2I p ) {
-        return this.ruleValidator.validate( getPosition( p ) ).entrySet().stream()
+        return this.ruleValidator.validate( p ).entrySet().stream()
                 .collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue() ) );
     }
 
     @Override
     public Validation validate( Vector2I from, Vector2I to ) {
-        return this.ruleValidator.validate( getPosition( from ), getPosition( to ) );
+        return this.ruleValidator.validate( from, to );
     }
 
     @Override
@@ -118,18 +126,16 @@ public class GameMB extends Game {
 
         try {
 
-            Position fromPos = getPosition( from );
-            Position toPos = getPosition( to );
-            if ( getPiece( fromPos ) == null ) {
+            if ( getPiece( from ) == null ) {
                 return false;
             }
 
-            ValidationMB validatedPosition = this.ruleValidator.validate( fromPos, toPos );
+            ValidationMB validatedPosition = this.ruleValidator.validate( from, to );
             if ( validatedPosition.isLegal() ) {
 
                 this.prev = this.clone( "rb" );
-                movePiece( fromPos, toPos );
-                this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), fromPos, toPos );
+                movePiece( from, to );
+                this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), from, to );
 
                 switchTeam();
 
@@ -144,7 +150,7 @@ public class GameMB extends Game {
                         from,
                         to,
                         validatedPosition.getActions() );
-                addHistory( validatedPosition.getActions(), fromPos.getPos(), toPos.getPos() );
+                addHistory( validatedPosition.getActions(), from, to );
 
                 checkFinished( validatedPosition.getActions() );
                 incrementMove();
@@ -160,21 +166,25 @@ public class GameMB extends Game {
 
     }
 
-    public void movePiece( Position from, Position to ) {
+    public void movePiece( Vector2I from, Vector2I to ) {
         PieceMB piece = ( PieceMB ) getPiece( from );
         if ( piece == null ) {
             return;
         }
         removePiece( to );
-        this.board.movePiece( from, to );
+        this.positions.put( from, "" );
+        this.positions.put( to, piece.getId() );
         piece.moved( this.moveNumber );
+
+        this.piecePositions.put( piece.getId(), to );
     }
 
-    public void removePiece( Position pos ) {
+    public void removePiece( Vector2I pos ) {
         Piece piece = getPiece( pos );
-        this.board.removePiece( pos );
+        this.positions.put( pos, "" );
         if ( piece != null ) {
             piece.setAlive( false );
+            this.piecePositions.remove( getPieceMb( piece ).getId() );
         }
     }
 
@@ -191,7 +201,7 @@ public class GameMB extends Game {
             return false;
         }
 
-        return MoveGenerator.generateAttackedPositionsBy( this, getEnemy( team ) ).contains( getPos( king ) );
+        return MoveGenerator.generateAttackedPositionsBy( this, getEnemy( team ) ).contains( getPosition( king ) );
     }
 
     @Override
@@ -199,7 +209,7 @@ public class GameMB extends Game {
 
         int movesLeft = 0;
 
-        for ( Position p : this.getAllAlivePositionsOf( color ) ) {
+        for ( Vector2I p : this.getAllAlivePositionsOf( color ) ) {
             int pieceMovesLeft = this.getRuleValidator().legalMovesLeft( p );
             movesLeft += pieceMovesLeft;
         }
@@ -243,7 +253,7 @@ public class GameMB extends Game {
         return EnumSet.of( GameState.TIE, GameState.WHITE_WON, GameState.BLACK_WON ).contains( this.state );
     }
 
-    public List<Position> getAllAlivePositionsOf( TeamColor color ) {
+    public List<Vector2I> getAllAlivePositionsOf( TeamColor color ) {
         Team team = getTeam( color );
         if ( team == null ) {
             return Collections.emptyList();
@@ -257,20 +267,8 @@ public class GameMB extends Game {
         return type.equals( getType( p ) );
     }
 
-    public boolean isType( Position position, PieceType type ) {
-        return type.equals( getType( position ) );
-    }
-
     public PieceType getType( Vector2I p ) {
         Piece piece = getPiece( p );
-        if ( piece == null ) {
-            return null;
-        }
-        return piece.getType();
-    }
-
-    public PieceType getType( Position position ) {
-        Piece piece = getPiece( position );
         if ( piece == null ) {
             return null;
         }
@@ -282,20 +280,8 @@ public class GameMB extends Game {
         return team.equals( getTeam( p ) );
     }
 
-    public boolean isTeam( Position position, TeamColor color ) {
-        return color.equals( getTeam( position ) );
-    }
-
     public TeamColor getTeam( Vector2I p ) {
         Piece piece = getPiece( p );
-        if ( piece == null ) {
-            return null;
-        }
-        return piece.getTeam();
-    }
-
-    public TeamColor getTeam( Position position ) {
-        Piece piece = getPiece( position );
         if ( piece == null ) {
             return null;
         }
@@ -306,21 +292,12 @@ public class GameMB extends Game {
         return TeamColor.getEnemy( getTeam( p ) );
     }
 
-    public TeamColor getEnemy( Position position ) {
-        return TeamColor.getEnemy( getTeam( position ) );
-    }
-
     public TeamColor getEnemy( TeamColor color ) {
         return TeamColor.getEnemy( color );
     }
 
     public TeamColor getEnemy() {
         return getEnemy( this.onMove );
-    }
-
-    @Override
-    public boolean areEnemies( Vector2I pA, Vector2I pB ) {
-        return areEnemies( getPosition( pA ), getPosition( pB ) );
     }
 
     @Override
@@ -336,7 +313,8 @@ public class GameMB extends Game {
         return this.pined.contains( p );
     }
 
-    public boolean areEnemies( Position pA, Position pB ) {
+    @Override
+    public boolean areEnemies( Vector2I pA, Vector2I pB ) {
         Piece pieceA = getPiece( pA );
         Piece pieceB = getPiece( pB );
         if ( pieceA == null || pieceB == null ) {
@@ -347,18 +325,16 @@ public class GameMB extends Game {
 
     @Override
     public Piece getPiece( Vector2I p ) {
-        Position pos = getPosition( p );
-        if ( pos == null ) {
+        String pieceId = this.positions.get( p );
+        if( StringUtil.isBlank( pieceId ) ) {
             return null;
         }
-        return getPiece( pos );
+        return getPiece( this.positions.get( p ) );
     }
 
-    public Piece getPiece( Position position ) {
-        if ( position == null || !position.hasPiece() ) {
-            return null;
-        }
-        return getPiece( position.getPieceId() );
+    @Override
+    public boolean hasPiece( Vector2I p ) {
+        return getPiece( p ) != null;
     }
 
     public Piece getPiece( String id ) {
@@ -366,17 +342,12 @@ public class GameMB extends Game {
         return team.getById( id );
     }
 
-    public boolean hasPieceOfType( Position p, PieceType type ) {
-        Piece piece = getPiece( p );
-        if ( piece != null ) {
-            return piece.getType().equals( type );
-        }
-        return false;
-    }
-
     @Override
-    public Vector2I getPos( Piece piece ) {
-        return this.board.getPosition( ( PieceMB ) piece ).getPos();
+    public Vector2I getPosition( Piece piece ) {
+        if( piece == null ) {
+            return null;
+        }
+        return this.piecePositions.get( getPieceMb(piece).getId() );
     }
 
     @Override
@@ -397,10 +368,6 @@ public class GameMB extends Game {
         return this.getMoveNumber() - pieceMB.getLastMovedAt() <= moveCount;
     }
 
-    public Position getPosition( Piece piece ) {
-        return this.board.getPosition( ( PieceMB ) piece );
-    }
-
     public TeamMB getTeam( String id ) {
         return id.startsWith( "W" ) ? this.white : this.black;
     }
@@ -410,30 +377,37 @@ public class GameMB extends Game {
         return color.equals( TeamColor.WHITE ) ? this.white : this.black;
     }
 
-    public Position getPosition( Vector2I p ) {
-        return this.board.getPosition( p );
-    }
-
-    private void setBoard() {
+    private void initPositions() {
 
         Map<Vector2I, PieceMB> placements = FenNotation.readPlacement( this.config.getStartingPosition() ).entrySet().stream()
                 .collect( Collectors.toMap( e -> e.getKey(), e -> new PieceMB( e.getValue().getType(), e.getValue().getTeam() ) ) );
 
         this.white = new TeamMB( TeamColor.WHITE );
         this.black = new TeamMB( TeamColor.BLACK );
-        Board board = new Board( FenNotation.readBoardSize( this.config.getStartingPosition() ) );
+        this.piecePositions = new HashMap<>();
+        this.positions = new HashMap<>();
+        for ( int i = 0; i < this.size; i++ ) {
+            for ( int j = 0; j < this.size; j++ ) {
+                this.positions.put( new Vector2I( i, j ), "" );
+            }
+        }
         for ( Map.Entry<Vector2I, PieceMB> placement : placements.entrySet() ) {
+            final Vector2I position = placement.getKey();
             PieceMB piece = placement.getValue();
             TeamMB team = piece.isTeam( TeamColor.WHITE ) ? this.white : this.black;
-            String id = team.registerPiece( piece );
-            board.setPiece( placement.getKey(), id );
+            final String id = team.registerPiece( piece );
+            this.positions.put( position, id );
+            this.piecePositions.put( id, position );
         }
-        this.board = board;
+    }
+
+    private PieceMB getPieceMb( Piece piece ) {
+        return ( PieceMB ) piece;
     }
 
     @Override
     public int getBoardSize() {
-        return this.board.getSize();
+        return this.size;
     }
 
     public GameMB clone( String tag ) {
@@ -445,7 +419,8 @@ public class GameMB extends Game {
     public void setAll( GameMB game ) {
         this.white = game.getWhite().clone();
         this.black = game.getBlack().clone();
-        this.board = game.getBoard().clone();
+        this.positions = game.getPositions().entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue() ));
+        this.piecePositions = game.getPiecePositions().entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue() ));
         this.onMove = game.getOnMove();
         this.state = game.getState();
         this.moveNumber = game.getMoveNumber();

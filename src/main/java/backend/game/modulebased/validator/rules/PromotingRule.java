@@ -5,9 +5,9 @@ import backend.core.values.ActionType;
 import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
 import backend.game.modulebased.GameMB;
-import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
 import backend.game.modulebased.validator.RuleType;
+import math.Vector2I;
 
 import java.util.Arrays;
 
@@ -18,22 +18,22 @@ public class PromotingRule extends Rule {
     }
 
     @Override
-    public boolean validate( GameMB game, Position from, Position to ) {
+    public boolean validate( GameMB game, Vector2I from, Vector2I to ) {
 
         if ( !game.isType( from, PieceType.PAWN ) ) {
             return false;
         }
 
-        if ( to.hasPiece() ) {
+        if ( game.hasPiece( to ) ) {
             return false;
         }
 
         int enemyRank = game.isTeam( from, TeamColor.WHITE ) ? game.getBoardSize() - 1 : 0;
-        return to.getPos().y == enemyRank;
+        return to.y == enemyRank;
     }
 
     @Override
-    public void applyAdditionalAfterMove( GameMB game, Position from, Position to ) {
+    public void applyAdditionalAfterMove( GameMB game, Vector2I from, Vector2I to ) {
         Piece pawn = game.getPiece( to );
         pawn.setType( PieceType.QUEEN );
     }

@@ -3,7 +3,6 @@ package backend.game.modulebased.validator.rules;
 import backend.core.values.ActionType;
 import backend.game.MoveGenerator;
 import backend.game.modulebased.GameMB;
-import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
 import backend.game.modulebased.validator.RuleType;
 import math.Vector2I;
@@ -18,16 +17,16 @@ public class PawnMoveRule extends Rule {
     }
 
     @Override
-    public boolean validate( GameMB game, Position from, Position to ) {
-        Set<Vector2I> moves = MoveGenerator.generatePawnMoves( game, from.getPos() );
-        Set<Vector2I> attacking = MoveGenerator.generatePawnNormalAttackingMoves( game, from.getPos() );
+    public boolean validate( GameMB game, Vector2I from, Vector2I to ) {
+        Set<Vector2I> moves = MoveGenerator.generatePawnMoves( game, from );
+        Set<Vector2I> attacking = MoveGenerator.generatePawnNormalAttackingMoves( game, from );
         for( Vector2I attack : attacking ) {
-            if( !to.hasPiece() ) {
+            if( !game.hasPiece( to ) ) {
                 moves.remove( attack );
             }
         }
 
-        return moves.contains( to.getPos() );
+        return moves.contains( to );
     }
 
 }

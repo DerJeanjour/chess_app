@@ -5,7 +5,6 @@ import backend.core.values.Dir;
 import backend.core.values.TeamColor;
 import backend.game.MoveGenerator;
 import backend.game.modulebased.GameMB;
-import backend.game.modulebased.Position;
 import backend.game.modulebased.validator.Rule;
 import backend.game.modulebased.validator.RuleType;
 import math.Vector2I;
@@ -19,15 +18,16 @@ public class CastleQueenRule extends Rule {
     }
 
     @Override
-    public boolean validate( GameMB game, Position from, Position to ) {
-        return MoveGenerator.generateCastleQueenMoves( game, from.getPos() ).contains( to.getPos() );
+    public boolean validate( GameMB game, Vector2I from, Vector2I to ) {
+        return MoveGenerator.generateCastleQueenMoves( game, from ).contains( to );
     }
 
     @Override
-    public void applyAdditionalAfterMove( GameMB game, Position from, Position to ) {
-        Vector2I rookPos = game.isTeam( to, TeamColor.WHITE ) ? new Vector2I( 0, 0 ) : new Vector2I( 0, game.getBoardSize() - 1 );
-        Position rookPosition = game.getPosition( rookPos );
-        Position target = game.getPosition( to.getPos().add( Dir.RIGHT.vector ) );
-        game.movePiece( rookPosition, target );
+    public void applyAdditionalAfterMove( GameMB game, Vector2I from, Vector2I to ) {
+        Vector2I rookPos = game.isTeam( to, TeamColor.WHITE )
+                ? new Vector2I( 0, 0 )
+                : new Vector2I( 0, game.getBoardSize() - 1 );
+        Vector2I target =to.add( Dir.RIGHT.vector );
+        game.movePiece( rookPos, target );
     }
 }

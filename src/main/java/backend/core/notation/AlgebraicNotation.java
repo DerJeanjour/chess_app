@@ -80,13 +80,13 @@ public class AlgebraicNotation implements ChessNotation {
         // special cases
         if ( moveNotation.equals( actionCodes.get( ActionType.CASTLE_KING ) ) ) {
             Team onMove = game.getTeam( game.getOnMove() );
-            Vector2I kingPos = game.getPos( onMove.getKing() );
+            Vector2I kingPos = game.getPosition( onMove.getKing() );
             return new Vector2I[]{ kingPos, kingPos.add( new Vector2I( 2, 0 ) ) };
         }
 
         if ( moveNotation.equals( actionCodes.get( ActionType.CASTLE_QUEEN ) ) ) {
             Team onMove = game.getTeam( game.getOnMove() );
-            Vector2I kingPos = game.getPos( onMove.getKing() );
+            Vector2I kingPos = game.getPosition( onMove.getKing() );
             return new Vector2I[]{ kingPos, kingPos.add( new Vector2I( -2, 0 ) ) };
         }
 
@@ -146,7 +146,7 @@ public class AlgebraicNotation implements ChessNotation {
             // get ambiguous positions with legal moves
             List<Vector2I> ambiguousPositions = new ArrayList<>();
             for ( Piece p : pieces ) {
-                Vector2I pPos = game.getPos( p );
+                Vector2I pPos = game.getPosition( p );
                 if ( pPos != null && game.validate( pPos, to ).isLegal() ) {
                     ambiguousPositions.add( pPos );
                     piece = p;
@@ -182,7 +182,7 @@ public class AlgebraicNotation implements ChessNotation {
         if ( piece == null ) {
             throw new NotationParsingException( "No piece found for move... ({})", moveNotation );
         }
-        Vector2I fromPos = game.getPos( piece );
+        Vector2I fromPos = game.getPosition( piece );
         if ( fromPos == null ) {
             throw new NotationParsingException( "No position found for piece {}... ({})", piece, moveNotation );
         }
@@ -295,7 +295,7 @@ public class AlgebraicNotation implements ChessNotation {
 
         List<Vector2I> ambiguousPositions = new ArrayList<>();
         for ( Piece piece : pieces ) {
-            Vector2I piecePos = game.getPos( piece );
+            Vector2I piecePos = game.getPosition( piece );
             if ( !piecePos.equals( move.getFrom() ) && game.validate( piecePos, move.getTo() ).isLegal() ) {
                 ambiguousPositions.add( piecePos );
             }

@@ -5,8 +5,6 @@ import backend.core.values.Dir;
 import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
 import math.Vector2I;
-import misc.Log;
-import misc.Timer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,25 +15,12 @@ public class MoveGenerator {
         Set<Vector2I> attacked = new HashSet<>();
         List<Piece> alive = game.getTeam( color ).getAlive();
         for ( Piece piece : alive ) {
-            Vector2I p = game.getPos( piece );
+            Vector2I p = game.getPosition( piece );
             if ( p != null ) {
                 attacked.addAll( generateAttackingMoves( game, p ) );
             }
         }
-        //return attacked.stream().filter( p -> !game.isTeam( p, color ) ).collect( Collectors.toSet());
         return attacked;
-    }
-
-    public static Set<Vector2I> generateCoveredPositionsBy( Game game, TeamColor color ) {
-        Set<Vector2I> attacked = new HashSet<>();
-        List<Piece> alive = game.getTeam( color ).getAlive();
-        for ( Piece piece : alive ) {
-            Vector2I p = game.getPos( piece );
-            if ( p != null ) {
-                attacked.addAll( generateAttackingMoves( game, p ) );
-            }
-        }
-        return attacked.stream().filter( p -> game.isTeam( p, color ) ).collect( Collectors.toSet());
     }
 
     public static Set<Vector2I> generatePinedPositionsBy( Game game, TeamColor color ) {
@@ -44,17 +29,17 @@ public class MoveGenerator {
         if ( !king.isAlive() ) {
             return pined;
         }
-        Vector2I kingPos = game.getPos( king );
+        Vector2I kingPos = game.getPosition( king );
         for ( Piece piece : game.getTeam( color ).getAlive() ) {
             switch ( piece.getType() ) {
                 case BISHOP -> Dir.diagonalDirs().forEach( dir ->
-                        pined.addAll( getPinedOfRay( game, kingPos, king.getTeam(), game.getPos( piece ), dir.vector ) )
+                        pined.addAll( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
                 );
                 case ROOK -> Dir.baseDirs().forEach( dir ->
-                        pined.addAll( getPinedOfRay( game, kingPos, king.getTeam(), game.getPos( piece ), dir.vector ) )
+                        pined.addAll( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
                 );
                 case QUEEN -> Arrays.asList( Dir.values() ).forEach( dir ->
-                        pined.addAll( getPinedOfRay( game, kingPos, king.getTeam(), game.getPos( piece ), dir.vector ) )
+                        pined.addAll( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
                 );
             }
         }

@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 
 public class TeamMB extends Team {
 
-    //private final TeamColor color;
-
     @Setter
     private Map<String, PieceMB> pieces;
 

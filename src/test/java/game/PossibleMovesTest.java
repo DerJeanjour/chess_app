@@ -51,7 +51,7 @@ public class PossibleMovesTest {
         }
         long legalMoves = 0l;
         for ( Piece piece : game.getTeam( game.getOnMove() ).getAlive() ) {
-            List<Validation> pieceMoves = game.validate( game.getPos( piece ) ).values().stream()
+            List<Validation> pieceMoves = game.validate( game.getPosition( piece ) ).values().stream()
                     .filter( Validation::isLegal ).collect( Collectors.toList() );
             for ( Validation move : pieceMoves ) {
                 game.makeMove( move.getFrom(), move.getTo() );
