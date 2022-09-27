@@ -206,14 +206,15 @@ public class GameMB extends Game {
 
     @Override
     public boolean hasLegalMovesLeft( TeamColor color ) {
-
-        int movesLeft = 0;
-
-        for ( Vector2I p : this.getAllAlivePositionsOf( color ) ) {
-            int pieceMovesLeft = this.getRuleValidator().legalMovesLeft( p );
-            movesLeft += pieceMovesLeft;
+        for ( Vector2I from : this.getAllAlivePositionsOf( color ) ) {
+            Set<Vector2I> positions = MoveGenerator.generateAllPossibleMoves( this, from );
+            for ( Vector2I to : positions ) {
+                if( this.ruleValidator.validate( from, to ).isLegal() ) {
+                    return true;
+                }
+            }
         }
-        return movesLeft > 0;
+        return false;
     }
 
     @Override
