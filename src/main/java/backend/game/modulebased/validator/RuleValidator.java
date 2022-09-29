@@ -116,6 +116,11 @@ public class RuleValidator {
 
         boolean isPromoting = false;
 
+        // check if team is on move
+        if ( getRule( RuleType.TEAM_IS_NOT_ON_MOVE ).validate( this.game, from, to ) ) {
+            return Arrays.asList( validatedPosition );
+        }
+
         // check if same square
         if ( from.equals( to ) ) {
             return Arrays.asList( validatedPosition );

@@ -261,8 +261,8 @@ public class GameMB extends Game {
 
         if ( actions.contains( ActionType.CHECKMATE ) ) {
             this.state = isOnMove( TeamColor.WHITE )
-                    ? GameState.WHITE_WON
-                    : GameState.BLACK_WON;
+                    ? GameState.BLACK_WON
+                    : GameState.WHITE_WON;
         }
 
         if ( actions.contains( ActionType.STALEMATE ) ) {

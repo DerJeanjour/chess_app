@@ -62,7 +62,7 @@ public class MoveGenerator {
                     foundKing = true;
                 } else {
                     pinedRay.add( p );
-                    if ( game.isTeam( p, kingTeam ) ) {
+                    if ( game.hasPiece( p ) ) {
                         foundPined++;
                     }
                 }
