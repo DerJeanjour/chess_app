@@ -63,7 +63,6 @@ public class AlgebraicNotation implements ChessNotation {
 
     public static Vector2I[] readMove( Game game, String moveNotation ) {
 
-
         if ( StringUtil.isBlank( moveNotation ) ) {
             throw new NotationParsingException( "Notation is empty!" );
         }
@@ -199,12 +198,12 @@ public class AlgebraicNotation implements ChessNotation {
     }
 
     @Override
-    public String write( List<Move> history ) {
+    public String write( Game game ) {
         String notation = "";
-        Game game = new GameMB( "write", new GameConfig() );
-        for ( Move move : history ) {
-            notation += writeCode( game, move );
-            game.makeMove( move.getFrom(), move.getTo() );
+        Game sandbox = new GameMB( "write", new GameConfig() );
+        for ( Move move : game.getHistory() ) {
+            notation += writeCode( sandbox, move );
+            sandbox.makeMove( move.getFrom(), move.getTo() );
         }
         return notation;
     }

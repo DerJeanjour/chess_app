@@ -1,6 +1,5 @@
 package backend.core.notation;
 
-import backend.core.model.Move;
 import backend.core.model.Piece;
 import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
@@ -9,7 +8,6 @@ import math.Vector2I;
 import util.StringUtil;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class FenNotation implements ChessNotation {
@@ -28,8 +26,35 @@ public class FenNotation implements ChessNotation {
     }
 
     @Override
-    public String write( List<Move> history ) {
-        return null;
+    public String write( Game game ) {
+        String notation = "";
+        for ( int row = game.getBoardSize() - 1; row >= 0; row-- ) {
+            int emptyCol = 0;
+            for ( int col = 0; col < game.getBoardSize(); col++ ) {
+                Vector2I p = new Vector2I( col, row );
+                Piece piece = game.getPiece( p );
+                if ( piece != null ) {
+                    if ( emptyCol > 0 ) {
+                        notation += emptyCol;
+                        emptyCol = 0;
+                    }
+                    String code = pieceCodes.get( piece.getType() );
+                    if ( piece.isTeam( TeamColor.BLACK ) ) {
+                        code = code.toLowerCase();
+                    }
+                    notation += code;
+                } else {
+                    emptyCol++;
+                }
+
+            }
+            if ( emptyCol > 0 ) {
+                notation += emptyCol;
+            }
+            notation += "/";
+        }
+        notation = notation.substring( 0, notation.length() - 1 );
+        return notation;
     }
 
     public static int readBoardSize( String placement ) {

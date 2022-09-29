@@ -209,7 +209,7 @@ public class GameMB extends Game {
         for ( Vector2I from : this.getAllAlivePositionsOf( color ) ) {
             Set<Vector2I> positions = MoveGenerator.generateAllPossibleMoves( this, from );
             for ( Vector2I to : positions ) {
-                if( this.ruleValidator.validate( from, to ).isLegal() ) {
+                if ( this.ruleValidator.validate( from, to ).isLegal() ) {
                     return true;
                 }
             }

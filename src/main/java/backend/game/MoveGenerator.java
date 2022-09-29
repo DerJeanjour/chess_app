@@ -47,11 +47,14 @@ public class MoveGenerator {
     }
 
     private static List<Vector2I> getPinedOfRay( Game game, Vector2I kingPos, TeamColor kingTeam, Vector2I from, Vector2I dir ) {
-        List<Vector2I> positions = getPositionsOfDir( game, from, dir, -1, true, false, false );
+        List<Vector2I> positions = getPositionsOfDir( game, from, dir, -1, true, false, false, false );
         if ( positions.contains( kingPos ) ) {
+
             List<Vector2I> pinedRay = new ArrayList<>();
+            pinedRay.add( from );
             int foundPined = 0;
             boolean foundKing = false;
+
             Iterator<Vector2I> iter = positions.iterator();
             while ( !foundKing && iter.hasNext() ) {
                 Vector2I p = iter.next();
@@ -75,9 +78,9 @@ public class MoveGenerator {
         Set<Vector2I> allowed = new HashSet<>();
         allowed.addAll( generatePawnAttackingMoves( game, from ) );
         allowed.addAll( generateKnightMoves( game, from ) );
-        allowed.addAll( generateBishopMoves( game, from ) );
-        allowed.addAll( generateRookMoves( game, from ) );
-        allowed.addAll( generateQueenMoves( game, from ) );
+        allowed.addAll( generateBishopAttackingMoves( game, from ) );
+        allowed.addAll( generateRookAttackingMoves( game, from ) );
+        allowed.addAll( generateQueenAttackingMoves( game, from ) );
         allowed.addAll( generateKingMoves( game, from ) );
         return allowed;
     }
@@ -107,7 +110,7 @@ public class MoveGenerator {
         Vector2I dir = piece.isTeam( TeamColor.WHITE ) ? Dir.UP.vector : Dir.DOWN.vector;
 
         int distance = game.hasMoved( piece ) ? 1 : 2;
-        allowed.addAll( getPositionsOfDir( game, from, dir, distance, false, false, false ) );
+        allowed.addAll( getPositionsOfDir( game, from, dir, distance, false, false, false, false ) );
         allowed.addAll( generatePawnNormalAttackingMoves( game, from ) );
 
         return allowed;
@@ -188,16 +191,7 @@ public class MoveGenerator {
         allowed.add( from.add( Dir.DOWN.vector.add( Dir.DOWN_RIGHT.vector ) ) );
 
         allowed = allowed.stream()
-                .filter( p -> {
-                    /*
-                    if ( game.isOutOfBounce( p ) ) {
-                        return false;
-                    }
-                    return game.getPiece( p ) == null || game.areEnemies( p, from );
-
-                     */
-                    return !game.isOutOfBounce( p );
-                } )
+                .filter( p -> !game.isOutOfBounce( p ) )
                 .collect( Collectors.toSet() );
         return allowed;
     }
@@ -210,8 +204,20 @@ public class MoveGenerator {
         }
 
         Dir.diagonalDirs().forEach( dir -> allowed.addAll(
-                //getPositionsOfDir( game, from, dir.vector, -1, false, true )
-                getPositionsOfDir( game, from, dir.vector, -1, false, true, true )
+                getPositionsOfDir( game, from, dir.vector, -1, false, false, true, true )
+        ) );
+        return allowed;
+    }
+
+    public static Set<Vector2I> generateBishopAttackingMoves( Game game, Vector2I from ) {
+
+        Set<Vector2I> allowed = new HashSet<>();
+        if ( !game.isType( from, PieceType.BISHOP ) ) {
+            return allowed;
+        }
+
+        Dir.diagonalDirs().forEach( dir -> allowed.addAll(
+                getPositionsOfDir( game, from, dir.vector, -1, false, true, true, true )
         ) );
         return allowed;
     }
@@ -224,7 +230,20 @@ public class MoveGenerator {
         }
 
         Dir.baseDirs().forEach( dir -> allowed.addAll(
-                getPositionsOfDir( game, from, dir.vector, -1, false, true, true )
+                getPositionsOfDir( game, from, dir.vector, -1, false, false, true, true )
+        ) );
+        return allowed;
+    }
+
+    public static Set<Vector2I> generateRookAttackingMoves( Game game, Vector2I from ) {
+
+        Set<Vector2I> allowed = new HashSet<>();
+        if ( !game.isType( from, PieceType.ROOK ) ) {
+            return allowed;
+        }
+
+        Dir.baseDirs().forEach( dir -> allowed.addAll(
+                getPositionsOfDir( game, from, dir.vector, -1, false, true, true, true )
         ) );
         return allowed;
     }
@@ -237,7 +256,20 @@ public class MoveGenerator {
         }
 
         Arrays.stream( Dir.values() ).forEach( dir -> allowed.addAll(
-                getPositionsOfDir( game, from, dir.vector, -1, false, true, true )
+                getPositionsOfDir( game, from, dir.vector, -1, false, false, true, true )
+        ) );
+        return allowed;
+    }
+
+    public static Set<Vector2I> generateQueenAttackingMoves( Game game, Vector2I from ) {
+
+        Set<Vector2I> allowed = new HashSet<>();
+        if ( !game.isType( from, PieceType.QUEEN ) ) {
+            return allowed;
+        }
+
+        Arrays.stream( Dir.values() ).forEach( dir -> allowed.addAll(
+                getPositionsOfDir( game, from, dir.vector, -1, false, true, true, true )
         ) );
         return allowed;
     }
@@ -250,7 +282,7 @@ public class MoveGenerator {
         }
 
         Arrays.stream( Dir.values() ).forEach( dir -> allowed.addAll(
-                getPositionsOfDir( game, from, dir.vector, 1, false, true, true )
+                getPositionsOfDir( game, from, dir.vector, 1, false, false, true, true )
         ) );
         // TODO is this correct ? maybe calculate covert separately
         return allowed.stream().filter( p -> !game.isAttacked( p ) ).collect( Collectors.toSet() );
@@ -276,7 +308,7 @@ public class MoveGenerator {
         }
 
         // check in between
-        List<Vector2I> inBetween = getPositionsOfDir( game, rookPos, Dir.RIGHT.vector, -1, false, false, false );
+        List<Vector2I> inBetween = getPositionsOfDir( game, rookPos, Dir.RIGHT.vector, -1, false, false, false, false );
         if ( inBetween.size() != kingPos.x - 1 ) {
             return allowed;
         }
@@ -317,7 +349,7 @@ public class MoveGenerator {
         }
 
         // check in between
-        List<Vector2I> inBetween = getPositionsOfDir( game, rookPos, Dir.LEFT.vector, -1, false, false, false );
+        List<Vector2I> inBetween = getPositionsOfDir( game, rookPos, Dir.LEFT.vector, -1, false, false, false, false );
         if ( inBetween.size() != game.getBoardSize() - kingPos.x - 2 ) {
             return allowed;
         }
@@ -338,7 +370,7 @@ public class MoveGenerator {
         return allowed;
     }
 
-    public static List<Vector2I> getPositionsOfDir( Game game, Vector2I from, Vector2I dir, int distance, boolean ignorePieces, boolean includeEnemyContact, boolean includeTeamContact ) {
+    public static List<Vector2I> getPositionsOfDir( Game game, Vector2I from, Vector2I dir, int distance, boolean ignorePieces, boolean ignoreEnemyKing, boolean includeEnemyContact, boolean includeTeamContact ) {
 
         if ( distance < 0 ) {
             distance = game.getBoardSize() * game.getBoardSize();
@@ -351,7 +383,7 @@ public class MoveGenerator {
 
             if ( !game.isOutOfBounce( p ) ) {
 
-                if ( !ignorePieces && game.getPiece( p ) != null ) {
+                if ( !ignorePieces && game.hasPiece( p ) && ( !ignoreEnemyKing || !game.areEnemies( p, from ) || !game.isType( p, PieceType.KING ) ) ) {
 
                     if ( includeEnemyContact && game.areEnemies( p, from ) ) {
                         positions.add( p );

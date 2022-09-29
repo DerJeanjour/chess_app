@@ -102,85 +102,85 @@ public class RuleValidator {
         validatedPosition.getActions().add( ActionType.MOVE );
 
         // check if same square
-        if( from.equals( to ) ) {
+        if ( from.equals( to ) ) {
             return validatedPosition;
         }
 
         // check out of bounds
-        if( getRule( RuleType.POSITION_IS_OUT_OF_BOUNDS ).validate( this.game, from, to ) ) {
+        if ( getRule( RuleType.POSITION_IS_OUT_OF_BOUNDS ).validate( this.game, from, to ) ) {
             return validatedPosition;
         }
 
         // check if piece is moved
         PieceType pieceType = this.game.getType( from );
-        if( pieceType == null ) {
+        if ( pieceType == null ) {
             return validatedPosition;
         }
 
         // check pawn moves
-        if( PieceType.PAWN.equals( pieceType ) ) {
+        if ( PieceType.PAWN.equals( pieceType ) ) {
             boolean validPawnMove = getRule( RuleType.PAWN_MOVE ).validate( this.game, from, to );
             boolean auPassant = getRule( RuleType.AU_PASSANT ).validate( this.game, from, to );
-            if( !validPawnMove && !auPassant ) {
+            if ( !validPawnMove && !auPassant ) {
                 return validatedPosition;
             }
-            if( auPassant ) {
+            if ( auPassant ) {
                 validatedPosition.getActions().add( ActionType.AU_PASSANT );
             }
-            if( validPawnMove && getRule( RuleType.PROMOTING ).validate( this.game, from, to ) ) {
+            if ( validPawnMove && getRule( RuleType.PROMOTING ).validate( this.game, from, to ) ) {
                 validatedPosition.getActions().add( ActionType.PROMOTING_QUEEN );
             }
         }
         // check knight moves
-        if( PieceType.KNIGHT.equals( pieceType ) ) {
-            if( !getRule( RuleType.KNIGHT_MOVE ).validate( this.game, from, to ) ) {
+        if ( PieceType.KNIGHT.equals( pieceType ) ) {
+            if ( !getRule( RuleType.KNIGHT_MOVE ).validate( this.game, from, to ) ) {
                 return validatedPosition;
             }
         }
         // check bishop moves
-        if( PieceType.BISHOP.equals( pieceType ) ) {
-            if( !getRule( RuleType.BISHOP_MOVE ).validate( this.game, from, to ) ) {
+        if ( PieceType.BISHOP.equals( pieceType ) ) {
+            if ( !getRule( RuleType.BISHOP_MOVE ).validate( this.game, from, to ) ) {
                 return validatedPosition;
             }
         }
         // check rook moves
-        if( PieceType.ROOK.equals( pieceType ) ) {
-            if( !getRule( RuleType.ROOK_MOVE ).validate( this.game, from, to ) ) {
+        if ( PieceType.ROOK.equals( pieceType ) ) {
+            if ( !getRule( RuleType.ROOK_MOVE ).validate( this.game, from, to ) ) {
                 return validatedPosition;
             }
         }
         // check queen moves
-        if( PieceType.QUEEN.equals( pieceType ) ) {
-            if( !getRule( RuleType.QUEEN_MOVE ).validate( this.game, from, to ) ) {
+        if ( PieceType.QUEEN.equals( pieceType ) ) {
+            if ( !getRule( RuleType.QUEEN_MOVE ).validate( this.game, from, to ) ) {
                 return validatedPosition;
             }
         }
         // check king moves
-        if( PieceType.KING.equals( pieceType ) ) {
+        if ( PieceType.KING.equals( pieceType ) ) {
             boolean validKingMove = getRule( RuleType.KING_MOVE ).validate( this.game, from, to );
             boolean validKingCastle = getRule( RuleType.CASTLING_KING_SIDE ).validate( this.game, from, to );
             boolean validQueenCastle = getRule( RuleType.CASTLING_QUEEN_SIDE ).validate( this.game, from, to );
-            if( !validKingMove && !validKingCastle && !validQueenCastle ) {
+            if ( !validKingMove && !validKingCastle && !validQueenCastle ) {
                 return validatedPosition;
             }
-            if( validKingCastle ) {
+            if ( validKingCastle ) {
                 validatedPosition.getActions().add( ActionType.CASTLE_KING );
             }
-            if( validKingCastle ) {
+            if ( validQueenCastle ) {
                 validatedPosition.getActions().add( ActionType.CASTLE_QUEEN );
             }
         }
 
         // check if king would be check
-        if( getRule( RuleType.KING_WOULD_BE_IN_CHECK ).validate( this.game, from, to ) ) {
+        if ( getRule( RuleType.KING_WOULD_BE_IN_CHECK ).validate( this.game, from, to ) ) {
             return validatedPosition;
         }
 
         // check capture
-        if( getRule( RuleType.NOT_ALLOWED_TO_CAPTURE ).validate( this.game, from, to ) ) {
+        if ( getRule( RuleType.NOT_ALLOWED_TO_CAPTURE ).validate( this.game, from, to ) ) {
             return validatedPosition;
         }
-        if( getRule( RuleType.ALLOWED_TO_CAPTURE ).validate( this.game, from, to ) ) {
+        if ( getRule( RuleType.ALLOWED_TO_CAPTURE ).validate( this.game, from, to ) ) {
             validatedPosition.getActions().add( ActionType.CAPTURE );
         }
 

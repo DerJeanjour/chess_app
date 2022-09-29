@@ -119,7 +119,7 @@ public class GameView implements GameListener {
     @Override
     public void gameUpdated( Game game ) {
         Log.info( "Evaluation is {}", new PiecePointChessEvaluator().evaluate( game, TeamColor.WHITE ) );
-        this.history = chessNotation.write( game.getHistory() );
+        this.history = chessNotation.write( game );
         final Player onMove = this.whitePlayer.isOnMove( game )
                 ? this.whitePlayer
                 : this.blackPlayer;
@@ -255,7 +255,7 @@ public class GameView implements GameListener {
             try {
                 game.setGame( this.history );
             } catch ( NotationParsingException e ) {
-                this.history = chessNotation.write( game.getHistory() );
+                this.history = chessNotation.write( game );
             }
 
         } );
