@@ -4,6 +4,8 @@ import backend.core.model.Piece;
 import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
 import backend.game.Game;
+import backend.game.GameConfig;
+import backend.game.modulebased.GameMB;
 import math.Vector2I;
 import util.StringUtil;
 
@@ -22,7 +24,8 @@ public class FenNotation implements ChessNotation {
 
     @Override
     public Game read( String notation ) {
-        return null;
+        GameConfig config = new GameConfig( notation, TeamColor.WHITE );
+        return new GameMB( "main", config );
     }
 
     @Override

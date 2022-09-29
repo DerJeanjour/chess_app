@@ -2,6 +2,7 @@ package backend.core.notation;
 
 import backend.core.exception.NotationParsingException;
 import backend.core.model.Move;
+import backend.core.model.MoveHistory;
 import backend.core.model.Piece;
 import backend.core.model.Team;
 import backend.core.values.ActionType;
@@ -59,12 +60,12 @@ public class AlgebraicNotation implements ChessNotation {
         List<String> moveNotations = Arrays.asList( notation.split( " " ) );
         moveNotations = moveNotations.stream().filter( m -> !m.endsWith( "." ) ).collect( Collectors.toList() );
         for ( String moveNotation : moveNotations ) {
-            Vector2I[] move = readMove( game, moveNotation );
-            game.makeMove( move[0], move[1] );
+            Move move = readMove( game, moveNotation );
+            game.makeMove( move );
         }
     }
 
-    public static Vector2I[] readMove( Game game, String moveNotation ) {
+    public static Move readMove( Game game, String moveNotation ) {
 
         if ( StringUtil.isBlank( moveNotation ) ) {
             throw new NotationParsingException( "Notation is empty!" );
@@ -75,25 +76,40 @@ public class AlgebraicNotation implements ChessNotation {
         if ( moveNotation.contains( "." ) ) {
             moveNotation = moveNotation.substring( moveNotation.indexOf( '.' ) + 1, moveNotation.length() );
         }
-        if ( moveNotation.contains( actionCodes.get( ActionType.PROMOTING_QUEEN ) ) ) {
-            moveNotation = moveNotation.replace( actionCodes.get( ActionType.PROMOTING_QUEEN ), "" );
+
+        PieceType promotingMode = PieceType.QUEEN;
+        if ( moveNotation.contains( "=" ) ) {
+            if ( moveNotation.contains( actionCodes.get( ActionType.PROMOTING_QUEEN ) ) ) {
+                promotingMode = PieceType.QUEEN;
+                moveNotation = moveNotation.replace( actionCodes.get( ActionType.PROMOTING_QUEEN ), "" );
+            } else if ( moveNotation.contains( actionCodes.get( ActionType.PROMOTING_ROOK ) ) ) {
+                promotingMode = PieceType.ROOK;
+                moveNotation = moveNotation.replace( actionCodes.get( ActionType.PROMOTING_ROOK ), "" );
+            } else if ( moveNotation.contains( actionCodes.get( ActionType.PROMOTING_BISHOP ) ) ) {
+                promotingMode = PieceType.BISHOP;
+                moveNotation = moveNotation.replace( actionCodes.get( ActionType.PROMOTING_BISHOP ), "" );
+            } else if ( moveNotation.contains( actionCodes.get( ActionType.PROMOTING_KNIGHT ) ) ) {
+                promotingMode = PieceType.KNIGHT;
+                moveNotation = moveNotation.replace( actionCodes.get( ActionType.PROMOTING_KNIGHT ), "" );
+            }
         }
+
 
         // special cases
         if ( moveNotation.equals( actionCodes.get( ActionType.CASTLE_KING ) ) ) {
             Team onMove = game.getTeam( game.getOnMove() );
             Vector2I kingPos = game.getPosition( onMove.getKing() );
-            return new Vector2I[]{ kingPos, kingPos.add( new Vector2I( 2, 0 ) ) };
+            return new Move( kingPos, kingPos.add( new Vector2I( 2, 0 ) ) );
         }
 
         if ( moveNotation.equals( actionCodes.get( ActionType.CASTLE_QUEEN ) ) ) {
             Team onMove = game.getTeam( game.getOnMove() );
             Vector2I kingPos = game.getPosition( onMove.getKing() );
-            return new Vector2I[]{ kingPos, kingPos.add( new Vector2I( -2, 0 ) ) };
+            return new Move( kingPos, kingPos.add( new Vector2I( -2, 0 ) ) );
         }
 
         if ( moveNotation.equals( actionCodes.get( ActionType.STALEMATE ) ) ) {
-            return new Vector2I[]{ null, null };
+            return new Move( null, null );
         }
 
         // general parsing
@@ -149,7 +165,7 @@ public class AlgebraicNotation implements ChessNotation {
             List<Vector2I> ambiguousPositions = new ArrayList<>();
             for ( Piece p : pieces ) {
                 Vector2I pPos = game.getPosition( p );
-                if ( pPos != null && game.validate( pPos, to ).isLegal() ) {
+                if ( pPos != null && game.isLegal( new Move( pPos, to ) ) ) {
                     ambiguousPositions.add( pPos );
                     piece = p;
                 }
@@ -189,7 +205,7 @@ public class AlgebraicNotation implements ChessNotation {
             throw new NotationParsingException( "No position found for piece {}... ({})", piece, moveNotation );
         }
 
-        return new Vector2I[]{ fromPos, to };
+        return new Move( fromPos, to, promotingMode );
     }
 
     public static int getRow( int rowCode ) {
@@ -204,28 +220,28 @@ public class AlgebraicNotation implements ChessNotation {
     public String write( Game game ) {
         String notation = "";
         Game sandbox = new GameMB( "write", new GameConfig() );
-        for ( Move move : game.getHistory() ) {
-            notation += writeCode( sandbox, move );
-            sandbox.makeMove( move.getFrom(), move.getTo() );
+        for ( MoveHistory history : game.getHistory() ) {
+            notation += writeCode( sandbox, history );
+            sandbox.makeMove( history.getMove() );
         }
         return notation;
     }
 
     /* model -> notation */
 
-    public static String writeCode( Game game, Move move ) {
+    public static String writeCode( Game game, MoveHistory moveHistory ) {
 
         String pattern = "{0}{1}{2}{3}{4}{5} ";
 
-        boolean isMoveEnd = TeamColor.BLACK.equals( move.getTeam() );
-        String moveNumber = isMoveEnd ? "" : ( move.getNumber() + 1 ) + ".";
-        String pieceCode = pieceCodes.get( move.getPiece() );
+        boolean isMoveEnd = TeamColor.BLACK.equals( moveHistory.getTeam() );
+        String moveNumber = isMoveEnd ? "" : ( moveHistory.getNumber() + 1 ) + ".";
+        String pieceCode = pieceCodes.get( moveHistory.getPiece() );
         String actionCode = "";
-        String posCode = getPosCode( move.getTo() );
+        String posCode = getPosCode( moveHistory.getMove().getTo() );
         String actionCodePromoting = "";
         String actionCodeCheck = "";
 
-        for ( ActionType actionType : move.getActions() ) {
+        for ( ActionType actionType : moveHistory.getActions() ) {
             switch ( actionType ) {
                 case MOVE:
                     if ( StringUtil.isBlank( actionCode ) ) {
@@ -237,6 +253,9 @@ public class AlgebraicNotation implements ChessNotation {
                     actionCode = actionCodes.get( actionType );
                     break;
                 case PROMOTING_QUEEN:
+                case PROMOTING_ROOK:
+                case PROMOTING_BISHOP:
+                case PROMOTING_KNIGHT:
                     actionCodePromoting = actionCodes.get( actionType );
                     break;
                 case CASTLE_QUEEN:
@@ -246,7 +265,7 @@ public class AlgebraicNotation implements ChessNotation {
                     actionCode = actionCodes.get( actionType );
                     break;
                 case CHECK:
-                    if ( !move.getActions().contains( ActionType.CHECKMATE ) ) {
+                    if ( !moveHistory.getActions().contains( ActionType.CHECKMATE ) ) {
                         actionCodeCheck = actionCodes.get( actionType );
                     }
                     break;
@@ -260,12 +279,12 @@ public class AlgebraicNotation implements ChessNotation {
         }
 
         // special notation for pawns
-        if ( PieceType.PAWN.equals( move.getPiece() )
-                && ( move.getActions().contains( ActionType.CAPTURE ) || move.getActions().contains( ActionType.AU_PASSANT ) ) ) {
-            pieceCode = getColCode( move.getFrom() );
+        if ( PieceType.PAWN.equals( moveHistory.getPiece() )
+                && ( moveHistory.getActions().contains( ActionType.CAPTURE ) || moveHistory.getActions().contains( ActionType.AU_PASSANT ) ) ) {
+            pieceCode = getColCode( moveHistory.getMove().getFrom() );
         }
-        if ( !PieceType.PAWN.equals( move.getPiece() ) ) {
-            pieceCode += handleAmbiguity( game, move );
+        if ( !PieceType.PAWN.equals( moveHistory.getPiece() ) ) {
+            pieceCode += handleAmbiguity( game, moveHistory );
         }
 
         return MessageFormat.format( pattern,
@@ -285,20 +304,21 @@ public class AlgebraicNotation implements ChessNotation {
      * 3. check if piece is distinguishable by row
      * 4. use row/column
      */
-    private static String handleAmbiguity( Game game, Move move ) {
+    private static String handleAmbiguity( Game game, MoveHistory moveHistory ) {
 
-        Team onMove = game.getTeam( move.getTeam() );
-        List<Piece> pieces = onMove.getPiecesByType( move.getPiece(), true );
+        Team onMove = game.getTeam( moveHistory.getTeam() );
+        List<Piece> pieces = onMove.getPiecesByType( moveHistory.getPiece(), true );
 
         if ( pieces.size() == 1 ) {
             return "";
         }
 
+        final Vector2I from = moveHistory.getMove().getFrom();
 
         List<Vector2I> ambiguousPositions = new ArrayList<>();
         for ( Piece piece : pieces ) {
             Vector2I piecePos = game.getPosition( piece );
-            if ( !piecePos.equals( move.getFrom() ) && game.validate( piecePos, move.getTo() ).isLegal() ) {
+            if ( !piecePos.equals( from ) && game.isLegal( moveHistory.getMove() ) ) {
                 ambiguousPositions.add( piecePos );
             }
         }
@@ -308,16 +328,16 @@ public class AlgebraicNotation implements ChessNotation {
         }
 
         // check col
-        if ( !ambiguousPositions.stream().filter( v -> v.x == move.getFrom().x ).findFirst().isPresent() ) {
-            return getColCode( move.getFrom() );
+        if ( !ambiguousPositions.stream().filter( v -> v.x == from.x ).findFirst().isPresent() ) {
+            return getColCode( from );
         }
 
         // check row
-        if ( !ambiguousPositions.stream().filter( v -> v.y == move.getFrom().y ).findFirst().isPresent() ) {
-            return getRowCode( move.getFrom() );
+        if ( !ambiguousPositions.stream().filter( v -> v.y == from.y ).findFirst().isPresent() ) {
+            return getRowCode( from );
         }
 
-        return getPosCode( move.getFrom() );
+        return getPosCode( from );
     }
 
     public static String getPosCode( Vector2I p ) {

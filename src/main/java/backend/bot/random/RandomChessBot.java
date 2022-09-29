@@ -9,7 +9,6 @@ import backend.game.Game;
 import math.Vector2I;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -35,14 +34,14 @@ public class RandomChessBot extends ChessBot {
                 Piece randomPiece = alive.get( randomPieceIdx );
                 Vector2I piecePos = game.getPosition( randomPiece );
 
-                Map<Vector2I, Validation> validation = game.validate( piecePos );
-                List<Validation> legalMoves = validation.values().stream()
+                List<Validation> validation = game.validate( piecePos );
+                List<Validation> legalMoves = validation.stream()
                         .filter( v -> v.isLegal() )
                         .collect( Collectors.toList() );
                 if ( !legalMoves.isEmpty() ) {
                     int randomMoveIdx = this.random.nextInt( legalMoves.size() );
                     Validation legalMove = legalMoves.get( randomMoveIdx );
-                    game.makeMove( piecePos, legalMove.getTo() );
+                    game.makeMove( legalMove.getMove() );
                     return;
                 }
 

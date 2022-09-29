@@ -2,7 +2,6 @@ package backend.core.model;
 
 import backend.core.values.ActionType;
 import lombok.Data;
-import math.Vector2I;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -10,17 +9,14 @@ import java.util.Set;
 @Data
 public class Validation {
 
-    protected final Vector2I from;
-
-    protected final Vector2I to;
+    protected final Move move;
 
     protected final Set<ActionType> actions;
 
     protected boolean legal;
 
-    public Validation( Vector2I from, Vector2I to ) {
-        this.from = from;
-        this.to = to;
+    public Validation( Move move ) {
+        this.move = move;
         this.actions = new HashSet<>();
         this.legal = true;
     }

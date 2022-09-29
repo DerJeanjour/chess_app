@@ -98,7 +98,6 @@ public class PossibleMovesTest {
 
     }
 
-    @Disabled
     @Test
     void testPosition5() {
 
@@ -116,7 +115,7 @@ public class PossibleMovesTest {
 
     }
 
-    @Disabled
+    //@Disabled
     @Test
     void testPosition6() {
 
@@ -128,7 +127,7 @@ public class PossibleMovesTest {
                 4, 3894594l
         );
 
-        int maxDepth = 3;
+        int maxDepth = 2;
         GameConfig config = new GameConfig( "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1", TeamColor.WHITE );
         testPositions( "position6", possibleNodesPerDepth, maxDepth, config );
 
@@ -151,11 +150,11 @@ public class PossibleMovesTest {
         }
         long legalMoves = 0l;
         for ( Piece piece : game.getTeam( game.getOnMove() ).getAlive() ) {
-            List<Validation> pieceMoves = game.validate( game.getPosition( piece ) ).values().stream()
+            List<Validation> pieceMoves = game.validate( game.getPosition( piece ) ).stream()
                     .filter( Validation::isLegal ).collect( Collectors.toList() );
-            for ( Validation move : pieceMoves ) {
-                //Log.info( AlgebraicNotation.getPosCode( move.getFrom() ) + AlgebraicNotation.getPosCode( move.getTo() ) );
-                game.makeMove( move.getFrom(), move.getTo() );
+            for ( Validation v : pieceMoves ) {
+                //Log.info( AlgebraicNotation.getPosCode( v.getMove().getFrom() ) + AlgebraicNotation.getPosCode( v.getMove().getTo() ) + v.getActions() );
+                game.makeMove( v.getMove() );
                 legalMoves += getPossibleNodesInDepth( game, depth - 1 );
                 game.undoLastMove();
             }

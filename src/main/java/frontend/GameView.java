@@ -3,11 +3,13 @@ package frontend;
 import backend.bot.evaluator.PiecePointChessEvaluator;
 import backend.core.exception.NotationParsingException;
 import backend.core.model.Move;
+import backend.core.model.MoveHistory;
 import backend.core.model.Piece;
 import backend.core.model.Validation;
 import backend.core.notation.AlgebraicNotation;
 import backend.core.notation.ChessNotation;
 import backend.core.values.ActionType;
+import backend.core.values.PieceType;
 import backend.core.values.PlayerType;
 import backend.core.values.TeamColor;
 import backend.game.Game;
@@ -46,6 +48,8 @@ public class GameView implements GameListener {
     private Player blackPlayer;
 
     private String history;
+
+    private PieceType promotionMode;
 
     private final int boardSize;
 
@@ -95,6 +99,7 @@ public class GameView implements GameListener {
 
         this.history = "";
         this.boardSize = boardSize;
+        this.promotionMode = PieceType.QUEEN;
 
         this.windowW = windowW;
         this.windowH = windowH;
@@ -161,7 +166,7 @@ public class GameView implements GameListener {
                 selectedPos = pixelToPosition( e.getX(), e.getY() );
                 if ( selectedPos != null && !game.isOutOfBounce( selectedPos ) ) {
                     if ( showMovePreview ) {
-                        validation.putAll( game.validate( selectedPos ) );
+                        game.validate( selectedPos ).forEach( v -> validation.put( v.getMove().getTo(), v ) );
                     }
                     onDrag = true;
                 }
@@ -173,7 +178,8 @@ public class GameView implements GameListener {
                 if ( selectedPos != null && !game.isOutOfBounce( pos ) ) {
                     Player playerOnMove = game.isOnMove( TeamColor.WHITE ) ? whitePlayer : blackPlayer;
                     if ( playerOnMove.isHuman() ) {
-                        game.makeMove( selectedPos, pos );
+                        Move move = new Move( selectedPos, pos, promotionMode );
+                        game.makeMove( move );
                     }
                 }
                 selectedPos = null;
@@ -275,6 +281,11 @@ public class GameView implements GameListener {
         } );
         infoPanel.add( resetButton );
 
+        JComboBox<PieceType> promotionModeSelect = new JComboBox<>( new PieceType[]{ PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT } );
+        promotionModeSelect.setSelectedItem( this.promotionMode );
+        promotionModeSelect.addActionListener( e -> promotionMode = ( PieceType ) promotionModeSelect.getSelectedItem() );
+        infoPanel.add( promotionModeSelect );
+
         JCheckBox movePreviewButton = new JCheckBox( "Move Preview" );
         movePreviewButton.addActionListener( e -> showMovePreview = movePreviewButton.isSelected() );
         infoPanel.add( movePreviewButton );
@@ -366,11 +377,11 @@ public class GameView implements GameListener {
                     }
 
                     if ( !onDrag && game.getLastMove() != null ) {
-                        Move lastMove = game.getLastMove();
-                        if ( pos.equals( lastMove.getFrom() ) ) {
+                        MoveHistory lastMove = game.getLastMove();
+                        if ( pos.equals( lastMove.getMove().getFrom() ) ) {
                             posColor = posColor.blend( new Color( Color.BLUE, 0.2f ) );
                         }
-                        if ( pos.equals( lastMove.getTo() ) ) {
+                        if ( pos.equals( lastMove.getMove().getTo() ) ) {
                             posColor = posColor.blend( new Color( Color.GREEN, 0.2f ) );
                         }
                     }

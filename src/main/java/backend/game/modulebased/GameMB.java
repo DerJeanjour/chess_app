@@ -1,6 +1,7 @@
 package backend.game.modulebased;
 
 import backend.core.exception.IllegalMoveException;
+import backend.core.model.Move;
 import backend.core.model.Piece;
 import backend.core.model.Team;
 import backend.core.model.Validation;
@@ -107,22 +108,26 @@ public class GameMB extends Game {
     }
 
     @Override
-    public Map<Vector2I, Validation> validate( Vector2I p ) {
-        return this.ruleValidator.validate( p ).entrySet().stream()
-                .collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue() ) );
+    public List<Validation> validate( Vector2I p ) {
+        List<Validation> validations = new ArrayList<>();
+        this.ruleValidator.validate( p ).values().forEach( v -> validations.addAll( v ) );
+        return validations;
     }
 
     @Override
-    public Validation validate( Vector2I from, Vector2I to ) {
-        return this.ruleValidator.validate( from, to );
+    public boolean isLegal( Move move ) {
+        return this.ruleValidator.validate( move ).get( 0 ).isLegal();
     }
 
     @Override
-    public synchronized boolean makeMove( Vector2I from, Vector2I to ) {
+    public synchronized boolean makeMove( Move move ) {
 
-        if ( from == null || to == null ) {
+        if ( move == null || move.getFrom() == null || move.getTo() == null ) {
             return false;
         }
+
+        Vector2I from = move.getFrom();
+        Vector2I to = move.getTo();
 
         try {
 
@@ -130,7 +135,24 @@ public class GameMB extends Game {
                 return false;
             }
 
-            ValidationMB validatedPosition = this.ruleValidator.validate( from, to );
+            List<ValidationMB> validatedPositions = this.ruleValidator.validate( move );
+
+            ValidationMB validatedPosition = validatedPositions.get( 0 );
+            if ( validatedPositions.size() > 1 ) {
+                ActionType promoteAction = ActionType.PROMOTING_QUEEN;
+                switch ( move.getPromoteTo() ) {
+                    case QUEEN -> promoteAction = ActionType.PROMOTING_QUEEN;
+                    case ROOK -> promoteAction = ActionType.PROMOTING_ROOK;
+                    case BISHOP -> promoteAction = ActionType.PROMOTING_BISHOP;
+                    case KNIGHT -> promoteAction = ActionType.PROMOTING_KNIGHT;
+                }
+                for ( ValidationMB v : validatedPositions ) {
+                    if ( v.getActions().contains( promoteAction ) ) {
+                        validatedPosition = v;
+                    }
+                }
+            }
+
             if ( validatedPosition.isLegal() ) {
 
                 this.prev = this.clone( "rb" );
@@ -150,7 +172,7 @@ public class GameMB extends Game {
                         from,
                         to,
                         validatedPosition.getActions() );
-                addHistory( validatedPosition.getActions(), from, to );
+                addHistory( validatedPosition.getActions(), move );
 
                 checkFinished( validatedPosition.getActions() );
                 incrementMove();
@@ -209,7 +231,7 @@ public class GameMB extends Game {
         for ( Vector2I from : this.getAllAlivePositionsOf( color ) ) {
             Set<Vector2I> positions = MoveGenerator.generateAllPossibleMoves( this, from );
             for ( Vector2I to : positions ) {
-                if ( this.ruleValidator.validate( from, to ).isLegal() ) {
+                if ( this.isLegal( new Move( from, to ) ) ) {
                     return true;
                 }
             }

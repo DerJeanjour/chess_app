@@ -1,9 +1,6 @@
 package backend.game;
 
-import backend.core.model.Move;
-import backend.core.model.Piece;
-import backend.core.model.Team;
-import backend.core.model.Validation;
+import backend.core.model.*;
 import backend.core.values.ActionType;
 import backend.core.values.GameState;
 import backend.core.values.PieceType;
@@ -32,7 +29,7 @@ public abstract class Game {
     protected int moveNumber;
 
     @Getter
-    protected List<Move> history;
+    protected List<MoveHistory> history;
 
     private List<GameListener> listeners;
 
@@ -50,13 +47,13 @@ public abstract class Game {
 
     public abstract void setGame( String notation );
 
-    public abstract boolean makeMove( Vector2I from, Vector2I to );
+    public abstract boolean makeMove( Move move );
 
     public abstract void undoLastMove();
 
-    public abstract Map<Vector2I, Validation> validate( Vector2I p );
+    public abstract List<Validation> validate( Vector2I p );
 
-    public abstract Validation validate( Vector2I from, Vector2I to );
+    public abstract boolean isLegal( Move move );
 
     public abstract int getBoardSize();
 
@@ -128,21 +125,20 @@ public abstract class Game {
      * general
      */
 
-    public Move getLastMove() {
+    public MoveHistory getLastMove() {
         if ( this.history.isEmpty() ) {
             return null;
         }
         return this.history.get( this.history.size() - 1 );
     }
 
-    protected void addHistory( Set<ActionType> actions, Vector2I from, Vector2I to ) {
-        this.history.add( new Move(
+    protected void addHistory( Set<ActionType> actions, Move move ) {
+        this.history.add( new MoveHistory(
                 this.moveNumber,
                 actions,
-                getTeam( to ),
-                getType( to ),
-                from,
-                to
+                getTeam( move.getTo() ),
+                getType( move.getTo() ),
+                move
         ) );
     }
 

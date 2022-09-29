@@ -1,6 +1,6 @@
 package game;
 
-import backend.core.model.Move;
+import backend.core.model.MoveHistory;
 import backend.core.model.Piece;
 import backend.core.notation.AlgebraicNotation;
 import backend.core.values.ActionType;
@@ -27,7 +27,7 @@ public class MoveActionsTest {
         Game game = new GameMB( "test", config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
-        Move moveHistory = game.getLastMove();
+        MoveHistory moveHistory = game.getLastMove();
 
         assertTrue( moveHistory.getActions().contains( ActionType.MOVE ) );
         assertTrue( moveHistory.getActions().contains( ActionType.CHECK ) );
@@ -46,7 +46,7 @@ public class MoveActionsTest {
         Game game = new GameMB( "test", config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
-        Move moveHistory = game.getLastMove();
+        MoveHistory moveHistory = game.getLastMove();
 
         assertTrue( moveHistory.getActions().contains( ActionType.MOVE ) );
         assertTrue( moveHistory.getActions().contains( ActionType.STALEMATE ) );
@@ -66,15 +66,40 @@ public class MoveActionsTest {
         Game game = new GameMB( "test", config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
-        Move moveHistory = game.getLastMove();
+        MoveHistory moveHistory = game.getLastMove();
 
+        assertTrue( moveHistory.getMove().getPromoteTo().equals( PieceType.QUEEN ) );
         assertTrue( moveHistory.getActions().contains( ActionType.MOVE ) );
         assertTrue( moveHistory.getActions().contains( ActionType.PROMOTING_QUEEN ) );
 
-        Piece promotedPawn = game.getPiece( moveHistory.getTo() );
+        Piece promotedPawn = game.getPiece( moveHistory.getMove().getTo() );
         assertTrue( promotedPawn != null );
         assertTrue( promotedPawn.isAlive() );
         assertTrue( promotedPawn.isType( PieceType.QUEEN ) );
+
+    }
+
+    @ParameterizedTest( name = "Testing bishop promotion move actions: {index} => placement={0} move={1}" )
+    @CsvSource( {
+            "'k3/3P/4/3K', '1.d4=B'",
+            "'k3/4/p3/3K', '1.Kc1 a1=B'"
+    } )
+    void testBishopPromotion( String placementPattern, String moveNotation ) {
+
+        GameConfig config = new GameConfig( placementPattern, TeamColor.WHITE );
+        Game game = new GameMB( "test", config );
+
+        AlgebraicNotation.applyMoves( game, moveNotation );
+        MoveHistory moveHistory = game.getLastMove();
+
+        assertTrue( moveHistory.getMove().getPromoteTo().equals( PieceType.BISHOP ) );
+        assertTrue( moveHistory.getActions().contains( ActionType.MOVE ) );
+        assertTrue( moveHistory.getActions().contains( ActionType.PROMOTING_BISHOP ) );
+
+        Piece promotedPawn = game.getPiece( moveHistory.getMove().getTo() );
+        assertTrue( promotedPawn != null );
+        assertTrue( promotedPawn.isAlive() );
+        assertTrue( promotedPawn.isType( PieceType.BISHOP ) );
 
     }
 

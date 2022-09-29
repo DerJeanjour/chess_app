@@ -1,5 +1,6 @@
 package backend.game.modulebased.validator;
 
+import backend.core.model.Move;
 import backend.core.values.ActionType;
 import backend.core.values.PieceType;
 import backend.game.MoveGenerator;
@@ -95,35 +96,40 @@ public class RuleValidator {
         }
     }
 
-    public Map<Vector2I, ValidationMB> validate( Vector2I from ) {
-        Map<Vector2I, ValidationMB> validation = new HashMap<>();
+    public Map<Vector2I, List<ValidationMB>> validate( Vector2I from ) {
+        Map<Vector2I, List<ValidationMB>> validation = new HashMap<>();
         Set<Vector2I> positions = MoveGenerator.generateAllPossibleMoves( this.game, from );
         for ( Vector2I to : positions ) {
-            validation.put( to, validate( from, to ) );
+            validation.put( to, validate( new Move( from, to ) ) );
         }
         return validation;
     }
 
-    public ValidationMB validate( Vector2I from, Vector2I to ) {
+    public List<ValidationMB> validate( Move move ) {
 
-        ValidationMB validatedPosition = new ValidationMB( from, to );
+        ValidationMB validatedPosition = new ValidationMB( move );
         validatedPosition.setLegal( false );
         validatedPosition.getActions().add( ActionType.MOVE );
 
+        Vector2I from = move.getFrom();
+        Vector2I to = move.getTo();
+
+        boolean isPromoting = false;
+
         // check if same square
         if ( from.equals( to ) ) {
-            return validatedPosition;
+            return Arrays.asList( validatedPosition );
         }
 
         // check out of bounds
         if ( getRule( RuleType.POSITION_IS_OUT_OF_BOUNDS ).validate( this.game, from, to ) ) {
-            return validatedPosition;
+            return Arrays.asList( validatedPosition );
         }
 
         // check if piece is moved
         PieceType pieceType = this.game.getType( from );
         if ( pieceType == null ) {
-            return validatedPosition;
+            return Arrays.asList( validatedPosition );
         }
 
         // check pawn moves
@@ -131,37 +137,38 @@ public class RuleValidator {
             boolean validPawnMove = getRule( RuleType.PAWN_MOVE ).validate( this.game, from, to );
             boolean auPassant = getRule( RuleType.AU_PASSANT ).validate( this.game, from, to );
             if ( !validPawnMove && !auPassant ) {
-                return validatedPosition;
+                return Arrays.asList( validatedPosition );
             }
             if ( auPassant ) {
                 validatedPosition.getActions().add( ActionType.AU_PASSANT );
             }
             if ( validPawnMove && getRule( RuleType.PROMOTING_QUEEN ).validate( this.game, from, to ) ) {
-                validatedPosition.getActions().add( ActionType.PROMOTING_QUEEN );
+                //validatedPosition.getActions().add( ActionType.PROMOTING_QUEEN );
+                isPromoting = true;
             }
         }
         // check knight moves
         if ( PieceType.KNIGHT.equals( pieceType ) ) {
             if ( !getRule( RuleType.KNIGHT_MOVE ).validate( this.game, from, to ) ) {
-                return validatedPosition;
+                return Arrays.asList( validatedPosition );
             }
         }
         // check bishop moves
         if ( PieceType.BISHOP.equals( pieceType ) ) {
             if ( !getRule( RuleType.BISHOP_MOVE ).validate( this.game, from, to ) ) {
-                return validatedPosition;
+                return Arrays.asList( validatedPosition );
             }
         }
         // check rook moves
         if ( PieceType.ROOK.equals( pieceType ) ) {
             if ( !getRule( RuleType.ROOK_MOVE ).validate( this.game, from, to ) ) {
-                return validatedPosition;
+                return Arrays.asList( validatedPosition );
             }
         }
         // check queen moves
         if ( PieceType.QUEEN.equals( pieceType ) ) {
             if ( !getRule( RuleType.QUEEN_MOVE ).validate( this.game, from, to ) ) {
-                return validatedPosition;
+                return Arrays.asList( validatedPosition );
             }
         }
         // check king moves
@@ -170,7 +177,7 @@ public class RuleValidator {
             boolean validKingCastle = getRule( RuleType.CASTLING_KING_SIDE ).validate( this.game, from, to );
             boolean validQueenCastle = getRule( RuleType.CASTLING_QUEEN_SIDE ).validate( this.game, from, to );
             if ( !validKingMove && !validKingCastle && !validQueenCastle ) {
-                return validatedPosition;
+                return Arrays.asList( validatedPosition );
             }
             if ( validKingCastle ) {
                 validatedPosition.getActions().add( ActionType.CASTLE_KING );
@@ -182,19 +189,39 @@ public class RuleValidator {
 
         // check if king would be check
         if ( getRule( RuleType.KING_WOULD_BE_IN_CHECK ).validate( this.game, from, to ) ) {
-            return validatedPosition;
+            return Arrays.asList( validatedPosition );
         }
 
         // check capture
         if ( getRule( RuleType.NOT_ALLOWED_TO_CAPTURE ).validate( this.game, from, to ) ) {
-            return validatedPosition;
+            return Arrays.asList( validatedPosition );
         }
         if ( getRule( RuleType.ALLOWED_TO_CAPTURE ).validate( this.game, from, to ) ) {
             validatedPosition.getActions().add( ActionType.CAPTURE );
         }
 
+        if ( isPromoting ) {
+            ValidationMB promoQueen = new ValidationMB( move );
+            promoQueen.setLegal( true );
+            promoQueen.getActions().addAll( validatedPosition.getActions() );
+            promoQueen.getActions().add( ActionType.PROMOTING_QUEEN );
+            ValidationMB promoRook = new ValidationMB( move );
+            promoRook.setLegal( true );
+            promoRook.getActions().addAll( validatedPosition.getActions() );
+            promoRook.getActions().add( ActionType.PROMOTING_ROOK );
+            ValidationMB promoBishop = new ValidationMB( move );
+            promoBishop.setLegal( true );
+            promoBishop.getActions().addAll( validatedPosition.getActions() );
+            promoBishop.getActions().add( ActionType.PROMOTING_BISHOP );
+            ValidationMB promoKnight = new ValidationMB( move );
+            promoKnight.setLegal( true );
+            promoKnight.getActions().addAll( validatedPosition.getActions() );
+            promoKnight.getActions().add( ActionType.PROMOTING_KNIGHT );
+            return Arrays.asList( promoQueen, promoRook, promoBishop, promoKnight );
+        }
+
         validatedPosition.setLegal( true );
-        return validatedPosition;
+        return Arrays.asList( validatedPosition );
     }
 
     /**
@@ -214,11 +241,11 @@ public class RuleValidator {
         }
     }
 
-    public ValidationMB validateLegacy( Vector2I from, Vector2I to ) {
+    public ValidationMB validateLegacy( Move move ) {
 
-        ValidationMB validatedPosition = new ValidationMB( from, to );
+        ValidationMB validatedPosition = new ValidationMB( move );
         for ( Rule rule : this.rules ) {
-            if ( rule.validate( this.game, from, to ) ) {
+            if ( rule.validate( this.game, move.getFrom(), move.getTo() ) ) {
                 validatedPosition.getActions().addAll( rule.getTags() );
                 validatedPosition.getRulesApplied().add( rule.getType() );
             }
@@ -239,11 +266,6 @@ public class RuleValidator {
             legal = false;
         }
         validatedPosition.setLegal( legal );
-    }
-
-    public int legalMovesLeft( Vector2I from ) {
-        Map<Vector2I, ValidationMB> positions = validate( from );
-        return ( int ) positions.entrySet().stream().filter( e -> e.getValue().isLegal() ).count();
     }
 
     private boolean validationHasAnyTag( ValidationMB validatedPosition, ActionType... actions ) {
