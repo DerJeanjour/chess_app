@@ -16,7 +16,10 @@ public enum RuleType {
     QUEEN_MOVE( true ),
     KING_MOVE( true ),
 
-    PROMOTING( true ),
+    PROMOTING_QUEEN( true ),
+    PROMOTING_ROOK( true ),
+    PROMOTING_BISHOP( true ),
+    PROMOTING_KNIGHT( true ),
     AU_PASSANT( true ),
     CASTLING_QUEEN_SIDE( true ),
     CASTLING_KING_SIDE( true ),

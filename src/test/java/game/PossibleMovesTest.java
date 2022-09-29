@@ -110,7 +110,7 @@ public class PossibleMovesTest {
                 4, 2103487l
         );
 
-        int maxDepth = 3;
+        int maxDepth = 1;
         GameConfig config = new GameConfig( "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R", TeamColor.WHITE );
         testPositions( "position5", possibleNodesPerDepth, maxDepth, config );
 
@@ -154,6 +154,7 @@ public class PossibleMovesTest {
             List<Validation> pieceMoves = game.validate( game.getPosition( piece ) ).values().stream()
                     .filter( Validation::isLegal ).collect( Collectors.toList() );
             for ( Validation move : pieceMoves ) {
+                //Log.info( AlgebraicNotation.getPosCode( move.getFrom() ) + AlgebraicNotation.getPosCode( move.getTo() ) );
                 game.makeMove( move.getFrom(), move.getTo() );
                 legalMoves += getPossibleNodesInDepth( game, depth - 1 );
                 game.undoLastMove();

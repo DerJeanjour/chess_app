@@ -109,7 +109,10 @@ public class MoveGenerator {
         Piece piece = game.getPiece( from );
         Vector2I dir = piece.isTeam( TeamColor.WHITE ) ? Dir.UP.vector : Dir.DOWN.vector;
 
-        int distance = game.hasMoved( piece ) ? 1 : 2;
+        int pawnLine = piece.isTeam( TeamColor.WHITE ) ? 1 : game.getBoardSize() - 2;
+        boolean pawnMoved = from.y != pawnLine;
+        int distance = pawnMoved ? 1 : 2;
+
         allowed.addAll( getPositionsOfDir( game, from, dir, distance, false, false, false, false ) );
         allowed.addAll( generatePawnNormalAttackingMoves( game, from ) );
 
@@ -303,7 +306,7 @@ public class MoveGenerator {
 
         // check rook
         Vector2I rookPos = game.isTeam( from, TeamColor.WHITE ) ? new Vector2I( 0, 0 ) : new Vector2I( 0, game.getBoardSize() - 1 );
-        if ( !game.isType( rookPos, PieceType.ROOK ) || game.isAttacked( rookPos ) ) {
+        if ( !game.isType( rookPos, PieceType.ROOK ) ) {
             return allowed;
         }
 
@@ -344,7 +347,7 @@ public class MoveGenerator {
 
         // check rook
         Vector2I rookPos = game.isTeam( from, TeamColor.WHITE ) ? new Vector2I( game.getBoardSize() - 1, 0 ) : new Vector2I( game.getBoardSize() - 1, game.getBoardSize() - 1 );
-        if ( !game.isType( rookPos, PieceType.ROOK ) || game.isAttacked( rookPos ) ) {
+        if ( !game.isType( rookPos, PieceType.ROOK ) ) {
             return allowed;
         }
 

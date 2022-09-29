@@ -59,8 +59,17 @@ public class RuleValidator {
             case KING_MOVE:
                 this.rules.add( new KingMoveRule() );
                 break;
-            case PROMOTING:
-                this.rules.add( new PromotingRule() );
+            case PROMOTING_QUEEN:
+                this.rules.add( new PromotingQueenRule() );
+                break;
+            case PROMOTING_ROOK:
+                this.rules.add( new PromotingRookRule() );
+                break;
+            case PROMOTING_BISHOP:
+                this.rules.add( new PromotingBishopRule() );
+                break;
+            case PROMOTING_KNIGHT:
+                this.rules.add( new PromotingKnightRule() );
                 break;
             case AU_PASSANT:
                 this.rules.add( new AuPassantRule() );
@@ -127,7 +136,7 @@ public class RuleValidator {
             if ( auPassant ) {
                 validatedPosition.getActions().add( ActionType.AU_PASSANT );
             }
-            if ( validPawnMove && getRule( RuleType.PROMOTING ).validate( this.game, from, to ) ) {
+            if ( validPawnMove && getRule( RuleType.PROMOTING_QUEEN ).validate( this.game, from, to ) ) {
                 validatedPosition.getActions().add( ActionType.PROMOTING_QUEEN );
             }
         }

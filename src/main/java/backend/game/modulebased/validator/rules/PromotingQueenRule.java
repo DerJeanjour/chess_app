@@ -11,20 +11,16 @@ import math.Vector2I;
 
 import java.util.Arrays;
 
-public class PromotingRule extends Rule {
+public class PromotingQueenRule extends Rule {
 
-    public PromotingRule() {
-        super( RuleType.PROMOTING, Arrays.asList( ActionType.PROMOTING_QUEEN ) );
+    public PromotingQueenRule() {
+        super( RuleType.PROMOTING_QUEEN, Arrays.asList( ActionType.PROMOTING_QUEEN ) );
     }
 
     @Override
     public boolean validate( GameMB game, Vector2I from, Vector2I to ) {
 
         if ( !game.isType( from, PieceType.PAWN ) ) {
-            return false;
-        }
-
-        if ( game.hasPiece( to ) ) {
             return false;
         }
 

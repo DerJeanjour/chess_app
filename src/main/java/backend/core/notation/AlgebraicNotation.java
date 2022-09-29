@@ -34,16 +34,19 @@ public class AlgebraicNotation implements ChessNotation {
             PieceType.QUEEN, "Q",
             PieceType.KING, "K" );
 
-    public static final Map<ActionType, String> actionCodes = Map.of(
-            ActionType.MOVE, "",
-            ActionType.CAPTURE, "x",
-            ActionType.AU_PASSANT, "x",
-            ActionType.PROMOTING_QUEEN, "=Q",
-            ActionType.CASTLE_KING, "O-O",
-            ActionType.CASTLE_QUEEN, "O-O-O",
-            ActionType.CHECK, "+",
-            ActionType.CHECKMATE, "#",
-            ActionType.STALEMATE, "1/2-1/2" );
+    public static final Map<ActionType, String> actionCodes = Map.ofEntries(
+            Map.entry( ActionType.MOVE, "" ),
+            Map.entry( ActionType.CAPTURE, "x" ),
+            Map.entry( ActionType.AU_PASSANT, "x" ),
+            Map.entry( ActionType.PROMOTING_QUEEN, "=Q" ),
+            Map.entry( ActionType.PROMOTING_ROOK, "=R" ),
+            Map.entry( ActionType.PROMOTING_BISHOP, "=B" ),
+            Map.entry( ActionType.PROMOTING_KNIGHT, "=N" ),
+            Map.entry( ActionType.CASTLE_KING, "O-O" ),
+            Map.entry( ActionType.CASTLE_QUEEN, "O-O-O" ),
+            Map.entry( ActionType.CHECK, "+" ),
+            Map.entry( ActionType.CHECKMATE, "#" ),
+            Map.entry( ActionType.STALEMATE, "1/2-1/2" ) );
 
     @Override
     public Game read( String notation ) {
