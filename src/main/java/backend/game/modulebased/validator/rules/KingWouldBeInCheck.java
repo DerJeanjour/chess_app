@@ -27,6 +27,7 @@ public class KingWouldBeInCheck extends Rule {
                 return true;
             }
         }
+        // TODO check explicitly for check resolve !
         if ( game.isPined( from ) && !game.isPined( to ) ) {
             return true;
         }
