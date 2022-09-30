@@ -2,6 +2,7 @@ package game;
 
 import backend.core.model.Piece;
 import backend.core.model.Validation;
+import backend.core.notation.AlgebraicNotation;
 import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * https://www.chessprogramming.org/Perft_Results
  */
-public class PossibleMovesTest {
+public class PerftTest {
 
     @Test
     void testPosition1() {
@@ -60,7 +61,7 @@ public class PossibleMovesTest {
 
     }
 
-    @Disabled
+    //@Disabled
     @Test
     void testPosition3() {
 
@@ -153,9 +154,17 @@ public class PossibleMovesTest {
             List<Validation> pieceMoves = game.validate( game.getPosition( piece ) ).stream()
                     .filter( Validation::isLegal ).collect( Collectors.toList() );
             for ( Validation v : pieceMoves ) {
-                //Log.info( AlgebraicNotation.getPosCode( v.getMove().getFrom() ) + AlgebraicNotation.getPosCode( v.getMove().getTo() ) + v.getActions() );
                 game.makeMove( v.getMove() );
-                legalMoves += getPossibleNodesInDepth( game, depth - 1 );
+                long possibleNodes = getPossibleNodesInDepth( game, depth - 1 );
+
+                /*
+                if( depth == 2 ) {
+                    Log.info( "d{}: {} - {}", depth, AlgebraicNotation.getPosCode( v.getMove().getFrom() ) + AlgebraicNotation.getPosCode( v.getMove().getTo() ) + v.getActions(), possibleNodes );
+                }
+
+                 */
+
+                legalMoves += possibleNodes;
                 game.undoLastMove();
             }
         }

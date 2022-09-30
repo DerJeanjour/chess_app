@@ -74,6 +74,25 @@ public class MoveGenerator {
         return Collections.emptyList();
     }
 
+    public static List<List<Vector2I>> generatePositionsOfRaysFor( Game game, TeamColor color ) {
+        List<List<Vector2I>> rays = new ArrayList<>();
+        for ( Piece piece : game.getTeam( color ).getAlive() ) {
+            Vector2I p = game.getPosition( piece );
+            switch ( piece.getType() ) {
+                case BISHOP -> Dir.diagonalDirs().forEach( dir ->
+                        rays.add( getPositionsOfDir( game, p, dir.vector, -1, true, false, false, false ) )
+                );
+                case ROOK -> Dir.baseDirs().forEach( dir ->
+                        rays.add( getPositionsOfDir( game, p, dir.vector, -1, true, false, false, false ) )
+                );
+                case QUEEN -> Arrays.asList( Dir.values() ).forEach( dir ->
+                        rays.add( getPositionsOfDir( game, p, dir.vector, -1, true, false, false, false ) )
+                );
+            }
+        }
+        return rays;
+    }
+
     public static Set<Vector2I> generateAttackingMoves( Game game, Vector2I from ) {
         Set<Vector2I> allowed = new HashSet<>();
         allowed.addAll( generatePawnAttackingMoves( game, from ) );
@@ -310,17 +329,6 @@ public class MoveGenerator {
             return allowed;
         }
 
-        // check in between
-        List<Vector2I> inBetween = getPositionsOfDir( game, rookPos, Dir.RIGHT.vector, -1, false, false, false, false );
-        if ( inBetween.size() != kingPos.x - 1 ) {
-            return allowed;
-        }
-        for ( Vector2I p : inBetween ) {
-            if ( game.isAttacked( p ) ) {
-                return allowed;
-            }
-        }
-
         // check additional
         Piece king = game.getPiece( from );
         Piece rook = game.getPiece( rookPos );
@@ -328,7 +336,26 @@ public class MoveGenerator {
             return allowed;
         }
 
-        allowed.add( from.add( Dir.LEFT.vector.mul( 2 ) ) );
+        Vector2I target = from.add( Dir.LEFT.vector.mul( 2 ) );
+        // check in between
+        List<Vector2I> inBetween = getPositionsOfDir( game, rookPos, Dir.RIGHT.vector, -1, false, false, false, false );
+        if ( inBetween.size() != kingPos.x - 1 ) {
+            return allowed;
+        }
+        boolean foundTarget = false;
+        for( int i = inBetween.size() -1; i >= 0; i-- ) {
+            Vector2I p = inBetween.get( i );
+            if( !foundTarget ) {
+                if ( game.isAttacked( p ) ) {
+                    return allowed;
+                }
+            }
+            if( p.equals( target ) ) {
+                foundTarget = true;
+            }
+        }
+
+        allowed.add( target );
         return allowed;
     }
 
@@ -351,17 +378,6 @@ public class MoveGenerator {
             return allowed;
         }
 
-        // check in between
-        List<Vector2I> inBetween = getPositionsOfDir( game, rookPos, Dir.LEFT.vector, -1, false, false, false, false );
-        if ( inBetween.size() != game.getBoardSize() - kingPos.x - 2 ) {
-            return allowed;
-        }
-        for ( Vector2I p : inBetween ) {
-            if ( game.isAttacked( p ) ) {
-                return allowed;
-            }
-        }
-
         // check additional
         Piece king = game.getPiece( from );
         Piece rook = game.getPiece( rookPos );
@@ -369,7 +385,26 @@ public class MoveGenerator {
             return allowed;
         }
 
-        allowed.add( from.add( Dir.RIGHT.vector.mul( 2 ) ) );
+        Vector2I target = from.add( Dir.RIGHT.vector.mul( 2 ) );
+        // check in between
+        List<Vector2I> inBetween = getPositionsOfDir( game, rookPos, Dir.LEFT.vector, -1, false, false, false, false );
+        if ( inBetween.size() != game.getBoardSize() - kingPos.x - 2 ) {
+            return allowed;
+        }
+        boolean foundTarget = false;
+        for( int i = inBetween.size() -1; i >= 0; i-- ) {
+            Vector2I p = inBetween.get( i );
+            if( !foundTarget ) {
+                if ( game.isAttacked( p ) ) {
+                    return allowed;
+                }
+            }
+            if( p.equals( target ) ) {
+                foundTarget = true;
+            }
+        }
+
+        allowed.add( target );
         return allowed;
     }
 
