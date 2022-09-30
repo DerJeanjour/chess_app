@@ -61,7 +61,7 @@ public class PerftTest {
 
     }
 
-    //@Disabled
+    @Disabled
     @Test
     void testPosition3() {
 

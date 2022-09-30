@@ -388,7 +388,7 @@ public class GameMB extends Game {
     @Override
     public boolean hasMovedSince( Piece piece, int moveCount ) {
         PieceMB pieceMB = ( PieceMB ) piece;
-        return this.getMoveNumber() - pieceMB.getLastMovedAt() <= moveCount;
+        return this.getMoveNumber() - pieceMB.getLastMovedAt() < moveCount;
     }
 
     public TeamMB getTeam( String id ) {
