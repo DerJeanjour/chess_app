@@ -9,6 +9,7 @@ import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
 import backend.game.modulebased.GameMB;
+import misc.Log;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -100,6 +101,25 @@ public class MoveActionsTest {
         assertTrue( promotedPawn != null );
         assertTrue( promotedPawn.isAlive() );
         assertTrue( promotedPawn.isType( PieceType.BISHOP ) );
+
+    }
+
+    @ParameterizedTest( name = "Testing au passant success move actions: {index} => placement={0} move={1}" )
+    @CsvSource( {
+            "'k4/1p3/5/2P2/4K', '1.c4 bxc3'",
+            "'k4/1p3/5/2P2/4K', '1.Kd1 b2 2.cxb3'"
+    } )
+    void testAuPassantSuccessMoves( String placementPattern, String moveNotation ) {
+
+        GameConfig config = new GameConfig( placementPattern, TeamColor.WHITE );
+        Game game = new GameMB( "test", config );
+
+        AlgebraicNotation.applyMoves( game, moveNotation );
+        MoveHistory moveHistory = game.getLastMove();
+
+        Log.info("move {}", game.getLastMove());
+        assertTrue( moveHistory.getActions().contains( ActionType.MOVE ) );
+        assertTrue( moveHistory.getActions().contains( ActionType.AU_PASSANT ) );
 
     }
 

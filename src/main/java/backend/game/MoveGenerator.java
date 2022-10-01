@@ -187,7 +187,7 @@ public class MoveGenerator {
         for ( Vector2I target : targets ) {
             if ( !game.isOutOfBounce( target ) && game.isType( target, PieceType.PAWN ) ) {
                 Piece targetPiece = game.getPiece( target );
-                if ( game.hasMovedTimes( targetPiece, 1 ) && game.hasMovedSince( targetPiece, 1 ) ) {
+                if ( game.hasMovedTimes( targetPiece, 1 ) && game.hasMovedSince( targetPiece, 2 ) ) {
                     allowed.add( target.add( dir ) );
                 }
             }

@@ -29,6 +29,12 @@ public abstract class Game {
     protected int moveNumber;
 
     @Getter
+    protected int halfMoveNumber;
+
+    @Getter
+    protected int halfMove50RuleCount;
+
+    @Getter
     protected List<MoveHistory> history;
 
     private List<GameListener> listeners;
@@ -147,12 +153,20 @@ public abstract class Game {
         this.state = isOnMove( TeamColor.BLACK ) ? GameState.BLACK_TO_MOVE : GameState.WHITE_TO_MOVE;
     }
 
-    protected void incrementMove() {
+    protected void incrementMove( Validation validation ) {
         if ( isFinished() ) {
             return;
         }
         if ( isOnMove( this.config.getTeamStarting() ) ) {
             this.moveNumber++;
+        }
+        this.halfMoveNumber++;
+        if(     !validation.getActions().contains( ActionType.CAPTURE ) ||
+                !validation.getActions().contains( ActionType.AU_PASSANT ) ||
+                !this.isType( validation.getMove().getTo(), PieceType.PAWN ) ) {
+            this.halfMove50RuleCount++;
+        } else {
+            this.halfMove50RuleCount = 0;
         }
     }
 
@@ -180,6 +194,8 @@ public abstract class Game {
         this.onMove = this.config.getTeamStarting();
         this.state = this.isOnMove( TeamColor.WHITE ) ? GameState.WHITE_TO_MOVE : GameState.BLACK_TO_MOVE;
         this.moveNumber = 0;
+        this.halfMoveNumber = 0;
+        this.halfMove50RuleCount = 0;
         this.history = new ArrayList<>();
     }
 

@@ -206,19 +206,19 @@ public class RuleValidator {
         }
 
         if ( isPromoting ) {
-            ValidationMB promoQueen = new ValidationMB( move );
+            ValidationMB promoQueen = new ValidationMB( new Move( move.getFrom(), move.getTo(), PieceType.QUEEN ) );
             promoQueen.setLegal( true );
             promoQueen.getActions().addAll( validatedPosition.getActions() );
             promoQueen.getActions().add( ActionType.PROMOTING_QUEEN );
-            ValidationMB promoRook = new ValidationMB( move );
+            ValidationMB promoRook = new ValidationMB( new Move( move.getFrom(), move.getTo(), PieceType.ROOK ) );
             promoRook.setLegal( true );
             promoRook.getActions().addAll( validatedPosition.getActions() );
             promoRook.getActions().add( ActionType.PROMOTING_ROOK );
-            ValidationMB promoBishop = new ValidationMB( move );
+            ValidationMB promoBishop = new ValidationMB( new Move( move.getFrom(), move.getTo(), PieceType.BISHOP ) );
             promoBishop.setLegal( true );
             promoBishop.getActions().addAll( validatedPosition.getActions() );
             promoBishop.getActions().add( ActionType.PROMOTING_BISHOP );
-            ValidationMB promoKnight = new ValidationMB( move );
+            ValidationMB promoKnight = new ValidationMB( new Move( move.getFrom(), move.getTo(), PieceType.KNIGHT ) );
             promoKnight.setLegal( true );
             promoKnight.getActions().addAll( validatedPosition.getActions() );
             promoKnight.getActions().add( ActionType.PROMOTING_KNIGHT );

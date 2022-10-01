@@ -175,7 +175,7 @@ public class GameMB extends Game {
                 addHistory( validatedPosition.getActions(), move );
 
                 checkFinished( validatedPosition.getActions() );
-                incrementMove();
+                incrementMove( validatedPosition );
 
                 this.emitEvent();
                 return true;
@@ -196,7 +196,7 @@ public class GameMB extends Game {
         removePiece( to );
         this.positions.put( from, "" );
         this.positions.put( to, piece.getId() );
-        piece.moved( this.moveNumber );
+        piece.moved( this.halfMoveNumber );
 
         this.piecePositions.put( piece.getId(), to );
     }
@@ -265,7 +265,7 @@ public class GameMB extends Game {
                     : GameState.WHITE_WON;
         }
 
-        if ( actions.contains( ActionType.STALEMATE ) ) {
+        if ( actions.contains( ActionType.STALEMATE ) || this.halfMove50RuleCount >= 50 ) {
             this.state = GameState.TIE;
         }
 
@@ -386,9 +386,9 @@ public class GameMB extends Game {
     }
 
     @Override
-    public boolean hasMovedSince( Piece piece, int moveCount ) {
+    public boolean hasMovedSince( Piece piece, int halfMoveCount ) {
         PieceMB pieceMB = ( PieceMB ) piece;
-        return this.getMoveNumber() - pieceMB.getLastMovedAt() < moveCount;
+        return this.halfMoveNumber - pieceMB.getLastMovedAt() < halfMoveCount;
     }
 
     public TeamMB getTeam( String id ) {
@@ -447,6 +447,8 @@ public class GameMB extends Game {
         this.onMove = game.getOnMove();
         this.state = game.getState();
         this.moveNumber = game.getMoveNumber();
+        this.halfMoveNumber = game.getHalfMoveNumber();
+        this.halfMove50RuleCount = game.getHalfMove50RuleCount();
         this.history = new ArrayList<>( game.getHistory() );
         this.prev = game.getPrev();
         this.attacked = game.getAttacked();

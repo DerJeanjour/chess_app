@@ -61,7 +61,7 @@ public class PerftTest {
 
     }
 
-    @Disabled
+    //@Disabled
     @Test
     void testPosition3() {
 
@@ -74,13 +74,13 @@ public class PerftTest {
                 5, 674624l
         );
 
-        int maxDepth = 4;
+        int maxDepth = 3;
         GameConfig config = new GameConfig( "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8", TeamColor.WHITE );
         testPositions( "position3", possibleNodesPerDepth, maxDepth, config );
 
     }
 
-    @Disabled
+    //@Disabled
     @Test
     void testPosition4() {
 
@@ -111,7 +111,7 @@ public class PerftTest {
                 4, 2103487l
         );
 
-        int maxDepth = 2;
+        int maxDepth = 3;
         GameConfig config = new GameConfig( "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R", TeamColor.WHITE );
         testPositions( "position5", possibleNodesPerDepth, maxDepth, config );
 
@@ -157,12 +157,9 @@ public class PerftTest {
                 game.makeMove( v.getMove() );
                 long possibleNodes = getPossibleNodesInDepth( game, depth - 1 );
 
-                /*
-                if( depth == 2 ) {
+                if( depth == 3 ) {
                     Log.info( "d{}: {} - {}", depth, AlgebraicNotation.getPosCode( v.getMove().getFrom() ) + AlgebraicNotation.getPosCode( v.getMove().getTo() ) + v.getActions(), possibleNodes );
                 }
-
-                 */
 
                 legalMoves += possibleNodes;
                 game.undoLastMove();
