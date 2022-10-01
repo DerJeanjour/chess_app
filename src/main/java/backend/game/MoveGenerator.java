@@ -195,10 +195,7 @@ public class MoveGenerator {
         Vector2I[] targets = new Vector2I[]{ from.add( Dir.LEFT.vector ), from.add( Dir.RIGHT.vector ) };
         for ( Vector2I target : targets ) {
             if ( !game.isOutOfBounce( target ) && game.isType( target, PieceType.PAWN ) ) {
-                Piece targetPiece = game.getPiece( target );
-                if ( game.hasMovedTimes( targetPiece, 1 ) && game.hasMovedSince( targetPiece, 2 ) ) {
-                    allowed.add( target.add( dir ) );
-                }
+                allowed.add( target.add( dir ) );
             }
         }
 
@@ -337,13 +334,6 @@ public class MoveGenerator {
             return allowed;
         }
 
-        // check additional
-        Piece king = game.getPiece( from );
-        Piece rook = game.getPiece( rookPos );
-        if ( game.hasMoved( king ) || game.hasMoved( rook ) ) {
-            return allowed;
-        }
-
         Vector2I target = from.add( Dir.LEFT.vector.mul( 2 ) );
         // check in between
         List<Vector2I> inBetween = getPositionsOfDir( game, rookPos, Dir.RIGHT.vector, -1, false, false, false, false );
@@ -383,13 +373,6 @@ public class MoveGenerator {
         // check rook
         Vector2I rookPos = game.isTeam( from, TeamColor.WHITE ) ? new Vector2I( game.getBoardSize() - 1, 0 ) : new Vector2I( game.getBoardSize() - 1, game.getBoardSize() - 1 );
         if ( !game.isType( rookPos, PieceType.ROOK ) ) {
-            return allowed;
-        }
-
-        // check additional
-        Piece king = game.getPiece( from );
-        Piece rook = game.getPiece( rookPos );
-        if ( game.hasMoved( king ) || game.hasMoved( rook ) ) {
             return allowed;
         }
 

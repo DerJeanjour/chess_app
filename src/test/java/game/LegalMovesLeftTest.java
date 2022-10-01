@@ -15,13 +15,13 @@ public class LegalMovesLeftTest {
     @DisplayName( "Testing no legal move state" )
     @ParameterizedTest( name = "{index} => placement={0}" )
     @CsvSource( {
-            "kPQ1/PP2/Q3/3K",
-            "k3/Q3/R3/3K"
+            "kPQ1/PP2/Q3/3K w - -",
+            "k3/Q3/R3/3K w - -"
     } )
     void testNoLegalMovesLeftByBlock( String placementPattern ) {
 
-        GameConfig config = new GameConfig( placementPattern, TeamColor.WHITE );
-        Game game = new GameMB( "test", config );
+        GameConfig config = new GameConfig( placementPattern );
+        Game game = new GameMB( config );
 
         assertFalse( game.hasLegalMovesLeft( TeamColor.BLACK ) );
     }

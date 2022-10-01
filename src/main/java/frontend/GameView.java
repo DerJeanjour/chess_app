@@ -8,6 +8,7 @@ import backend.core.model.Piece;
 import backend.core.model.Validation;
 import backend.core.notation.AlgebraicNotation;
 import backend.core.notation.ChessNotation;
+import backend.core.notation.FenNotation;
 import backend.core.values.ActionType;
 import backend.core.values.PieceType;
 import backend.core.values.PlayerType;
@@ -47,7 +48,7 @@ public class GameView implements GameListener {
 
     private Player blackPlayer;
 
-    private String history;
+    private String notation;
 
     private PieceType promotionMode;
 
@@ -65,7 +66,7 @@ public class GameView implements GameListener {
 
     private SpriteProvider sprites;
 
-    private ChessNotation chessNotation;
+    private ChessNotation notationProcessor;
 
     private JFrame frame;
 
@@ -97,7 +98,7 @@ public class GameView implements GameListener {
         this.whitePlayer = new Player( TeamColor.WHITE, PlayerType.HUMAN );
         this.blackPlayer = new Player( TeamColor.BLACK, PlayerType.HUMAN );
 
-        this.history = "";
+        this.notation = "";
         this.boardSize = boardSize;
         this.promotionMode = PieceType.QUEEN;
 
@@ -115,7 +116,7 @@ public class GameView implements GameListener {
         this.validation = new HashMap<>();
         this.sprites = new SpriteProvider();
         this.sprites.reload( this.posSize );
-        this.chessNotation = new AlgebraicNotation();
+        this.notationProcessor = new AlgebraicNotation();
         setupFrame();
 
         this.game.emitEvent();
@@ -124,7 +125,7 @@ public class GameView implements GameListener {
     @Override
     public void gameUpdated( Game game ) {
         Log.info( "Evaluation is {}", new PiecePointChessEvaluator().evaluate( game, TeamColor.WHITE ) );
-        this.history = chessNotation.write( game );
+        this.notation = notationProcessor.write( game );
         final Player onMove = this.whitePlayer.isOnMove( game )
                 ? this.whitePlayer
                 : this.blackPlayer;
@@ -228,14 +229,14 @@ public class GameView implements GameListener {
                         break;
                     case KeyEvent.VK_DELETE:
                     case KeyEvent.VK_BACK_SPACE:
-                        if ( history.length() > 0 ) {
-                            history = history.substring( 0, history.length() - 1 );
+                        if ( notation.length() > 0 ) {
+                            notation = notation.substring( 0, notation.length() - 1 );
                         }
                         break;
                     default:
                         char pressed = e.getKeyChar();
                         if ( Character.isDefined( pressed ) ) {
-                            history += pressed;
+                            notation += pressed;
                         }
                         break;
                 }
@@ -259,9 +260,9 @@ public class GameView implements GameListener {
         JButton parseButton = new JButton( "Parse" );
         parseButton.addActionListener( a -> {
             try {
-                game.setGame( this.history );
+                game.setGame( this.notation, this.notationProcessor );
             } catch ( NotationParsingException e ) {
-                this.history = chessNotation.write( game );
+                this.notation = notationProcessor.write( game );
             }
 
         } );
@@ -322,6 +323,15 @@ public class GameView implements GameListener {
         } );
         blackPlayerSelectPanel.add( blackPlayerSelect );
         infoPanel.add( blackPlayerSelectPanel );
+
+        JButton notationSwitchButton = new JButton( "Switch notation" );
+        notationSwitchButton.addActionListener( e -> {
+            this.notationProcessor = this.notationProcessor instanceof AlgebraicNotation
+                    ? new FenNotation()
+                    : new AlgebraicNotation();
+            this.notation = notationProcessor.write( game );
+        } );
+        infoPanel.add( notationSwitchButton );
 
         this.gameStateInfo = new JTextField();
         this.gameStateInfo.setEditable( false );
@@ -465,7 +475,7 @@ public class GameView implements GameListener {
             g.drawRect( p.x, p.y, boardSize, boardSize );
 
             // Set info texts
-            moveInfo.setText( history );
+            moveInfo.setText( notation );
             gameStateInfo.setText( game.getState().name() );
 
             fps.update();

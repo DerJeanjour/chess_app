@@ -13,8 +13,8 @@ public class CheckTest {
     @Test
     void testSimpleCheck() {
 
-        GameConfig config = new GameConfig( "k3/4/4/R2K", TeamColor.WHITE );
-        Game game = new GameMB( "test", config );
+        GameConfig config = new GameConfig( "k3/4/4/R2K w - -" );
+        Game game = new GameMB( config );
 
         assertTrue( game.isCheckFor( TeamColor.BLACK ) );
     }

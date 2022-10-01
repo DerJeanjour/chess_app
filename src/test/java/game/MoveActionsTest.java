@@ -5,7 +5,6 @@ import backend.core.model.Piece;
 import backend.core.notation.AlgebraicNotation;
 import backend.core.values.ActionType;
 import backend.core.values.PieceType;
-import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
 import backend.game.modulebased.GameMB;
@@ -20,12 +19,12 @@ public class MoveActionsTest {
 
     @ParameterizedTest( name = "Testing checkmate move actions: {index} => placement={0} move={1}" )
     @CsvSource( {
-            "'k3/2RQ/4/3K', '1.Qd4'"
+            "'k3/2RQ/4/3K w - -', '1.Qd4'"
     } )
     void testCheckmateMoves( String placementPattern, String moveNotation ) {
 
-        GameConfig config = new GameConfig( placementPattern, TeamColor.WHITE );
-        Game game = new GameMB( "test", config );
+        GameConfig config = new GameConfig( placementPattern );
+        Game game = new GameMB( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -39,12 +38,12 @@ public class MoveActionsTest {
 
     @ParameterizedTest( name = "Testing stalemate move actions: {index} => placement={0} move={1}" )
     @CsvSource( {
-            "'k3/2RQ/4/3K', '1.Rb3'"
+            "'k3/2RQ/4/3K w - -', '1.Rb3'"
     } )
     void testStalemateMoves( String placementPattern, String moveNotation ) {
 
-        GameConfig config = new GameConfig( placementPattern, TeamColor.WHITE );
-        Game game = new GameMB( "test", config );
+        GameConfig config = new GameConfig( placementPattern );
+        Game game = new GameMB( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -58,13 +57,13 @@ public class MoveActionsTest {
 
     @ParameterizedTest( name = "Testing queen promotion move actions: {index} => placement={0} move={1}" )
     @CsvSource( {
-            "'k3/3P/4/3K', '1.d4=Q'",
-            "'k3/4/p3/3K', '1.Kc1 a1=Q'"
+            "'k3/3P/4/3K w - -', '1.d4=Q'",
+            "'k3/4/p3/3K w - -', '1.Kc1 a1=Q'"
     } )
     void testQueenPromotion( String placementPattern, String moveNotation ) {
 
-        GameConfig config = new GameConfig( placementPattern, TeamColor.WHITE );
-        Game game = new GameMB( "test", config );
+        GameConfig config = new GameConfig( placementPattern );
+        Game game = new GameMB( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -82,13 +81,13 @@ public class MoveActionsTest {
 
     @ParameterizedTest( name = "Testing bishop promotion move actions: {index} => placement={0} move={1}" )
     @CsvSource( {
-            "'k3/3P/4/3K', '1.d4=B'",
-            "'k3/4/p3/3K', '1.Kc1 a1=B'"
+            "'k3/3P/4/3K w - -', '1.d4=B'",
+            "'k3/4/p3/3K w - -', '1.Kc1 a1=B'"
     } )
     void testBishopPromotion( String placementPattern, String moveNotation ) {
 
-        GameConfig config = new GameConfig( placementPattern, TeamColor.WHITE );
-        Game game = new GameMB( "test", config );
+        GameConfig config = new GameConfig( placementPattern );
+        Game game = new GameMB( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -106,13 +105,13 @@ public class MoveActionsTest {
 
     @ParameterizedTest( name = "Testing au passant success move actions: {index} => placement={0} move={1}" )
     @CsvSource( {
-            "'k4/1p3/5/2P2/4K', '1.c4 bxc3'",
-            "'k4/1p3/5/2P2/4K', '1.Kd1 b2 2.cxb3'"
+            "'k4/1p3/5/2P2/4K w - -', '1.c4 bxc3'",
+            "'k4/1p3/5/2P2/4K w - -', '1.Kd1 b2 2.cxb3'"
     } )
     void testAuPassantSuccessMoves( String placementPattern, String moveNotation ) {
 
-        GameConfig config = new GameConfig( placementPattern, TeamColor.WHITE );
-        Game game = new GameMB( "test", config );
+        GameConfig config = new GameConfig( placementPattern );
+        Game game = new GameMB( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();

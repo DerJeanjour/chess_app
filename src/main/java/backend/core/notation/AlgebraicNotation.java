@@ -51,7 +51,8 @@ public class AlgebraicNotation implements ChessNotation {
 
     @Override
     public Game read( String notation ) {
-        Game game = new GameMB( "main", new GameConfig() );
+        GameConfig config = new GameConfig();
+        Game game = new GameMB( config );
         applyMoves( game, notation );
         return game;
     }
@@ -144,7 +145,7 @@ public class AlgebraicNotation implements ChessNotation {
                 if ( toRow != null ) {
                     optionalFromRow = toRow;
                 }
-                toRow = getRow( Character.getNumericValue( m ) );
+                toRow = getRow( m );
             }
         }
 
@@ -208,8 +209,8 @@ public class AlgebraicNotation implements ChessNotation {
         return new Move( fromPos, to, promotingMode );
     }
 
-    public static int getRow( int rowCode ) {
-        return rowCode - 1;
+    public static int getRow( char rowCode ) {
+        return Character.getNumericValue( rowCode ) - 1;
     }
 
     public static int getCol( char colCode ) {
@@ -219,7 +220,7 @@ public class AlgebraicNotation implements ChessNotation {
     @Override
     public String write( Game game ) {
         String notation = "";
-        Game sandbox = new GameMB( "write", new GameConfig() );
+        Game sandbox = new GameMB( game.getConfig() );
         for ( MoveHistory history : game.getHistory() ) {
             notation += writeCode( sandbox, history );
             sandbox.makeMove( history.getMove() );
@@ -227,14 +228,12 @@ public class AlgebraicNotation implements ChessNotation {
         return notation;
     }
 
-    /* model -> notation */
-
     public static String writeCode( Game game, MoveHistory moveHistory ) {
 
         String pattern = "{0}{1}{2}{3}{4}{5} ";
 
         boolean isMoveEnd = TeamColor.BLACK.equals( moveHistory.getTeam() );
-        String moveNumber = isMoveEnd ? "" : ( moveHistory.getNumber() + 1 ) + ".";
+        String moveNumber = isMoveEnd ? "" : ( moveHistory.getNumber() + 1 ) + ". ";
         String pieceCode = pieceCodes.get( moveHistory.getPiece() );
         String actionCode = "";
         String posCode = getPosCode( moveHistory.getMove().getTo() );

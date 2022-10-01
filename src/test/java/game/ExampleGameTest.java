@@ -38,8 +38,8 @@ public class ExampleGameTest {
         Game game = notationProcessor.read( notation );
 
         ChessNotation positionProcessor = new FenNotation();
-        String is = positionProcessor.write( game );
-        String should = "8/6k1/5R2/6K1/p7/P7/2b5/8";
+        String should = "8/6k1/5R2/6K1/p7/P7/2b5/8 w - -";
+        String is = positionProcessor.write( game ).substring( 0, should.length() );
         assertEquals( is, should );
 
     }

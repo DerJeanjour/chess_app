@@ -1,11 +1,13 @@
 package backend.game;
 
 import backend.core.model.*;
+import backend.core.notation.ChessNotation;
 import backend.core.values.ActionType;
 import backend.core.values.GameState;
 import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
 import lombok.Getter;
+import lombok.Setter;
 import math.Vector2I;
 import util.MathUtil;
 
@@ -25,14 +27,31 @@ public abstract class Game {
     @Getter
     protected TeamColor onMove;
 
+    @Setter
+    @Getter
+    protected boolean whiteCanCastleKing;
+
+    @Setter
+    @Getter
+    protected boolean whiteCanCastleQueen;
+
+    @Setter
+    @Getter
+    protected boolean blackCanCastleKing;
+
+    @Setter
+    @Getter
+    protected boolean blackCanCastleQueen;
+
     @Getter
     protected int moveNumber;
 
     @Getter
-    protected int halfMoveNumber;
+    protected int halfMoveRuleCount;
 
+    @Setter
     @Getter
-    protected int halfMove50RuleCount;
+    protected Vector2I auPassantPosition;
 
     @Getter
     protected List<MoveHistory> history;
@@ -51,7 +70,7 @@ public abstract class Game {
 
     public abstract void reset();
 
-    public abstract void setGame( String notation );
+    public abstract void setGame( String notation, ChessNotation notationProcessor );
 
     public abstract boolean makeMove( Move move );
 
@@ -92,12 +111,6 @@ public abstract class Game {
     public abstract boolean hasPiece( Vector2I p );
 
     public abstract Vector2I getPosition( Piece piece );
-
-    public abstract boolean hasMoved( Piece piece );
-
-    public abstract boolean hasMovedTimes( Piece piece, int moveCount );
-
-    public abstract boolean hasMovedSince( Piece piece, int moveCount );
 
     public abstract boolean isTeam( Vector2I p, TeamColor team );
 
@@ -157,16 +170,15 @@ public abstract class Game {
         if ( isFinished() ) {
             return;
         }
-        if ( isOnMove( this.config.getTeamStarting() ) ) {
+        if ( isOnMove( this.config.getOnMove() ) ) {
             this.moveNumber++;
         }
-        this.halfMoveNumber++;
-        if (    !validation.getActions().contains( ActionType.CAPTURE ) &&
+        if ( !validation.getActions().contains( ActionType.CAPTURE ) &&
                 !validation.getActions().contains( ActionType.CAPTURE_AU_PASSANT ) &&
                 !this.isType( validation.getMove().getTo(), PieceType.PAWN ) ) {
-            this.halfMove50RuleCount++;
+            this.halfMoveRuleCount++;
         } else {
-            this.halfMove50RuleCount = 0;
+            this.halfMoveRuleCount = 0;
         }
     }
 
@@ -191,12 +203,16 @@ public abstract class Game {
     }
 
     protected void resetStates() {
-        this.onMove = this.config.getTeamStarting();
-        this.state = this.isOnMove( TeamColor.WHITE ) ? GameState.WHITE_TO_MOVE : GameState.BLACK_TO_MOVE;
-        this.moveNumber = 0;
-        this.halfMoveNumber = 0;
-        this.halfMove50RuleCount = 0;
+        this.onMove = this.config.getOnMove();
+        this.whiteCanCastleKing = this.config.isWhiteCanCastleKing();
+        this.whiteCanCastleQueen = this.config.isWhiteCanCastleQueen();
+        this.blackCanCastleKing = this.config.isBlackCanCastleKing();
+        this.blackCanCastleQueen = this.config.isBlackCanCastleQueen();
+        this.auPassantPosition = null;
+        this.halfMoveRuleCount = this.config.getHalfMoveRuleCount();
+        this.moveNumber = this.config.getMoveNumber();
         this.history = new ArrayList<>();
+        this.state = this.isOnMove( TeamColor.WHITE ) ? GameState.WHITE_TO_MOVE : GameState.BLACK_TO_MOVE;
     }
 
 }

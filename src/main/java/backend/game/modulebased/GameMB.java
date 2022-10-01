@@ -5,9 +5,7 @@ import backend.core.model.Move;
 import backend.core.model.Piece;
 import backend.core.model.Team;
 import backend.core.model.Validation;
-import backend.core.notation.AlgebraicNotation;
 import backend.core.notation.ChessNotation;
-import backend.core.notation.FenNotation;
 import backend.core.values.ActionType;
 import backend.core.values.GameState;
 import backend.core.values.PieceType;
@@ -19,7 +17,6 @@ import backend.game.modulebased.validator.RuleType;
 import backend.game.modulebased.validator.RuleValidator;
 import backend.game.modulebased.validator.ValidationMB;
 import lombok.Getter;
-import lombok.Setter;
 import math.Vector2I;
 import misc.Log;
 import util.CollectionUtil;
@@ -31,16 +28,10 @@ import java.util.stream.Collectors;
 public class GameMB extends Game {
 
     @Getter
-    private final String id;
-
-    @Getter
     private TeamMB white;
 
     @Getter
     private TeamMB black;
-
-    @Getter
-    private int size;
 
     @Getter
     private Map<Vector2I, String> positions;
@@ -54,8 +45,6 @@ public class GameMB extends Game {
     @Getter
     private final boolean canLog;
 
-    // speedup data
-
     @Getter
     private GameMB prev;
 
@@ -65,20 +54,14 @@ public class GameMB extends Game {
     @Getter
     private List<List<Vector2I>> pined;
 
-    @Setter
-    @Getter
-    private Vector2I auPassantPosition;
-
-    public GameMB( final String id, final GameConfig config ) {
+    public GameMB( final GameConfig config ) {
         super( config );
-        this.id = id;
         this.canLog = false;
         reset();
     }
 
-    public GameMB( final String id, final GameConfig config, boolean canLog ) {
+    public GameMB( final GameConfig config, boolean canLog ) {
         super( config );
-        this.id = id;
         this.canLog = canLog;
         reset();
     }
@@ -88,19 +71,16 @@ public class GameMB extends Game {
         this.white = new TeamMB( TeamColor.WHITE );
         this.black = new TeamMB( TeamColor.BLACK );
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
-        this.size = FenNotation.readBoardSize( this.config.getStartingPosition() );
-        this.initPositions();
         this.resetStates();
+        this.initPositions();
         this.prev = null;
         this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
         this.pined = MoveGenerator.generatePinedPositionsBy( this, getEnemy( this.onMove ) );
-        this.auPassantPosition = null;
         this.emitEvent();
     }
 
     @Override
-    public void setGame( String notation ) {
-        ChessNotation notationProcessor = new AlgebraicNotation();
+    public void setGame( String notation, ChessNotation notationProcessor ) {
         GameMB game = ( GameMB ) notationProcessor.read( notation );
         this.setAll( game );
     }
@@ -161,7 +141,7 @@ public class GameMB extends Game {
 
             if ( validatedPosition.isLegal() ) {
 
-                this.prev = this.clone( "rb" );
+                this.prev = this.clone();
                 movePiece( from, to );
                 this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), from, to );
 
@@ -203,7 +183,6 @@ public class GameMB extends Game {
         removePiece( to );
         this.positions.put( from, "" );
         this.positions.put( to, piece.getId() );
-        piece.moved( this.halfMoveNumber );
 
         this.piecePositions.put( piece.getId(), to );
     }
@@ -272,7 +251,7 @@ public class GameMB extends Game {
                     : GameState.WHITE_WON;
         }
 
-        if ( actions.contains( ActionType.STALEMATE ) || this.halfMove50RuleCount >= 50 ) {
+        if ( actions.contains( ActionType.STALEMATE ) || this.halfMoveRuleCount >= 50 ) {
             this.state = GameState.TIE;
         }
 
@@ -400,24 +379,6 @@ public class GameMB extends Game {
         return this.piecePositions.get( getPieceMb( piece ).getId() );
     }
 
-    @Override
-    public boolean hasMoved( Piece piece ) {
-        PieceMB pieceMB = ( PieceMB ) piece;
-        return pieceMB.getMoved() > 0;
-    }
-
-    @Override
-    public boolean hasMovedTimes( Piece piece, int moveCount ) {
-        PieceMB pieceMB = ( PieceMB ) piece;
-        return pieceMB.getMoved() == moveCount;
-    }
-
-    @Override
-    public boolean hasMovedSince( Piece piece, int halfMoveCount ) {
-        PieceMB pieceMB = ( PieceMB ) piece;
-        return this.halfMoveNumber - pieceMB.getLastMovedAt() < halfMoveCount;
-    }
-
     public TeamMB getTeam( String id ) {
         return id.startsWith( "W" ) ? this.white : this.black;
     }
@@ -428,22 +389,18 @@ public class GameMB extends Game {
     }
 
     private void initPositions() {
-
-        Map<Vector2I, PieceMB> placements = FenNotation.readPlacement( this.config.getStartingPosition() ).entrySet().stream()
-                .collect( Collectors.toMap( e -> e.getKey(), e -> new PieceMB( e.getValue().getType(), e.getValue().getTeam() ) ) );
-
         this.white = new TeamMB( TeamColor.WHITE );
         this.black = new TeamMB( TeamColor.BLACK );
         this.piecePositions = new HashMap<>();
         this.positions = new HashMap<>();
-        for ( int i = 0; i < this.size; i++ ) {
-            for ( int j = 0; j < this.size; j++ ) {
+        for ( int i = 0; i < this.getBoardSize(); i++ ) {
+            for ( int j = 0; j < this.getBoardSize(); j++ ) {
                 this.positions.put( new Vector2I( i, j ), "" );
             }
         }
-        for ( Map.Entry<Vector2I, PieceMB> placement : placements.entrySet() ) {
+        for ( Map.Entry<Vector2I, Piece> placement : this.config.getPlacements().entrySet() ) {
             final Vector2I position = placement.getKey();
-            PieceMB piece = placement.getValue();
+            PieceMB piece = new PieceMB( placement.getValue().getType(), placement.getValue().getTeam() );
             TeamMB team = piece.isTeam( TeamColor.WHITE ) ? this.white : this.black;
             final String id = team.registerPiece( piece );
             this.positions.put( position, id );
@@ -457,11 +414,11 @@ public class GameMB extends Game {
 
     @Override
     public int getBoardSize() {
-        return this.size;
+        return this.config.getBoardSize();
     }
 
-    public GameMB clone( String tag ) {
-        GameMB game = new GameMB( this.id + "::" + tag, this.config );
+    public GameMB clone() {
+        GameMB game = new GameMB( this.config );
         game.setAll( this );
         return game;
     }
@@ -471,25 +428,26 @@ public class GameMB extends Game {
         this.black = game.getBlack().clone();
         this.positions = game.getPositions().entrySet().stream().collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue() ) );
         this.piecePositions = game.getPiecePositions().entrySet().stream().collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue() ) );
-        this.onMove = game.getOnMove();
         this.state = game.getState();
-        this.moveNumber = game.getMoveNumber();
-        this.halfMoveNumber = game.getHalfMoveNumber();
-        this.halfMove50RuleCount = game.getHalfMove50RuleCount();
         this.history = new ArrayList<>( game.getHistory() );
         this.prev = game.getPrev();
         this.attacked = game.getAttacked();
         this.pined = game.getPined();
+        this.onMove = game.getOnMove();
+        this.whiteCanCastleKing = game.isWhiteCanCastleKing();
+        this.whiteCanCastleQueen = game.isWhiteCanCastleQueen();
+        this.blackCanCastleKing = game.isBlackCanCastleKing();
+        this.blackCanCastleQueen = game.isBlackCanCastleQueen();
         this.auPassantPosition = game.getAuPassantPosition();
+        this.moveNumber = game.getMoveNumber();
+        this.halfMoveRuleCount = game.getHalfMoveRuleCount();
         this.ruleValidator = game.getRuleValidator().clone( this );
         this.emitEvent();
     }
 
     public void log( String pattern, Object... arguments ) {
         if ( this.canLog ) {
-            pattern += " ({})";
             List<Object> argumentList = CollectionUtil.toMutableList( arguments );
-            argumentList.add( this.id );
             Log.info( pattern, argumentList.toArray() );
         }
     }

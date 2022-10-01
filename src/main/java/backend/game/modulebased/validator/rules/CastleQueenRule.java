@@ -19,6 +19,10 @@ public class CastleQueenRule extends Rule {
 
     @Override
     public boolean validate( GameMB game, Vector2I from, Vector2I to ) {
+        if ( !( game.isTeam( from, TeamColor.WHITE ) && game.isWhiteCanCastleQueen() ) &&
+                !( game.isTeam( from, TeamColor.BLACK ) && game.isBlackCanCastleQueen() ) ) {
+            return false;
+        }
         return MoveGenerator.generateCastleQueenMoves( game, from ).contains( to );
     }
 
@@ -29,5 +33,12 @@ public class CastleQueenRule extends Rule {
                 : new Vector2I( 0, game.getBoardSize() - 1 );
         Vector2I target = to.add( Dir.RIGHT.vector );
         game.movePiece( rookPos, target );
+        if ( game.isTeam( to, TeamColor.WHITE ) ) {
+            game.setWhiteCanCastleKing( false );
+            game.setWhiteCanCastleQueen( false );
+        } else {
+            game.setBlackCanCastleKing( false );
+            game.setBlackCanCastleQueen( false );
+        }
     }
 }
