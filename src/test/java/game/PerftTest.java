@@ -61,7 +61,6 @@ public class PerftTest {
 
     }
 
-    //@Disabled
     @Test
     void testPosition3() {
 
@@ -74,7 +73,7 @@ public class PerftTest {
                 5, 674624l
         );
 
-        int maxDepth = 3;
+        int maxDepth = 4;
         GameConfig config = new GameConfig( "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8", TeamColor.WHITE );
         testPositions( "position3", possibleNodesPerDepth, maxDepth, config );
 
@@ -98,7 +97,6 @@ public class PerftTest {
 
     }
 
-    //@Disabled
     @Test
     void testPosition5() {
 
@@ -115,6 +113,20 @@ public class PerftTest {
         testPositions( "position5", possibleNodesPerDepth, maxDepth, config );
 
     }
+
+    /*
+    @Test
+    void test() {
+        final Map<Integer, Long> possibleNodesPerDepth = Map.of(
+                0, 1l,
+                1, 34l,
+                2, 1373l
+        );
+        GameConfig config = new GameConfig("rnbq1k1r/pp1Pbppp/2p5/8/2B5/P7/1PP1NnPP/RNBQK2R", TeamColor.BLACK);
+        testPositions( "position5", possibleNodesPerDepth, 1, config );
+
+    }
+     */
 
     @Test
     void testPosition6() {
