@@ -4,7 +4,8 @@ public enum ActionType {
 
     MOVE,
     CAPTURE,
-    AU_PASSANT,
+    TRIGGER_AU_PASSANT,
+    CAPTURE_AU_PASSANT,
     PROMOTING_QUEEN,
     PROMOTING_ROOK,
     PROMOTING_BISHOP,

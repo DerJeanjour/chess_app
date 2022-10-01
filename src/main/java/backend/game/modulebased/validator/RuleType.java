@@ -20,7 +20,8 @@ public enum RuleType {
     PROMOTING_ROOK( true ),
     PROMOTING_BISHOP( true ),
     PROMOTING_KNIGHT( true ),
-    AU_PASSANT( true ),
+    AU_PASSANT_POSITION( true ),
+    AU_PASSANT_CAPTURE( true ),
     CASTLING_QUEEN_SIDE( true ),
     CASTLING_KING_SIDE( true ),
 

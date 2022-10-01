@@ -33,7 +33,7 @@ public class GameView implements GameListener {
     private static final Map<ActionType, Color> actionColors = Map.of(
             ActionType.MOVE, Color.GREEN,
             ActionType.CAPTURE, Color.RED,
-            ActionType.AU_PASSANT, Color.RED,
+            ActionType.CAPTURE_AU_PASSANT, Color.RED,
             ActionType.CASTLE_QUEEN, Color.GREEN,
             ActionType.CASTLE_KING, Color.GREEN,
             ActionType.CHECK, Color.RED
@@ -399,8 +399,8 @@ public class GameView implements GameListener {
                             actionColor = new Color( actionColors.get( ActionType.CAPTURE ), 0.2f );
                         }
 
-                        if ( game.hasAction( validation, pos, ActionType.AU_PASSANT ) ) {
-                            actionColor = new Color( actionColors.get( ActionType.AU_PASSANT ), 0.2f );
+                        if ( game.hasAction( validation, pos, ActionType.CAPTURE_AU_PASSANT ) ) {
+                            actionColor = new Color( actionColors.get( ActionType.CAPTURE_AU_PASSANT ), 0.2f );
                         }
 
                         if ( game.hasAction( validation, pos, ActionType.CHECK ) ) {

@@ -117,9 +117,9 @@ public class MoveActionsTest {
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
 
-        Log.info("move {}", game.getLastMove());
+        Log.info( "move {}", game.getLastMove() );
         assertTrue( moveHistory.getActions().contains( ActionType.MOVE ) );
-        assertTrue( moveHistory.getActions().contains( ActionType.AU_PASSANT ) );
+        assertTrue( moveHistory.getActions().contains( ActionType.CAPTURE_AU_PASSANT ) );
 
     }
 

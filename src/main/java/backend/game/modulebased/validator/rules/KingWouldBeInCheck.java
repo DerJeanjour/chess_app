@@ -29,12 +29,12 @@ public class KingWouldBeInCheck extends Rule {
                 return true;
             } else if ( !from.equals( kingPos ) ) {
 
-                if( !game.isPined( to ) ) {
+                if ( !game.isPined( to ) ) {
                     return true;
                 }
 
                 // check if all pins would be resolved
-                if( !getUnresolvedPinIdxs( game, king.getTeam() ).contains( game.getPinIdx( to ) ) ) {
+                if ( !getUnresolvedPinIdxs( game, king.getTeam() ).contains( game.getPinIdx( to ) ) ) {
                     return true;
                 }
 
@@ -49,15 +49,15 @@ public class KingWouldBeInCheck extends Rule {
     private List<Integer> getUnresolvedPinIdxs( GameMB game, TeamColor team ) {
 
         List<Integer> unresolvedPinIdxs = new ArrayList<>();
-        for( int i = 0; i < game.getPined().size(); i++ ) {
+        for ( int i = 0; i < game.getPined().size(); i++ ) {
             List<Vector2I> pin = game.getPined().get( i );
             boolean resolved = false;
-            for( Vector2I p : pin ) {
-                if( game.isTeam( p, team ) ) {
+            for ( Vector2I p : pin ) {
+                if ( game.isTeam( p, team ) ) {
                     resolved = true;
                 }
             }
-            if( !resolved ) {
+            if ( !resolved ) {
                 unresolvedPinIdxs.add( i );
             }
         }

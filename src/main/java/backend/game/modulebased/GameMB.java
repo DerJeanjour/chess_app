@@ -19,6 +19,7 @@ import backend.game.modulebased.validator.RuleType;
 import backend.game.modulebased.validator.RuleValidator;
 import backend.game.modulebased.validator.ValidationMB;
 import lombok.Getter;
+import lombok.Setter;
 import math.Vector2I;
 import misc.Log;
 import util.CollectionUtil;
@@ -64,6 +65,10 @@ public class GameMB extends Game {
     @Getter
     private List<List<Vector2I>> pined;
 
+    @Setter
+    @Getter
+    private Vector2I auPassantPosition;
+
     public GameMB( final String id, final GameConfig config ) {
         super( config );
         this.id = id;
@@ -83,12 +88,13 @@ public class GameMB extends Game {
         this.white = new TeamMB( TeamColor.WHITE );
         this.black = new TeamMB( TeamColor.BLACK );
         this.ruleValidator = new RuleValidator( this, Arrays.asList( RuleType.values() ) );
-        this.size = FenNotation.readBoardSize( config.getStartingPosition() );
+        this.size = FenNotation.readBoardSize( this.config.getStartingPosition() );
         this.initPositions();
         this.resetStates();
         this.prev = null;
         this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
         this.pined = MoveGenerator.generatePinedPositionsBy( this, getEnemy( this.onMove ) );
+        this.auPassantPosition = null;
         this.emitEvent();
     }
 
@@ -159,6 +165,7 @@ public class GameMB extends Game {
                 movePiece( from, to );
                 this.ruleValidator.applyAdditionalActions( validatedPosition.getActions(), from, to );
 
+                handleAuPassantPosition();
                 switchTeam();
 
                 this.attacked = MoveGenerator.generateAttackedPositionsBy( this, getEnemy( this.onMove ) );
@@ -276,6 +283,16 @@ public class GameMB extends Game {
         return EnumSet.of( GameState.TIE, GameState.WHITE_WON, GameState.BLACK_WON ).contains( this.state );
     }
 
+    private void handleAuPassantPosition() {
+        if ( this.auPassantPosition == null ) {
+            return;
+        }
+        Piece piece = getPiece( this.auPassantPosition );
+        if ( piece == null || !piece.getTeam().equals( this.onMove ) ) {
+            this.auPassantPosition = null;
+        }
+    }
+
     public List<Vector2I> getAllAlivePositionsOf( TeamColor color ) {
         Team team = getTeam( color );
         if ( team == null ) {
@@ -337,9 +354,9 @@ public class GameMB extends Game {
     }
 
     public int getPinIdx( Vector2I p ) {
-        for( int i = 0; i < this.pined.size(); i++ ) {
+        for ( int i = 0; i < this.pined.size(); i++ ) {
             List<Vector2I> ray = this.pined.get( i );
-            if( ray.contains( p ) ) {
+            if ( ray.contains( p ) ) {
                 return i;
             }
         }
@@ -463,6 +480,7 @@ public class GameMB extends Game {
         this.prev = game.getPrev();
         this.attacked = game.getAttacked();
         this.pined = game.getPined();
+        this.auPassantPosition = game.getAuPassantPosition();
         this.ruleValidator = game.getRuleValidator().clone( this );
         this.emitEvent();
     }

@@ -161,8 +161,8 @@ public abstract class Game {
             this.moveNumber++;
         }
         this.halfMoveNumber++;
-        if(     !validation.getActions().contains( ActionType.CAPTURE ) ||
-                !validation.getActions().contains( ActionType.AU_PASSANT ) ||
+        if ( !validation.getActions().contains( ActionType.CAPTURE ) ||
+                !validation.getActions().contains( ActionType.CAPTURE_AU_PASSANT ) ||
                 !this.isType( validation.getMove().getTo(), PieceType.PAWN ) ) {
             this.halfMove50RuleCount++;
         } else {

@@ -2,14 +2,12 @@ package game;
 
 import backend.core.model.Piece;
 import backend.core.model.Validation;
-import backend.core.notation.AlgebraicNotation;
 import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
 import backend.game.modulebased.GameMB;
 import misc.Log;
 import misc.Timer;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -42,7 +40,6 @@ public class PerftTest {
 
     }
 
-    //@Disabled
     @Test
     void testPosition2() {
 
@@ -55,7 +52,7 @@ public class PerftTest {
                 5, 193690690l
         );
 
-        int maxDepth = 2;
+        int maxDepth = 3;
         GameConfig config = new GameConfig( "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R", TeamColor.WHITE );
         testPositions( "position2", possibleNodesPerDepth, maxDepth, config );
 
@@ -114,20 +111,6 @@ public class PerftTest {
 
     }
 
-    /*
-    @Test
-    void test() {
-        final Map<Integer, Long> possibleNodesPerDepth = Map.of(
-                0, 1l,
-                1, 34l,
-                2, 1373l
-        );
-        GameConfig config = new GameConfig("rnbq1k1r/pp1Pbppp/2p5/8/2B5/P7/1PP1NnPP/RNBQK2R", TeamColor.BLACK);
-        testPositions( "position5", possibleNodesPerDepth, 1, config );
-
-    }
-     */
-
     @Test
     void testPosition6() {
 
@@ -165,16 +148,10 @@ public class PerftTest {
             List<Validation> pieceMoves = game.validate( game.getPosition( piece ) ).stream()
                     .filter( Validation::isLegal ).collect( Collectors.toList() );
             for ( Validation v : pieceMoves ) {
+
                 game.makeMove( v.getMove() );
+
                 long possibleNodes = getPossibleNodesInDepth( game, depth - 1 );
-
-                /*
-                if( depth == 3 ) {
-                    Log.info( "d{}: {} - {}", depth, AlgebraicNotation.getPosCode( v.getMove().getFrom() ) + AlgebraicNotation.getPosCode( v.getMove().getTo() ) + v.getActions(), possibleNodes );
-                }
-
-                 */
-
                 legalMoves += possibleNodes;
                 game.undoLastMove();
             }

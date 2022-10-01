@@ -43,12 +43,12 @@ public class MoveGenerator {
                         pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), p, dir.vector ) )
                 );
                 case KNIGHT -> {
-                    if( generateKnightMoves( game, p ).contains( kingPos ) ) {
+                    if ( generateKnightMoves( game, p ).contains( kingPos ) ) {
                         pinningRays.add( Arrays.asList( p ) );
                     }
                 }
                 case PAWN -> {
-                    if( generatePawnNormalAttackingMoves( game, p ).contains( kingPos ) ) {
+                    if ( generatePawnNormalAttackingMoves( game, p ).contains( kingPos ) ) {
                         pinningRays.add( Arrays.asList( p ) );
                     }
                 }
@@ -171,12 +171,10 @@ public class MoveGenerator {
         Vector2I dir = piece.isTeam( TeamColor.WHITE ) ? Dir.UP.vector : Dir.DOWN.vector;
 
         Vector2I diagonalLeft = from.add( dir ).add( Dir.LEFT.vector );
-        //if ( game.areEnemies( diagonalLeft, from ) ) {
         if ( !game.isOutOfBounce( diagonalLeft ) ) {
             allowed.add( diagonalLeft );
         }
         Vector2I diagonalRight = from.add( dir ).add( Dir.RIGHT.vector );
-        //if ( game.areEnemies( diagonalRight, from ) ) {
         if ( !game.isOutOfBounce( diagonalRight ) ) {
             allowed.add( diagonalRight );
         }
@@ -317,7 +315,6 @@ public class MoveGenerator {
         Arrays.stream( Dir.values() ).forEach( dir -> allowed.addAll(
                 getPositionsOfDir( game, from, dir.vector, 1, false, false, true, true )
         ) );
-        // TODO is this correct ? maybe calculate covert separately
         return allowed.stream().filter( p -> !game.isAttacked( p ) ).collect( Collectors.toSet() );
     }
 
@@ -354,14 +351,14 @@ public class MoveGenerator {
             return allowed;
         }
         boolean foundTarget = false;
-        for( int i = inBetween.size() -1; i >= 0; i-- ) {
+        for ( int i = inBetween.size() - 1; i >= 0; i-- ) {
             Vector2I p = inBetween.get( i );
-            if( !foundTarget ) {
+            if ( !foundTarget ) {
                 if ( game.isAttacked( p ) ) {
                     return allowed;
                 }
             }
-            if( p.equals( target ) ) {
+            if ( p.equals( target ) ) {
                 foundTarget = true;
             }
         }
@@ -403,14 +400,14 @@ public class MoveGenerator {
             return allowed;
         }
         boolean foundTarget = false;
-        for( int i = inBetween.size() -1; i >= 0; i-- ) {
+        for ( int i = inBetween.size() - 1; i >= 0; i-- ) {
             Vector2I p = inBetween.get( i );
-            if( !foundTarget ) {
+            if ( !foundTarget ) {
                 if ( game.isAttacked( p ) ) {
                     return allowed;
                 }
             }
-            if( p.equals( target ) ) {
+            if ( p.equals( target ) ) {
                 foundTarget = true;
             }
         }

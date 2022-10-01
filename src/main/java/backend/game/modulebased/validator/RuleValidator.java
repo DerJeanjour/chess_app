@@ -72,8 +72,11 @@ public class RuleValidator {
             case PROMOTING_KNIGHT:
                 this.rules.add( new PromotingKnightRule() );
                 break;
-            case AU_PASSANT:
-                this.rules.add( new AuPassantRule() );
+            case AU_PASSANT_POSITION:
+                this.rules.add( new AuPassantPositionRule() );
+                break;
+            case AU_PASSANT_CAPTURE:
+                this.rules.add( new AuPassantCaptureRule() );
                 break;
             case CASTLING_QUEEN_SIDE:
                 this.rules.add( new CastleQueenRule() );
@@ -140,16 +143,18 @@ public class RuleValidator {
         // check pawn moves
         if ( PieceType.PAWN.equals( pieceType ) ) {
             boolean validPawnMove = getRule( RuleType.PAWN_MOVE ).validate( this.game, from, to );
-            boolean auPassant = getRule( RuleType.AU_PASSANT ).validate( this.game, from, to );
+            boolean auPassant = getRule( RuleType.AU_PASSANT_CAPTURE ).validate( this.game, from, to );
             if ( !validPawnMove && !auPassant ) {
                 return Arrays.asList( validatedPosition );
             }
             if ( auPassant ) {
-                validatedPosition.getActions().add( ActionType.AU_PASSANT );
+                validatedPosition.getActions().add( ActionType.CAPTURE_AU_PASSANT );
             }
             if ( validPawnMove && getRule( RuleType.PROMOTING_QUEEN ).validate( this.game, from, to ) ) {
-                //validatedPosition.getActions().add( ActionType.PROMOTING_QUEEN );
                 isPromoting = true;
+            }
+            if ( validPawnMove && getRule( RuleType.AU_PASSANT_POSITION ).validate( this.game, from, to ) ) {
+                validatedPosition.getActions().add( ActionType.TRIGGER_AU_PASSANT );
             }
         }
         // check knight moves

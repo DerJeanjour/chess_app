@@ -38,7 +38,7 @@ public class AlgebraicNotation implements ChessNotation {
     public static final Map<ActionType, String> actionCodes = Map.ofEntries(
             Map.entry( ActionType.MOVE, "" ),
             Map.entry( ActionType.CAPTURE, "x" ),
-            Map.entry( ActionType.AU_PASSANT, "x" ),
+            Map.entry( ActionType.CAPTURE_AU_PASSANT, "x" ),
             Map.entry( ActionType.PROMOTING_QUEEN, "=Q" ),
             Map.entry( ActionType.PROMOTING_ROOK, "=R" ),
             Map.entry( ActionType.PROMOTING_BISHOP, "=B" ),
@@ -249,7 +249,7 @@ public class AlgebraicNotation implements ChessNotation {
                     }
                     break;
                 case CAPTURE:
-                case AU_PASSANT:
+                case CAPTURE_AU_PASSANT:
                     actionCode = actionCodes.get( actionType );
                     break;
                 case PROMOTING_QUEEN:
@@ -280,7 +280,7 @@ public class AlgebraicNotation implements ChessNotation {
 
         // special notation for pawns
         if ( PieceType.PAWN.equals( moveHistory.getPiece() )
-                && ( moveHistory.getActions().contains( ActionType.CAPTURE ) || moveHistory.getActions().contains( ActionType.AU_PASSANT ) ) ) {
+                && ( moveHistory.getActions().contains( ActionType.CAPTURE ) || moveHistory.getActions().contains( ActionType.CAPTURE_AU_PASSANT ) ) ) {
             pieceCode = getColCode( moveHistory.getMove().getFrom() );
         }
         if ( !PieceType.PAWN.equals( moveHistory.getPiece() ) ) {
