@@ -62,7 +62,7 @@ public class GameMB extends Game {
     private Set<Vector2I> attacked;
 
     @Getter
-    private Set<Vector2I> pined;
+    private List<List<Vector2I>> pined;
 
     public GameMB( final String id, final GameConfig config ) {
         super( config );
@@ -333,7 +333,17 @@ public class GameMB extends Game {
 
     @Override
     public boolean isPined( Vector2I p ) {
-        return this.pined.contains( p );
+        return this.getPinIdx( p ) >= 0;
+    }
+
+    public int getPinIdx( Vector2I p ) {
+        for( int i = 0; i < this.pined.size(); i++ ) {
+            List<Vector2I> ray = this.pined.get( i );
+            if( ray.contains( p ) ) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override

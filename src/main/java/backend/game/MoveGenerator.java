@@ -23,27 +23,27 @@ public class MoveGenerator {
         return attacked;
     }
 
-    public static Set<Vector2I> generatePinedPositionsBy( Game game, TeamColor color ) {
-        Set<Vector2I> pined = new HashSet<>();
+    public static List<List<Vector2I>> generatePinedPositionsBy( Game game, TeamColor color ) {
+        List<List<Vector2I>> pinningRays = new ArrayList<>();
         Piece king = game.getTeam( game.getEnemy( color ) ).getKing();
         if ( !king.isAlive() ) {
-            return pined;
+            return pinningRays;
         }
         Vector2I kingPos = game.getPosition( king );
         for ( Piece piece : game.getTeam( color ).getAlive() ) {
             switch ( piece.getType() ) {
                 case BISHOP -> Dir.diagonalDirs().forEach( dir ->
-                        pined.addAll( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
+                        pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
                 );
                 case ROOK -> Dir.baseDirs().forEach( dir ->
-                        pined.addAll( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
+                        pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
                 );
                 case QUEEN -> Arrays.asList( Dir.values() ).forEach( dir ->
-                        pined.addAll( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
+                        pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
                 );
             }
         }
-        return pined;
+        return pinningRays;
     }
 
     private static List<Vector2I> getPinedOfRay( Game game, Vector2I kingPos, TeamColor kingTeam, Vector2I from, Vector2I dir ) {
