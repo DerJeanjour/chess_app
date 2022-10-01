@@ -31,16 +31,27 @@ public class MoveGenerator {
         }
         Vector2I kingPos = game.getPosition( king );
         for ( Piece piece : game.getTeam( color ).getAlive() ) {
+            Vector2I p = game.getPosition( piece );
             switch ( piece.getType() ) {
                 case BISHOP -> Dir.diagonalDirs().forEach( dir ->
-                        pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
+                        pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), p, dir.vector ) )
                 );
                 case ROOK -> Dir.baseDirs().forEach( dir ->
-                        pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
+                        pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), p, dir.vector ) )
                 );
                 case QUEEN -> Arrays.asList( Dir.values() ).forEach( dir ->
-                        pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), game.getPosition( piece ), dir.vector ) )
+                        pinningRays.add( getPinedOfRay( game, kingPos, king.getTeam(), p, dir.vector ) )
                 );
+                case KNIGHT -> {
+                    if( generateKnightMoves( game, p ).contains( kingPos ) ) {
+                        pinningRays.add( Arrays.asList( p ) );
+                    }
+                }
+                case PAWN -> {
+                    if( generatePawnNormalAttackingMoves( game, p ).contains( kingPos ) ) {
+                        pinningRays.add( Arrays.asList( p ) );
+                    }
+                }
             }
         }
         return pinningRays;

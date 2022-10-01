@@ -110,7 +110,7 @@ public class PerftTest {
                 4, 2103487l
         );
 
-        int maxDepth = 2;
+        int maxDepth = 3;
         GameConfig config = new GameConfig( "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R", TeamColor.WHITE );
         testPositions( "position5", possibleNodesPerDepth, maxDepth, config );
 
