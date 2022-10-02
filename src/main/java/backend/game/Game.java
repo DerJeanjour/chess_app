@@ -82,6 +82,14 @@ public abstract class Game {
 
     public abstract int getBoardSize();
 
+    public abstract List<Move> getPossibleMoves( TeamColor color );
+
+    public abstract List<Move> getPossibleMoves( Piece piece );
+
+    public abstract List<Validation> getPossibleValidations( TeamColor color );
+
+    public abstract List<Validation> getPossibleValidations( Piece piece );
+
     /**
      * state
      */

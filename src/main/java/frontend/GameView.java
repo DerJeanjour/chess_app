@@ -253,6 +253,15 @@ public class GameView implements GameListener {
         JScrollPane moveInfoScroll = new JScrollPane( moveInfo );
         infoPanel.add( moveInfoScroll );
 
+        JButton notationSwitchButton = new JButton( "Switch notation" );
+        notationSwitchButton.addActionListener( e -> {
+            this.notationProcessor = this.notationProcessor instanceof AlgebraicNotation
+                    ? new FenNotation()
+                    : new AlgebraicNotation();
+            this.notation = notationProcessor.write( game );
+        } );
+        infoPanel.add( notationSwitchButton );
+
         JButton copyHistoryButton = new JButton( "Copy" );
         copyHistoryButton.addActionListener( e -> IOUtil.copyToClipboard( moveInfo.getText() ) );
         infoPanel.add( copyHistoryButton );
@@ -323,15 +332,6 @@ public class GameView implements GameListener {
         } );
         blackPlayerSelectPanel.add( blackPlayerSelect );
         infoPanel.add( blackPlayerSelectPanel );
-
-        JButton notationSwitchButton = new JButton( "Switch notation" );
-        notationSwitchButton.addActionListener( e -> {
-            this.notationProcessor = this.notationProcessor instanceof AlgebraicNotation
-                    ? new FenNotation()
-                    : new AlgebraicNotation();
-            this.notation = notationProcessor.write( game );
-        } );
-        infoPanel.add( notationSwitchButton );
 
         this.gameStateInfo = new JTextField();
         this.gameStateInfo.setEditable( false );

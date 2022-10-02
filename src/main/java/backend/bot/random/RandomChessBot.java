@@ -1,16 +1,14 @@
 package backend.bot.random;
 
 import backend.bot.ChessBot;
+import backend.core.model.Move;
 import backend.core.model.Piece;
 import backend.core.model.Team;
-import backend.core.model.Validation;
 import backend.core.values.TeamColor;
 import backend.game.Game;
-import math.Vector2I;
 
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 public class RandomChessBot extends ChessBot {
 
@@ -32,16 +30,11 @@ public class RandomChessBot extends ChessBot {
 
                 int randomPieceIdx = this.random.nextInt( alive.size() );
                 Piece randomPiece = alive.get( randomPieceIdx );
-                Vector2I piecePos = game.getPosition( randomPiece );
-
-                List<Validation> validation = game.validate( piecePos );
-                List<Validation> legalMoves = validation.stream()
-                        .filter( v -> v.isLegal() )
-                        .collect( Collectors.toList() );
+                List<Move> legalMoves = game.getPossibleMoves( randomPiece );
                 if ( !legalMoves.isEmpty() ) {
                     int randomMoveIdx = this.random.nextInt( legalMoves.size() );
-                    Validation legalMove = legalMoves.get( randomMoveIdx );
-                    game.makeMove( legalMove.getMove() );
+                    Move legalMove = legalMoves.get( randomMoveIdx );
+                    game.makeMove( legalMove );
                     return;
                 }
 

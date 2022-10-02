@@ -417,6 +417,41 @@ public class GameMB extends Game {
         return this.config.getBoardSize();
     }
 
+    @Override
+    public List<Move> getPossibleMoves( TeamColor color ) {
+        List<Move> possibleMoves = new ArrayList<>();
+        List<Piece> alive = getTeam( color ).getAlive();
+        alive.forEach( piece -> possibleMoves.addAll( getPossibleMoves( piece ) ) );
+        return possibleMoves;
+    }
+
+    @Override
+    public List<Move> getPossibleMoves( Piece piece ) {
+        return getPossibleValidations( piece ).stream()
+                .map( Validation::getMove )
+                .collect( Collectors.toList() );
+    }
+
+    @Override
+    public List<Validation> getPossibleValidations( TeamColor color ) {
+        List<Validation> validations = new ArrayList<>();
+        List<Piece> alive = getTeam( color ).getAlive();
+        alive.forEach( piece -> validations.addAll( getPossibleValidations( piece ) ) );
+        return validations;
+    }
+
+    @Override
+    public List<Validation> getPossibleValidations( Piece piece ) {
+        if ( !piece.isAlive() ) {
+            return Collections.EMPTY_LIST;
+        }
+        Vector2I p = getPosition( piece );
+        List<Validation> validations = this.validate( p );
+        return validations.stream()
+                .filter( Validation::isLegal )
+                .collect( Collectors.toList() );
+    }
+
     public GameMB clone() {
         GameMB game = new GameMB( this.config );
         game.setAll( this );

@@ -1,6 +1,6 @@
 package backend.bot;
 
-import backend.bot.minimax.AlphaBetaChessBot;
+import backend.bot.alphabeta.AlphaBetaChessBot;
 import backend.bot.random.RandomChessBot;
 import backend.core.values.PlayerType;
 import backend.core.values.TeamColor;

@@ -27,7 +27,7 @@ public class PiecePointChessEvaluator implements ChessEvaluator {
         return ( ( double ) teamPoints / ( double ) ( teamPoints + enemyPoints ) ) * 2d - 1d;
     }
 
-    private int getTeamPoints( Team team ) {
+    public static int getTeamPoints( Team team ) {
         if ( !team.getKing().isAlive() ) {
             return 0;
         }

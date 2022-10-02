@@ -133,7 +133,7 @@ public class PerftTest {
             Game game = new GameMB( config );
             long calculatedNodes = getPossibleNodesInDepth( game, i );
             long actualNodes = possibleNodesPerDepth.get( i );
-            Log.info( "{}::{}: Calculated {} nodes in {}s - should be {}", test, i, calculatedNodes, timer.getTimeSinceSec(), actualNodes );
+            Log.info( "{}::{}: {}/{} searched nodes in {}s", test, i, calculatedNodes, actualNodes, timer.getTimeSinceSec() );
             assertEquals( actualNodes, calculatedNodes );
         }
     }
