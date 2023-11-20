@@ -124,7 +124,6 @@ public class GameView implements GameListener {
 
     @Override
     public void gameUpdated( Game game ) {
-        Log.info( "Evaluation is {}", new PiecePointChessEvaluator().evaluate( game, TeamColor.WHITE ) );
         this.notation = notationProcessor.write( game );
         final Player onMove = this.whitePlayer.isOnMove( game )
                 ? this.whitePlayer
@@ -229,7 +228,7 @@ public class GameView implements GameListener {
                         break;
                     case KeyEvent.VK_DELETE:
                     case KeyEvent.VK_BACK_SPACE:
-                        if ( notation.length() > 0 ) {
+                        if ( !notation.isEmpty() ) {
                             notation = notation.substring( 0, notation.length() - 1 );
                         }
                         break;

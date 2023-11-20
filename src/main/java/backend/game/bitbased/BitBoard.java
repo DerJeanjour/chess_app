@@ -7,8 +7,7 @@ import backend.game.GameConfig;
 import math.Vector2I;
 import misc.Log;
 
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.*;
 
 public class BitBoard {
 
@@ -24,8 +23,7 @@ public class BitBoard {
         this.black = new long[]{ 0L, 0L, 0L, 0L, 0L, 0L };
         config.getPlacements().forEach( this::setPiece );
 
-        Log.info( "White", Arrays.asList( this.white ) );
-        Log.info( "Black", Arrays.asList( this.black ) );
+        this.logPieces();
     }
 
     private long posToBit( final Vector2I pos ) {
@@ -37,6 +35,16 @@ public class BitBoard {
         int y = index / 8;
         int x = index % 8;
         return new Vector2I( x, y );
+    }
+
+    public void removePiece( final Vector2I pos ) {
+
+        long bit = posToBit( pos );
+
+        for ( PieceType type : PieceType.values() ) {
+            white[type.ordinal()] &= ~bit;
+            black[type.ordinal()] &= ~bit;
+        }
     }
 
     public void setPiece( final Vector2I pos, final Piece piece ) {
@@ -64,6 +72,69 @@ public class BitBoard {
         }
 
         return Optional.empty();
+    }
+
+    public Collection<Vector2I> getLegal( final Vector2I pos ) {
+
+        Optional<Piece> pieceOptional = this.getPiece( pos );
+        if ( pieceOptional.isEmpty() ) {
+            return Collections.emptyList();
+        }
+
+        final Piece piece = pieceOptional.get();
+        long[] teamPieces = this.getTeamPieces( piece.getTeam() );
+        long legal = 0L;
+
+        // check if any square is set by own team
+        for ( PieceType type : PieceType.values() ) {
+            legal |= teamPieces[type.ordinal()];
+        }
+
+        // TODO more checks
+
+        final Set<Vector2I> legalMoves = new HashSet<>();
+        for ( int y = 0; y < 8; y++ ) {
+            for ( int x = 0; x < 8; x++ ) {
+
+                Vector2I currentPosition = new Vector2I( x, y );
+
+                // If the bit at the current position is not set, it is a legal move
+                if ( ( legal & posToBit( currentPosition ) ) == 0 ) {
+                    legalMoves.add( currentPosition );
+                }
+            }
+        }
+
+        return legalMoves;
+    }
+
+    private long[] getEnemyPieces( final TeamColor team ) {
+        return TeamColor.WHITE.equals( team ) ? this.black : this.white;
+    }
+
+    private long[] getTeamPieces( final TeamColor team ) {
+        return TeamColor.WHITE.equals( team ) ? this.white : this.black;
+    }
+
+    public void logPieces() {
+        Log.info( "-- BitBoard --" );
+        for ( TeamColor team : TeamColor.values() ) {
+            for ( PieceType type : PieceType.values() ) {
+                Log.info( team.name() + "_" + type.name() + ": " + BitBoard.longToBitString( this.white[type.ordinal()] ) );
+            }
+        }
+    }
+
+    private static String longToBitString( long value ) {
+        StringBuilder bitString = new StringBuilder();
+
+        for ( int i = 63; i >= 0; i-- ) {
+            long mask = 1L << i;
+            long bit = ( value & mask ) == 0 ? 0 : 1;
+            bitString.append( bit );
+        }
+
+        return bitString.toString();
     }
 
 }

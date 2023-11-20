@@ -5,6 +5,7 @@ import backend.core.model.Piece;
 import backend.core.model.Team;
 import backend.core.model.Validation;
 import backend.core.notation.ChessNotation;
+import backend.core.values.ActionType;
 import backend.core.values.GameState;
 import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
@@ -12,9 +13,8 @@ import backend.game.Game;
 import backend.game.GameConfig;
 import math.Vector2I;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GameBB extends Game {
 
@@ -41,12 +41,23 @@ public class GameBB extends Game {
 
     @Override
     public void setGame( String notation, ChessNotation notationProcessor ) {
-
+        final Game game = notationProcessor.read( notation );
+        // TODO
     }
 
     @Override
     public boolean makeMove( Move move ) {
-        return false;
+        if( !this.isLegal( move ) ) {
+            return false;
+        }
+        if( this.hasPiece( move.getTo() ) ) {
+            this.board.removePiece( move.getTo() );
+        }
+        final Piece piece = this.getPiece( move.getFrom() );
+        this.board.removePiece( move.getFrom() );
+        this.board.setPiece( move.getTo(), piece );
+        this.board.logPieces();
+        return true;
     }
 
     @Override
@@ -56,12 +67,26 @@ public class GameBB extends Game {
 
     @Override
     public List<Validation> validate( Vector2I p ) {
-        return null;
+        return this.board.getLegal( p ).stream()
+                .map( to -> {
+                    final Validation validation = new Validation( new Move( p, to ) );
+                    validation.getActions().add( ActionType.MOVE );
+                    return validation;
+                } )
+                .collect( Collectors.toList());
     }
 
     @Override
     public boolean isLegal( Move move ) {
-        return false;
+        if( this.isOutOfBounds( move.getTo() ) ) {
+            return false;
+        }
+        final Piece piece = this.getPiece( move.getFrom() );
+        if( piece == null ) {
+            return false;
+        }
+        return this.validate( move.getFrom() ).stream()
+                .anyMatch( v -> v.getMove().getTo().equals( move.getTo() ) && v.isLegal() );
     }
 
     @Override
