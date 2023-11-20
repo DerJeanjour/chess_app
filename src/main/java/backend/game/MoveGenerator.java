@@ -171,11 +171,11 @@ public class MoveGenerator {
         Vector2I dir = piece.isTeam( TeamColor.WHITE ) ? Dir.UP.vector : Dir.DOWN.vector;
 
         Vector2I diagonalLeft = from.add( dir ).add( Dir.LEFT.vector );
-        if ( !game.isOutOfBounce( diagonalLeft ) ) {
+        if ( !game.isOutOfBounds( diagonalLeft ) ) {
             allowed.add( diagonalLeft );
         }
         Vector2I diagonalRight = from.add( dir ).add( Dir.RIGHT.vector );
-        if ( !game.isOutOfBounce( diagonalRight ) ) {
+        if ( !game.isOutOfBounds( diagonalRight ) ) {
             allowed.add( diagonalRight );
         }
 
@@ -194,7 +194,7 @@ public class MoveGenerator {
         }
         Vector2I[] targets = new Vector2I[]{ from.add( Dir.LEFT.vector ), from.add( Dir.RIGHT.vector ) };
         for ( Vector2I target : targets ) {
-            if ( !game.isOutOfBounce( target ) && game.isType( target, PieceType.PAWN ) ) {
+            if ( !game.isOutOfBounds( target ) && game.isType( target, PieceType.PAWN ) ) {
                 allowed.add( target.add( dir ) );
             }
         }
@@ -219,7 +219,7 @@ public class MoveGenerator {
         allowed.add( from.add( Dir.DOWN.vector.add( Dir.DOWN_RIGHT.vector ) ) );
 
         allowed = allowed.stream()
-                .filter( p -> !game.isOutOfBounce( p ) )
+                .filter( p -> !game.isOutOfBounds( p ) )
                 .collect( Collectors.toSet() );
         return allowed;
     }
@@ -410,7 +410,7 @@ public class MoveGenerator {
 
             Vector2I p = from.add( dir.mul( i + 1 ) );
 
-            if ( !game.isOutOfBounce( p ) ) {
+            if ( !game.isOutOfBounds( p ) ) {
 
                 if ( !ignorePieces && game.hasPiece( p ) && ( !ignoreEnemyKing || !game.areEnemies( p, from ) || !game.isType( p, PieceType.KING ) ) ) {
 

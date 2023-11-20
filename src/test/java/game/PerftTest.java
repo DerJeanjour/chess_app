@@ -4,7 +4,6 @@ import backend.core.model.Piece;
 import backend.core.model.Validation;
 import backend.game.Game;
 import backend.game.GameConfig;
-import backend.game.modulebased.GameMB;
 import misc.Log;
 import misc.Timer;
 import org.junit.jupiter.api.Test;
@@ -24,13 +23,13 @@ public class PerftTest {
     void testPosition1() {
 
         final Map<Integer, Long> possibleNodesPerDepth = Map.of(
-                0, 1l,
-                1, 20l,
-                2, 400l,
-                3, 8902l,
-                4, 197281l,
-                5, 4865609l,
-                6, 119060324l
+                0, 1L,
+                1, 20L,
+                2, 400L,
+                3, 8902L,
+                4, 197281L,
+                5, 4865609L,
+                6, 119060324L
         );
 
         int maxDepth = 3;
@@ -43,12 +42,12 @@ public class PerftTest {
     void testPosition2() {
 
         final Map<Integer, Long> possibleNodesPerDepth = Map.of(
-                0, 1l,
-                1, 48l,
-                2, 2039l,
-                3, 97862l,
-                4, 4085603l,
-                5, 193690690l
+                0, 1L,
+                1, 48L,
+                2, 2039L,
+                3, 97862L,
+                4, 4085603L,
+                5, 193690690L
         );
 
         int maxDepth = 3;
@@ -61,12 +60,12 @@ public class PerftTest {
     void testPosition3() {
 
         final Map<Integer, Long> possibleNodesPerDepth = Map.of(
-                0, 1l,
-                1, 14l,
-                2, 191l,
-                3, 2812l,
-                4, 43238l,
-                5, 674624l
+                0, 1L,
+                1, 14L,
+                2, 191L,
+                3, 2812L,
+                4, 43238L,
+                5, 674624L
         );
 
         int maxDepth = 4;
@@ -79,12 +78,12 @@ public class PerftTest {
     void testPosition4() {
 
         final Map<Integer, Long> possibleNodesPerDepth = Map.of(
-                0, 1l,
-                1, 6l,
-                2, 264l,
-                3, 9467l,
-                4, 422333l,
-                5, 15833292l
+                0, 1L,
+                1, 6L,
+                2, 264L,
+                3, 9467L,
+                4, 422333L,
+                5, 15833292L
         );
 
         int maxDepth = 3;
@@ -97,11 +96,11 @@ public class PerftTest {
     void testPosition5() {
 
         final Map<Integer, Long> possibleNodesPerDepth = Map.of(
-                0, 1l,
-                1, 44l,
-                2, 1486l,
-                3, 62379l,
-                4, 2103487l
+                0, 1L,
+                1, 44L,
+                2, 1486L,
+                3, 62379L,
+                4, 2103487L
         );
 
         int maxDepth = 3;
@@ -114,11 +113,11 @@ public class PerftTest {
     void testPosition6() {
 
         final Map<Integer, Long> possibleNodesPerDepth = Map.of(
-                0, 1l,
-                1, 46l,
-                2, 2079l,
-                3, 89890l,
-                4, 3894594l
+                0, 1L,
+                1, 46L,
+                2, 2079L,
+                3, 89890L,
+                4, 3894594L
         );
 
         int maxDepth = 3;
@@ -130,7 +129,7 @@ public class PerftTest {
     void testPositions( String test, Map<Integer, Long> possibleNodesPerDepth, int maxDepth, GameConfig config ) {
         for ( int i = 0; i <= maxDepth; i++ ) {
             Timer timer = new Timer();
-            Game game = new GameMB( config );
+            Game game = Game.getInstance( config );
             long calculatedNodes = getPossibleNodesInDepth( game, i );
             long actualNodes = possibleNodesPerDepth.get( i );
             Log.info( "{}::{}: {}/{} searched nodes in {}s", test, i, calculatedNodes, actualNodes, timer.getTimeSinceSec() );
@@ -140,9 +139,9 @@ public class PerftTest {
 
     long getPossibleNodesInDepth( Game game, int depth ) {
         if ( depth == 0 ) {
-            return 1l;
+            return 1L;
         }
-        long legalMoves = 0l;
+        long legalMoves = 0L;
         for ( Piece piece : game.getTeam( game.getOnMove() ).getAlive() ) {
             List<Validation> pieceMoves = game.validate( game.getPosition( piece ) ).stream()
                     .filter( Validation::isLegal ).collect( Collectors.toList() );

@@ -3,7 +3,6 @@ package game;
 import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
-import backend.game.modulebased.GameMB;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -22,7 +21,7 @@ public class FinishConditionTest {
     void testCheckmate( String placementPattern ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = new GameMB( config );
+        Game game = Game.getInstance( config );
 
         assertTrue( game.isCheckmateFor( TeamColor.BLACK ) );
         assertFalse( game.isStalemateFor( TeamColor.BLACK ) );
@@ -37,7 +36,7 @@ public class FinishConditionTest {
     void testStalemate( String placementPattern ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = new GameMB( config );
+        Game game = Game.getInstance( config );
 
         assertFalse( game.isCheckmateFor( TeamColor.BLACK ) );
         assertTrue( game.isStalemateFor( TeamColor.BLACK ) );

@@ -165,7 +165,7 @@ public class GameView implements GameListener {
             @Override
             public void mousePressed( MouseEvent e ) {
                 selectedPos = pixelToPosition( e.getX(), e.getY() );
-                if ( selectedPos != null && !game.isOutOfBounce( selectedPos ) ) {
+                if ( selectedPos != null && !game.isOutOfBounds( selectedPos ) ) {
                     if ( showMovePreview ) {
                         game.validate( selectedPos ).forEach( v -> validation.put( v.getMove().getTo(), v ) );
                     }
@@ -176,7 +176,7 @@ public class GameView implements GameListener {
             @Override
             public void mouseReleased( MouseEvent e ) {
                 Vector2I pos = pixelToPosition( e.getX(), e.getY() );
-                if ( selectedPos != null && !game.isOutOfBounce( pos ) ) {
+                if ( selectedPos != null && !game.isOutOfBounds( pos ) ) {
                     Player playerOnMove = game.isOnMove( TeamColor.WHITE ) ? whitePlayer : blackPlayer;
                     if ( playerOnMove.isHuman() ) {
                         Move move = new Move( selectedPos, pos, promotionMode );

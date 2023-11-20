@@ -6,7 +6,6 @@ import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
-import backend.game.modulebased.GameMB;
 import math.Vector2I;
 import util.StringUtil;
 
@@ -32,7 +31,7 @@ public class FenNotation implements ChessNotation {
     @Override
     public Game read( String notation ) {
         GameConfig config = new GameConfig( notation );
-        return new GameMB( config );
+        return Game.getInstance( config );
     }
 
     @Override
@@ -194,7 +193,6 @@ public class FenNotation implements ChessNotation {
 
         String[] rows = placement.split( "/" );
         int rowSize = rows.length;
-        //Board board = new Board( rowSize );
         Map<Vector2I, Piece> placements = new HashMap<>();
 
         for ( int i = rowSize - 1; i >= 0; i-- ) {

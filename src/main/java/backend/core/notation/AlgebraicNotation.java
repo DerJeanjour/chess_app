@@ -10,7 +10,6 @@ import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
-import backend.game.modulebased.GameMB;
 import math.Vector2I;
 import util.CollectionUtil;
 import util.StringUtil;
@@ -52,7 +51,7 @@ public class AlgebraicNotation implements ChessNotation {
     @Override
     public Game read( String notation ) {
         GameConfig config = new GameConfig();
-        Game game = new GameMB( config );
+        Game game = Game.getInstance( config );
         applyMoves( game, notation );
         return game;
     }
@@ -220,7 +219,7 @@ public class AlgebraicNotation implements ChessNotation {
     @Override
     public String write( Game game ) {
         String notation = "";
-        Game sandbox = new GameMB( game.getConfig() );
+        Game sandbox = Game.getInstance( game.getConfig() );
         for ( MoveHistory history : game.getHistory() ) {
             notation += writeCode( sandbox, history );
             sandbox.makeMove( history.getMove() );
@@ -327,12 +326,12 @@ public class AlgebraicNotation implements ChessNotation {
         }
 
         // check col
-        if ( !ambiguousPositions.stream().filter( v -> v.x == from.x ).findFirst().isPresent() ) {
+        if ( !ambiguousPositions.stream().anyMatch( v -> v.x == from.x ) ) {
             return getColCode( from );
         }
 
         // check row
-        if ( !ambiguousPositions.stream().filter( v -> v.y == from.y ).findFirst().isPresent() ) {
+        if ( !ambiguousPositions.stream().anyMatch( v -> v.y == from.y ) ) {
             return getRowCode( from );
         }
 

@@ -3,7 +3,6 @@ package game;
 import backend.core.values.TeamColor;
 import backend.game.Game;
 import backend.game.GameConfig;
-import backend.game.modulebased.GameMB;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -21,7 +20,7 @@ public class LegalMovesLeftTest {
     void testNoLegalMovesLeftByBlock( String placementPattern ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = new GameMB( config );
+        Game game = Game.getInstance( config );
 
         assertFalse( game.hasLegalMovesLeft( TeamColor.BLACK ) );
     }

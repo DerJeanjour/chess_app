@@ -10,7 +10,7 @@ import misc.Timer;
 
 public class Player {
 
-    private static long WAITING_FOR_MOVE = 1000l;
+    private final static long WAITING_FOR_MOVE = 1000L;
 
     @Getter
     private final TeamColor team;

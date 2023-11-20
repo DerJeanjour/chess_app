@@ -6,6 +6,7 @@ import backend.core.values.ActionType;
 import backend.core.values.GameState;
 import backend.core.values.PieceType;
 import backend.core.values.TeamColor;
+import backend.game.modulebased.GameMB;
 import lombok.Getter;
 import lombok.Setter;
 import math.Vector2I;
@@ -17,6 +18,18 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class Game {
+
+    public static Game getInstance() {
+        return new GameMB( new GameConfig() );
+    }
+
+    public static Game getInstance( final GameConfig config ) {
+        return new GameMB( config );
+    }
+
+    public static Game getInstance( final GameConfig config, final boolean canLog ) {
+        return new GameMB( config, canLog );
+    }
 
     @Getter
     protected final GameConfig config;
@@ -190,7 +203,7 @@ public abstract class Game {
         }
     }
 
-    public boolean isOutOfBounce( Vector2I p ) {
+    public boolean isOutOfBounds( Vector2I p ) {
         if ( p == null ) {
             return true;
         }

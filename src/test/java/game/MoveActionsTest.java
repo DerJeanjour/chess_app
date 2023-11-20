@@ -7,13 +7,11 @@ import backend.core.values.ActionType;
 import backend.core.values.PieceType;
 import backend.game.Game;
 import backend.game.GameConfig;
-import backend.game.modulebased.GameMB;
 import misc.Log;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MoveActionsTest {
 
@@ -24,7 +22,7 @@ public class MoveActionsTest {
     void testCheckmateMoves( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = new GameMB( config );
+        Game game = Game.getInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -43,7 +41,7 @@ public class MoveActionsTest {
     void testStalemateMoves( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = new GameMB( config );
+        Game game = Game.getInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -63,17 +61,17 @@ public class MoveActionsTest {
     void testQueenPromotion( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = new GameMB( config );
+        Game game = Game.getInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
 
-        assertTrue( moveHistory.getMove().getPromoteTo().equals( PieceType.QUEEN ) );
+        assertEquals( moveHistory.getMove().getPromoteTo(), PieceType.QUEEN );
         assertTrue( moveHistory.getActions().contains( ActionType.MOVE ) );
         assertTrue( moveHistory.getActions().contains( ActionType.PROMOTING_QUEEN ) );
 
         Piece promotedPawn = game.getPiece( moveHistory.getMove().getTo() );
-        assertTrue( promotedPawn != null );
+        assertNotNull( promotedPawn );
         assertTrue( promotedPawn.isAlive() );
         assertTrue( promotedPawn.isType( PieceType.QUEEN ) );
 
@@ -87,17 +85,17 @@ public class MoveActionsTest {
     void testBishopPromotion( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = new GameMB( config );
+        Game game = Game.getInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
 
-        assertTrue( moveHistory.getMove().getPromoteTo().equals( PieceType.BISHOP ) );
+        assertEquals( moveHistory.getMove().getPromoteTo(), PieceType.BISHOP );
         assertTrue( moveHistory.getActions().contains( ActionType.MOVE ) );
         assertTrue( moveHistory.getActions().contains( ActionType.PROMOTING_BISHOP ) );
 
         Piece promotedPawn = game.getPiece( moveHistory.getMove().getTo() );
-        assertTrue( promotedPawn != null );
+        assertNotNull( promotedPawn );
         assertTrue( promotedPawn.isAlive() );
         assertTrue( promotedPawn.isType( PieceType.BISHOP ) );
 
@@ -111,7 +109,7 @@ public class MoveActionsTest {
     void testAuPassantSuccessMoves( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = new GameMB( config );
+        Game game = Game.getInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
