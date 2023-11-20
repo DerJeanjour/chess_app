@@ -20,7 +20,7 @@ public class LegalMovesLeftTest {
     void testNoLegalMovesLeftByBlock( String placementPattern ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = Game.getInstance( config );
+        Game game = Game.getTestInstance( config );
 
         assertFalse( game.hasLegalMovesLeft( TeamColor.BLACK ) );
     }

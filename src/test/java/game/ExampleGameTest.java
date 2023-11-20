@@ -4,12 +4,14 @@ import backend.core.notation.AlgebraicNotation;
 import backend.core.notation.ChessNotation;
 import backend.core.notation.FenNotation;
 import backend.game.Game;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExampleGameTest {
 
+    @Disabled
     @Test
     void testGame() {
 

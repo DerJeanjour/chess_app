@@ -90,7 +90,7 @@ public class GameView implements GameListener {
 
     public GameView( Game game, int boardSize, int windowW, int windowH ) {
 
-        this.fps = new FpsTracker( 1000l );
+        this.fps = new FpsTracker( 1000L );
         this.fps.start();
 
         this.game = game;

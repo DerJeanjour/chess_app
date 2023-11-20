@@ -69,33 +69,6 @@ public class GameConfig {
         this.moveNumber = config.getMoveNumber();
     }
 
-    /*
-    public GameConfig( String definition,
-                       int boardSize,
-                       Map<Vector2I, PieceMB> placements,
-                       TeamColor onMove,
-                       boolean whiteCanCastleKing,
-                       boolean whiteCanCastleQueen,
-                       boolean blackCanCastleKing,
-                       boolean blackCanCastleQueen,
-                       Vector2I auPassantPosition,
-                       int halfMoveRuleCount,
-                       int moveNumber ) {
-        this.definition = definition;
-        this.boardSize = boardSize;
-        this.placements = placements;
-        this.onMove = onMove;
-        this.whiteCanCastleKing = whiteCanCastleKing;
-        this.whiteCanCastleQueen = whiteCanCastleQueen;
-        this.blackCanCastleKing = blackCanCastleKing;
-        this.blackCanCastleQueen = blackCanCastleQueen;
-        this.auPassantPosition = auPassantPosition;
-        this.halfMoveRuleCount = halfMoveRuleCount;
-        this.moveNumber = moveNumber;
-    }
-
-     */
-
     private String fetchDefault() {
 
         List<String> placementLine = ResourceLoader.getTextFile( DEFAULT_PIECE_PLACEMENT_PATH );

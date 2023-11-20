@@ -129,7 +129,7 @@ public class PerftTest {
     void testPositions( String test, Map<Integer, Long> possibleNodesPerDepth, int maxDepth, GameConfig config ) {
         for ( int i = 0; i <= maxDepth; i++ ) {
             Timer timer = new Timer();
-            Game game = Game.getInstance( config );
+            Game game = Game.getTestInstance( config );
             long calculatedNodes = getPossibleNodesInDepth( game, i );
             long actualNodes = possibleNodesPerDepth.get( i );
             Log.info( "{}::{}: {}/{} searched nodes in {}s", test, i, calculatedNodes, actualNodes, timer.getTimeSinceSec() );

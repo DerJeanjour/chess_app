@@ -21,7 +21,7 @@ public class FinishConditionTest {
     void testCheckmate( String placementPattern ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = Game.getInstance( config );
+        Game game = Game.getTestInstance( config );
 
         assertTrue( game.isCheckmateFor( TeamColor.BLACK ) );
         assertFalse( game.isStalemateFor( TeamColor.BLACK ) );
@@ -36,7 +36,7 @@ public class FinishConditionTest {
     void testStalemate( String placementPattern ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = Game.getInstance( config );
+        Game game = Game.getTestInstance( config );
 
         assertFalse( game.isCheckmateFor( TeamColor.BLACK ) );
         assertTrue( game.isStalemateFor( TeamColor.BLACK ) );

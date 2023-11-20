@@ -22,7 +22,7 @@ public class MoveActionsTest {
     void testCheckmateMoves( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = Game.getInstance( config );
+        Game game = Game.getTestInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -41,7 +41,7 @@ public class MoveActionsTest {
     void testStalemateMoves( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = Game.getInstance( config );
+        Game game = Game.getTestInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -61,7 +61,7 @@ public class MoveActionsTest {
     void testQueenPromotion( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = Game.getInstance( config );
+        Game game = Game.getTestInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -85,7 +85,7 @@ public class MoveActionsTest {
     void testBishopPromotion( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = Game.getInstance( config );
+        Game game = Game.getTestInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();
@@ -109,7 +109,7 @@ public class MoveActionsTest {
     void testAuPassantSuccessMoves( String placementPattern, String moveNotation ) {
 
         GameConfig config = new GameConfig( placementPattern );
-        Game game = Game.getInstance( config );
+        Game game = Game.getTestInstance( config );
 
         AlgebraicNotation.applyMoves( game, moveNotation );
         MoveHistory moveHistory = game.getLastMove();

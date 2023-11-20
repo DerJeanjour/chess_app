@@ -13,7 +13,7 @@ public class CheckTest {
     void testSimpleCheck() {
 
         GameConfig config = new GameConfig( "k3/4/4/R2K w - -" );
-        Game game = Game.getInstance( config );
+        Game game = Game.getTestInstance( config );
 
         assertTrue( game.isCheckFor( TeamColor.BLACK ) );
     }
